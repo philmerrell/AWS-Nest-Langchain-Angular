@@ -3,6 +3,7 @@ import { addIcons } from 'ionicons';
 import { IonIcon, IonTextarea, IonButton, IonCardContent, IonCard } from "@ionic/angular/standalone";
 import { FormsModule } from '@angular/forms';
 import { arrowUpOutline, stop, close } from 'ionicons/icons';
+import { ChatRequestService } from '../../services/chat-request.service';
 
 @Component({
   selector: 'app-chat-input',
@@ -16,7 +17,7 @@ export class ChatInputComponent  implements OnInit {
   loading: boolean = false;
   error = '';
   
-  constructor() {
+  constructor(private chatRequestService: ChatRequestService) {
     addIcons({close, stop, arrowUpOutline});
   }
 
@@ -24,7 +25,7 @@ export class ChatInputComponent  implements OnInit {
 
 
   handleSubmitChat() {
-    
+    this.chatRequestService.submitChatRequest('test', new AbortController().signal);
   }
 
   handleEnterKey(event: any) {

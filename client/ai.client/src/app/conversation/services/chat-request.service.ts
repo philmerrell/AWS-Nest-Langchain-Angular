@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal, WritableSignal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -10,10 +10,12 @@ class FatalError extends Error { }
     providedIn: 'root'
 })
 export class ChatRequestService {
+    private chatLoading: WritableSignal<boolean> = signal(false);
 
-    constructor(private http: HttpClient) { }
+    constructor() { }
 
     submitChatRequest(message: string, signal: AbortSignal) {
+        this.chatLoading.set(true);
         fetchEventSource(`${environment.chatApiUrl}/chat`, {
             method: 'POST',
             headers: {
