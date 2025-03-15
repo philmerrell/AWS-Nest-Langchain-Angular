@@ -9,7 +9,7 @@ import { arrowUpOutline, stop, close } from 'ionicons/icons';
   templateUrl: './chat-input.component.html',
   styleUrls: ['./chat-input.component.scss'],
   standalone: true,
-  imports: [IonCard, IonCardContent, IonButton, IonTextarea, IonIcon, IonButton, IonIcon, IonCard, IonTextarea, FormsModule]
+  imports: [IonCard, IonCardContent, IonButton, IonTextarea, IonButton, IonCard, IonTextarea, FormsModule]
 })
 export class ChatInputComponent  implements OnInit {
   message: string = '';
@@ -30,7 +30,7 @@ export class ChatInputComponent  implements OnInit {
   handleEnterKey(event: any) {
     if (event.which === 13 && !event.shiftKey) {
       event.preventDefault();
-      // this.submitChatRequest();
+      this.submitChatRequest();
     }
   }
 
