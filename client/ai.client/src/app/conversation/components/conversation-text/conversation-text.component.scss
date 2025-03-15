@@ -1,0 +1,16 @@
+
+.assistant-message {
+    line-height: 1.65rem;
+    font-size: 1.15rem;
+    font-weight: 400;
+}
+
+.assistant-response-row:last-of-type {
+    min-height: calc(100vh - 320px);
+}
+
+.metadata-row {
+    min-height: 30px;
+    padding: 0;
+    margin: 0;
+}

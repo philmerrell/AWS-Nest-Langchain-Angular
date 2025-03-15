@@ -1,0 +1,67 @@
+@if(!conversation()?.messages?.length) {
+  <app-help-card [@fadeInOut]></app-help-card>
+}
+
+@if(conversation()?.messages) {
+  <div class="ion-padding">
+    <ion-grid>
+      @for(message of conversation()?.messages; track message.id; let i = $index;) {
+        @if(message.role === 'user') {
+          <ion-row [id]="message.id" [@slide]>
+            <ion-col size="3"></ion-col>
+            <ion-col size="9" style="text-align: right; position: relative;">
+              <app-user-message [message]="message"></app-user-message>
+            </ion-col>
+          </ion-row>
+
+          <ion-row class="metadata-row">
+            <ion-col>
+                <!-- Only display loading indicator if it's the last or second to last message -->
+                @if(i === conversation()?.messages!.length || i === conversation()?.messages!.length - 1) {
+                  @for(metadata of responseMetadata(); let i = $index; track i;) {
+                    @if(metadata?.sticky && metadata.sticky !== undefined) {
+                    <ion-chip [@fadeInOut]>
+                      <ion-avatar>
+                      <div class="pulsating-circle"></div>
+                      </ion-avatar>
+                      <ion-label>{{ metadata.message }}</ion-label>
+                    </ion-chip>
+                    }
+                  }
+                }
+            </ion-col>
+          </ion-row>
+
+          <!-- This displays files that were just uploaded for the conversation -->
+          @if(message.data?.dataSources?.length) {
+            <b>Included documents:</b><br>
+            @for(file of message.data.dataSources; track file.id) {
+              <ion-chip (click)="downloadFile(file)">
+                <ion-icon [name]="file.type | fileTypeIcon"></ion-icon>
+                <ion-label>{{ file.name }}</ion-label>
+              </ion-chip>
+            }
+          }
+        } @else {
+          <ion-row class="assistant-response-row">
+            <ion-col size="12">
+              <div class="assistant-message" [@fadeInOut]>
+                <!-- This displays files that were selected from previously uploaded files and also not listed in the datasources -->
+                @if(message.data?.state?.sources?.documentContext?.sources?.length) {
+                  <b>Included documents:</b><br>
+                  @for(file of message.data.state.sources.documentContext.sources; let i = $index; track i) {
+                    <ion-chip (click)="downloadFile(file)">
+                      <ion-icon [name]="file.type | fileTypeIcon"></ion-icon>
+                      <ion-label>{{ file.name }}</ion-label>
+                    </ion-chip>
+                  }
+                }
+                <markdown clipboard mermaid [data]="message.content"></markdown>
+              </div>
+            </ion-col>
+          </ion-row>
+        }
+      }
+    </ion-grid>
+  </div>
+}

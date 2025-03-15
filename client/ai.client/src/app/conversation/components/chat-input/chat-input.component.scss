@@ -1,0 +1,12 @@
+#fileDropRef {
+    display: none;
+}
+
+.fileover {
+    border: 1px dashed var(--ion-color-dark);
+    background: var(--ion-color-medium);
+}
+
+ion-badge {
+    margin-left: 5px;
+}

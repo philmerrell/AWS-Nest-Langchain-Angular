@@ -1,0 +1,24 @@
+ion-button {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+}
+
+.user-message {
+    padding: 10px !important;
+    transition: all 250ms ease-in-out !important;
+    border-radius: 10px !important;
+    margin-bottom: 4px !important;
+    display: inline-block;
+    background-color: var(--ion-color-primary) !important;
+    color: var(--ion-color-primary-contrast) !important;
+    white-space: pre-wrap;
+
+    div {
+        text-align: left;
+    }
+
+    .truncated-message {
+        padding-right: 30px;
+    }
+}

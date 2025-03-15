@@ -1,0 +1,17 @@
+<div class="user-message">
+  @if((message.content | truncateUserInput).truncated) {
+    @if(!expanded) {
+      <div class="truncated-message">{{ (message.content | truncateUserInput).text }}</div>
+      <ion-button (click)="expanded = !expanded" shape="round">
+        <ion-icon slot="icon-only" name="chevron-down-outline"></ion-icon>
+      </ion-button>
+    } @else {
+      <div class="truncated-message">{{ message.content }}</div>
+      <ion-button (click)="expanded = !expanded" shape="round">
+        <ion-icon slot="icon-only" name="chevron-up-outline"></ion-icon>
+      </ion-button>
+    }
+  } @else {
+    <div>{{ (message.content | truncateUserInput).text }}</div>
+  }
+</div>
