@@ -13,7 +13,10 @@ export class ModelService {
 
   getModels(): Model[] {
     return [
-        { id: 'anthropic.claude-3-5-sonnet-20240620-v1:0', name: 'Claude 3.5 Sonnet' }
+        { id: 'anthropic.claude-3-5-sonnet-20240620-v1:0', name: 'Claude 3.5 Sonnet' },
+        { id: 'anthropic.claude-3-7-sonnet-20250219-v1:0', name: 'Claude 3.7 Sonnet' },
+        { id: 'deepseek.r1-v1:0', name: 'DeepSeek R1' },
+        { id: 'amazon.nova-pro-v1:0', name: 'AWS Nova Pro' },
     ];
   }
 

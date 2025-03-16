@@ -84,7 +84,7 @@ export class ChatRequestService {
 
     updateCurrentConversationWithUserInput(userInput: string) {
         const userMessage = this.initUserMessage(userInput);
-        const systemMessage = this.initSystemMessage();
+        const systemMessage = this.initAssistantMessage();
     
         // Check if it's a new conversation.
         if (!this.currentConversation().messages.length) {
@@ -92,7 +92,7 @@ export class ChatRequestService {
           this.currentConversation.update((c: Conversation) => {
             return {
               ...c,
-              messages: [userMessage, systemMessage]
+              messages: [userMessage]
             }
           });
     
@@ -131,11 +131,11 @@ export class ChatRequestService {
         }
     }
     
-    private initSystemMessage(): Message {
+    private initAssistantMessage(): Message {
         return {
           content: '',
           id: uuidv4(),
-          role: 'system'
+          role: 'assistant'
         }
     }
 }

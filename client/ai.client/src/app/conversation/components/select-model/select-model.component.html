@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-toolbar color="light">
+    <ion-title>Select a Model</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()" color="primary">Dismiss</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-list>
+    
+    <ion-item (click)="navigateToAdvancedSettings()" button>
+      <ion-icon slot="start" color="secondary" name="settings-outline"></ion-icon>
+      Advanced Settings
+    </ion-item>
+    <ion-item-divider sticky>Models</ion-item-divider>
+    @for(model of models; track model.id) {
+      <ion-item (click)="selectModel(model)" button>
+        <ion-label>
+          <h2>{{ model.name }}</h2>
+          <!-- <p>{{ model.description }}</p> -->
+        </ion-label>
+        @if(model.id === selectedModel().id) {
+          <ion-icon slot="end" name="checkmark-circle" color="success"></ion-icon>
+        }
+      </ion-item>
+    }
+  </ion-list>
+
+</ion-content>

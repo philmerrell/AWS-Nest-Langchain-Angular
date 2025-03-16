@@ -38,7 +38,6 @@ export class ConversationService {
       id: uuidv4(),
       name: 'New Conversation',
       messages: [],
-      model: this.selectedModel(),
       prompt: this.selectedPrompt(),
       temperature: this.selectedTemperature()
     };

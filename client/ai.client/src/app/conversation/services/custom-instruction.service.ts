@@ -21,6 +21,10 @@ export class CustomInstructionService {
 
   }
 
+  getCustomInstructions(): Signal<CustomInstruction[]> {
+    return signal([]);
+  }
+
   getSelectedCustomInstruction(): Signal<CustomInstruction> {
     return this.selectedCustomInstruction;
   }

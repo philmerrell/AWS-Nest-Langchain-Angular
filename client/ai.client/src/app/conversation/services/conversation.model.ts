@@ -2,7 +2,7 @@ export interface Conversation {
     id: string;
     name: string;
     messages: Message[];
-    model: Model;
+    // model: Model;
     prompt?: string;
     temperature?: number;
     instructions?: CustomInstruction;

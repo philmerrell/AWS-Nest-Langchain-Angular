@@ -1,0 +1,82 @@
+<!-- <ion-card color="light"> -->
+<!-- <ion-item-divider>Conversation Settings</ion-item-divider> -->
+<ion-header>
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Advanced Settings</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()" color="secondary">
+        Dismiss
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+
+  <ion-item>
+    <ion-select (ionChange)="handleModelChange($event)" [interfaceOptions]="modelPopoverOptions"
+      [value]="selectedModel()" interface="popover" label="Model" label-placement="floating">
+      @for(model of models; track model.id) {
+      <ion-select-option [value]="model">{{ model.name }}</ion-select-option>
+      }
+
+    </ion-select>
+  </ion-item>
+  <ion-item (click)="presentCustomInstructionsModal()" button>
+    <ion-label>
+      <p>Custom Instructions</p>
+      <h2>{{ selectedCustomInstructions().name }}</h2>
+    </ion-label>
+    <!-- <ion-select
+           [interfaceOptions]="customInstructionsPopoverOptions"
+           value="default"
+           interface="popover"
+           label="Custom Instructions"
+           label-placement="floating">
+           <ion-select-option value="default">Default</ion-select-option>
+         </ion-select> -->
+  </ion-item>
+  <div class="ion-padding">
+
+    <ion-item lines="none">
+      <ion-label>
+        <p>Temperature</p>
+        <h5>Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more
+          focused and deterministic.</h5>
+        <ion-range aria-label="temperature" (ionChange)="handleTempChange($event)" [value]="selectedTemperature()"
+          [min]="0" [max]="1.0" [step]="0.1" [pin]="true" [pinFormatter]="temperatureFormatter">
+        </ion-range>
+      </ion-label>
+    </ion-item>
+
+    <ion-grid class="ion-no-padding">
+      <ion-row>
+        <ion-col class="ion-text-start">Precise</ion-col>
+        <ion-col class="ion-text-center">Neutral</ion-col>
+        <ion-col class="ion-text-end">Creative</ion-col>
+      </ion-row>
+    </ion-grid>
+    <ion-item lines="none">
+      <ion-label>
+        <p>Response Length</p>
+        <h5>Higher values will allow, but do not guarantee, longer answers.</h5>
+        <ion-range aria-label="Response length" [pin]="true" [min]="0" [step]="0.1" [max]="6" [value]="3"></ion-range>
+      </ion-label>
+    </ion-item>
+    <ion-grid class="ion-no-padding">
+      <ion-row>
+        <ion-col class="ion-text-start">Concise</ion-col>
+        <ion-col class="ion-text-center">Average</ion-col>
+        <ion-col class="ion-text-end">Verbose</ion-col>
+      </ion-row>
+    </ion-grid>
+
+  </div>
+</ion-content>
+<ion-footer>
+  <ion-toolbar color="light">
+    <ion-button (click)="dismiss()" expand="block">Done</ion-button>
+  </ion-toolbar>
+</ion-footer>

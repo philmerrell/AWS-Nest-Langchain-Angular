@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Custom Instructions</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        Dismiss
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-list>
+    <ion-item>
+      <ion-label>
+        <p>Custom instructions are like setting ground rules or preferences for how an LLM should interact with you. Think of it as configuring your personal AI teaching assistant!</p>
+      </ion-label>
+      <ion-button slot="end">Create</ion-button>
+    </ion-item>
+    <ion-item-divider>Instructions</ion-item-divider>
+    @for(instruction of customInstructions() | filterInstructions:'root_prompt'; track instruction.id) {
+      <ion-item (click)="setSelectedCustomInstruction(instruction)" button>
+        <ion-label>
+          {{ instruction.name }}
+          <p>{{instruction.description}}</p>
+        </ion-label>
+      </ion-item>
+    }
+  </ion-list>
+
+</ion-content>
