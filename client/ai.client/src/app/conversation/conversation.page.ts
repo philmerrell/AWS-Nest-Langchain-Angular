@@ -1,21 +1,32 @@
 import { Component, OnInit, Signal  } from '@angular/core';
 import { ChatInputComponent } from './components/chat-input/chat-input.component';
 import { addIcons } from 'ionicons';
-import { chevronForwardOutline, personOutline } from 'ionicons/icons';
-import { Router } from '@angular/router';
+import { chevronForwardOutline } from 'ionicons/icons';
 import { IonHeader, IonToolbar, IonButtons, IonTitle, IonContent, IonFooter, IonMenuButton } from "@ionic/angular/standalone";
+import { ConversationTextComponent } from './components/conversation-text/conversation-text.component';
+import { Conversation, Model } from './services/conversation.model';
+import { ChatRequestService } from './services/chat-request.service';
+import { ConversationService } from './services/conversation.service';
+import { ModelService } from './services/model.service';
 
 @Component({
   selector: 'app-conversation',
   templateUrl: './conversation.page.html',
   styleUrls: ['./conversation.page.scss'],
   standalone: true,
-  imports: [IonFooter, IonContent, IonTitle, IonButtons, IonToolbar, IonHeader, ChatInputComponent, IonMenuButton ]
+  imports: [IonFooter, IonContent, IonTitle, IonButtons, IonToolbar, IonHeader, ChatInputComponent, IonMenuButton, ConversationTextComponent ]
 })
 export class ConversationPage implements OnInit {
+  currentConversation: Signal<Conversation> = this.conversationService.getCurrentConversation();
+  chatLoading: Signal<boolean> = this.chatRequestService.getChatLoading();
+  selectedModel: Signal<Model> = this.modelService.getSelectedModel();
+
   isModalOpen = false;
 
-  constructor() {
+  constructor(
+    private chatRequestService: ChatRequestService,
+    private conversationService: ConversationService,
+    private modelService: ModelService,) {
     addIcons({chevronForwardOutline});
   }
 

@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { Message } from 'src/app/models/conversation.model';
 import { IonButton, IonIcon } from "@ionic/angular/standalone";
 import { TruncateUserInputPipe } from "../truncate-user-input.pipe";
 import { addIcons } from 'ionicons';
 import { chevronDownOutline, chevronUpOutline } from 'ionicons/icons';
-import { expandCollapse } from 'src/app/core/animations/expandCollapse';
+import { Message } from 'src/app/conversation/services/conversation.model';
+import { expandCollapse } from 'src/app/shared/animations/expandCollapse';
 
 @Component({
   selector: 'app-user-message',

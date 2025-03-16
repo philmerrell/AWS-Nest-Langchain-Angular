@@ -1,6 +1,4 @@
-import { Injectable, signal, WritableSignal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
 class RetriableError extends Error { }
@@ -36,16 +34,10 @@ export class ChatRequestService {
                 }
             },
             onmessage(msg) {
-                // if the server emits an error message, throw an exception
-                // so it gets handled by the onerror callback below:
-                if (msg.event === 'FatalError') {
-                    throw new FatalError(msg.data);
-                }
-                console.log(msg.data);
+                console.log(msg);
             },
             onclose() {
-                // if the server closes the connection unexpectedly, retry:
-                throw new RetriableError();
+                
             },
             onerror(err) {
                 if (err instanceof FatalError) {
@@ -56,5 +48,9 @@ export class ChatRequestService {
                 }
             }
         });
+    }
+
+    getChatLoading(): Signal<boolean> {
+        return this.chatLoading;
     }
 }

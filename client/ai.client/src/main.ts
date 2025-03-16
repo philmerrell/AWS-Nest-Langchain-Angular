@@ -4,6 +4,8 @@ import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalo
 
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
+import { MERMAID_OPTIONS, provideMarkdown } from 'ngx-markdown';
+
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -13,5 +15,13 @@ bootstrapApplication(AppComponent, {
       swipeBackEnabled: false
     }),
     provideRouter(routes, withPreloading(PreloadAllModules)),
+    provideMarkdown({
+      mermaidOptions: {
+        provide: MERMAID_OPTIONS,
+        useValue: {
+          darkMode: true
+        },
+      },
+    })
   ],
 });
