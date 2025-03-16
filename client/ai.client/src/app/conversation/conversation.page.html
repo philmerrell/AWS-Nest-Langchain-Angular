@@ -17,6 +17,7 @@
         <ion-title size="large">{{ currentConversation().name }}</ion-title>
       </ion-toolbar>
     </ion-header>
+    <pre>{{ currentConversation() | json }}</pre>
     <app-conversation-text [conversation]="currentConversation()" [loading]="chatLoading()" [scroller]="scroller"></app-conversation-text>    
   </div>
 </ion-content>

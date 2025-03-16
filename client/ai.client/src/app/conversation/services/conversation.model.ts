@@ -5,7 +5,7 @@ export interface Conversation {
     model: Model;
     prompt?: string;
     temperature?: number;
-    promptTemplate?: Prompt | null;
+    instructions?: CustomInstruction;
     tags?: string[]
 
 }
@@ -14,17 +14,13 @@ export interface Message {
     role: Role;
     content: string;
     id: string;
-    type: string | undefined;
 }
 
-export interface Prompt {
+export interface CustomInstruction {
     id: string;
     name: string;
     description: string;
     content: string;
-    model?: Model;
-    folderId: string | null;
-    type?: string;
 }
 
 export interface Model {

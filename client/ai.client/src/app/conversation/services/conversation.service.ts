@@ -33,7 +33,7 @@ export class ConversationService {
     return this.conversations;
   }
 
-  createConversation(): Conversation {
+  private createConversation(): Conversation {
     const newConversation = {
       id: uuidv4(),
       name: 'New Conversation',
