@@ -10,10 +10,14 @@
         placeholder="How can I help you?"
         value=""
       >
-        <ion-button (click)="handleSubmitChat()" shape="round" slot="end" aria-label="Submit chat">
-          
-        </ion-button>
-      </ion-textarea>
+      <ion-button (click)="handleSubmitChat()" shape="round" slot="end" aria-label="Submit chat" [color]="chatLoading() ? 'danger' : 'primary'">
+        @if (chatLoading()) {
+          <ion-icon slot="icon-only" name="stop" aria-hidden="true"></ion-icon>
+        } @else {
+          <ion-icon slot="icon-only" name="arrow-up-outline" aria-hidden="true"></ion-icon>
+        }
+      </ion-button>          
+    </ion-textarea>
   
     </ion-card-content>
   </ion-card>

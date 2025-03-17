@@ -6,11 +6,10 @@ import { ChatRequestDto } from './chat-request.dto';
 @Controller('chat')
 export class ChatController {
 
-    constructor(private chatService: ChatService) {}
+  constructor(private chatService: ChatService) { }
 
-    @Post()
-    async chat(@Body() chatRequestDto: ChatRequestDto, @Res() res: Response) {
-      console.log('chatRequestDto', chatRequestDto);
-        return this.chatService.streamChat(chatRequestDto, res);
-      }
+  @Post()
+  async chat(@Body() chatRequestDto: ChatRequestDto, @Res() res: Response) {
+    return this.chatService.streamChat(chatRequestDto, res);
+  }
 }

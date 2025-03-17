@@ -10,9 +10,10 @@ import { ChatRequestService } from '../../services/chat-request.service';
   templateUrl: './chat-input.component.html',
   styleUrls: ['./chat-input.component.scss'],
   standalone: true,
-  imports: [IonCard, IonCardContent, IonButton, IonTextarea, IonButton, IonCard, IonTextarea, FormsModule]
+  imports: [IonCard, IonCardContent, IonButton, IonTextarea, IonButton, IonCard, IonTextarea, FormsModule, IonIcon]
 })
 export class ChatInputComponent  implements OnInit {
+  chatLoading: Signal<boolean> = this.chatRequestService.getChatLoading();
   message: string = '';
   loading: boolean = false;
   error = '';
@@ -25,20 +26,26 @@ export class ChatInputComponent  implements OnInit {
 
 
   handleSubmitChat() {
-    this.chatRequestService.submitChatRequest('test', new AbortController().signal);
+    if (this.chatLoading()) {
+      this.cancelChatRequest()
+    } else {
+      this.submitChatRequest()
+    }
   }
 
   handleEnterKey(event: any) {
     if (event.which === 13 && !event.shiftKey) {
       event.preventDefault();
-      this.submitChatRequest();
+      if (!this.chatLoading()) {
+        this.submitChatRequest();
+      }
     }
   }
 
   private submitChatRequest() {
     const message = this.message.trim();
     if (message !== '') {
-      // this.chatRequestService.submitChatRequest(this.message);
+      this.chatRequestService.submitChatRequest(this.message, new AbortController().signal);
     }
     this.message = ''
   }
