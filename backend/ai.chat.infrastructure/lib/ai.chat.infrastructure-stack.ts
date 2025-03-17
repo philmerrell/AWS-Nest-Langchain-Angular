@@ -1,16 +1,89 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import { BoiseStateAIStackProps } from '../bin/BoiseStateAIStackProps';
 
 export class AiChatInfrastructureStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: BoiseStateAIStackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const tags = {
+      Project: 'BoiseState.ai',
+      Environment: `${props?.environment}`,
+      Owner: 'WebTeam',
+      Purpose: 'ConversationStorage'
+    };
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'AiChatInfrastructureQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    // Conversations Table
+    const conversationsTable = new dynamodb.Table(this, 'BoiseState.ai.Conversations.DynamoDB', {
+      tableName: `${props?.environment}-BoiseState.ai.Conversations`,
+      partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // userId#conversationId
+      sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      pointInTimeRecovery: true,
+    });
+
+    conversationsTable.addGlobalSecondaryIndex({
+      indexName: 'ConversationByIdIndex',
+      partitionKey: { name: 'conversationId', type: dynamodb.AttributeType.STRING },
+    });
+
+    // Messages Table
+    const messagesTable = new dynamodb.Table(this, 'BoiseState.ai.Messages.DynamoDB', {
+      tableName: `${props?.environment}-BoiseState.ai.Messages`,
+      partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // conversationId
+      sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      pointInTimeRecovery: true,
+    });
+
+    // Shared Conversations Table
+    const sharedConversationsTable = new dynamodb.Table(this, 'BoiseState.ai.SharedConversations.DynamoDB', {
+      tableName: `${props?.environment}-BoiseState.ai.SharedConversations`,
+      partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // sharedConversationId
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      pointInTimeRecovery: true,
+    });
+
+    sharedConversationsTable.addGlobalSecondaryIndex({
+      indexName: 'OwnerIdIndex',
+      partitionKey: { name: 'ownerId', type: dynamodb.AttributeType.STRING }, // ownerId
+      sortKey: { name: 'createdAt', type: dynamodb.AttributeType.STRING }, // createdAt
+    });
+
+    // Shared Messages Table
+    const sharedMessagesTable = new dynamodb.Table(this, 'BoiseState.ai.SharedMessages.DynamoDB', {
+      tableName: `${props?.environment}-SharedMessages`,
+      partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // sharedConversationId
+      sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      pointInTimeRecovery: true,
+    });
+
+    new cdk.CfnOutput(this, 'ConversationsTableName', {
+      value: conversationsTable.tableName,
+    });
+
+    new cdk.CfnOutput(this, 'MessagesTableName', {
+      value: messagesTable.tableName,
+    });
+
+    new cdk.CfnOutput(this, 'SharedConversationsTableName', {
+      value: sharedConversationsTable.tableName,
+    });
+
+    new cdk.CfnOutput(this, 'SharedMessagesTableName', {
+      value: sharedMessagesTable.tableName,
+    });
+
+
+    // Apply Tags to Resources
+    [conversationsTable, messagesTable, sharedConversationsTable, sharedMessagesTable].forEach((table) => {
+      Object.entries(tags).forEach(([key, value]) => {
+        cdk.Tags.of(table).add(key, value);
+      });
+    });
+
   }
+
 }
