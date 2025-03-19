@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
 import { AiChatInfrastructureStack } from '../lib/ai.chat.infrastructure-stack';
+import * as dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 const app = new cdk.App();
-new AiChatInfrastructureStack(app, 'BoiseStateAIInfrastructureStack', {
+new AiChatInfrastructureStack(app, 'AiChatInfrastructureStack', {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */

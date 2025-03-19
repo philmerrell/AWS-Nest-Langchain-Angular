@@ -20,7 +20,6 @@ export class AiChatInfrastructureStack extends cdk.Stack {
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // userId
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      pointInTimeRecovery: true,
     });
 
     conversationsTable.addGlobalSecondaryIndex({
@@ -34,7 +33,6 @@ export class AiChatInfrastructureStack extends cdk.Stack {
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // userId#conversationId
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      pointInTimeRecovery: true,
     });
 
     // Shared Conversations Table
@@ -42,7 +40,6 @@ export class AiChatInfrastructureStack extends cdk.Stack {
       tableName: `${props?.environment}-BoiseState.ai.SharedConversations`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // sharedConversationId
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      pointInTimeRecovery: true,
     });
 
     sharedConversationsTable.addGlobalSecondaryIndex({
@@ -57,7 +54,6 @@ export class AiChatInfrastructureStack extends cdk.Stack {
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // sharedConversationId
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      pointInTimeRecovery: true,
     });
 
     new cdk.CfnOutput(this, 'ConversationsTableName', {
