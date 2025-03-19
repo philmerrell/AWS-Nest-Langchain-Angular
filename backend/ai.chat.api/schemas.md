@@ -1,7 +1,7 @@
 
 ### **Conversations Table**  
 - **Primary Key:**  
-  - **PK:** `userId#conversationId`  
+  - **PK:** `userId`  
   - **SK:** `timestamp`  
 - **Attributes:**  
   - `conversationId` (String, UUID)   

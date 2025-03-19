@@ -8,7 +8,7 @@ export class AiChatInfrastructureStack extends cdk.Stack {
     super(scope, id, props);
 
     const tags = {
-      Project: 'BoiseState.ai',
+      Project: 'Dev-BoiseState.ai',
       Environment: `${props?.environment}`,
       Owner: 'WebTeam',
       Purpose: 'ConversationStorage'
@@ -17,7 +17,7 @@ export class AiChatInfrastructureStack extends cdk.Stack {
     // Conversations Table
     const conversationsTable = new dynamodb.Table(this, 'BoiseState.ai.Conversations.DynamoDB', {
       tableName: `${props?.environment}-BoiseState.ai.Conversations`,
-      partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // userId#conversationId
+      partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // userId
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecovery: true,
@@ -31,7 +31,7 @@ export class AiChatInfrastructureStack extends cdk.Stack {
     // Messages Table
     const messagesTable = new dynamodb.Table(this, 'BoiseState.ai.Messages.DynamoDB', {
       tableName: `${props?.environment}-BoiseState.ai.Messages`,
-      partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // conversationId
+      partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // userId#conversationId
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecovery: true,
