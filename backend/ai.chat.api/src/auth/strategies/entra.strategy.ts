@@ -4,6 +4,12 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import * as jwksRsa from 'jwks-rsa';
 import { ConfigService } from '@nestjs/config';
 
+export interface User {
+  email: string;
+  name: string;
+  roles: string[];
+}
+
 @Injectable()
 export class EntraIDStrategy extends PassportStrategy(Strategy, 'EntraID') {
   constructor(protected readonly configService: ConfigService) {
@@ -25,9 +31,11 @@ export class EntraIDStrategy extends PassportStrategy(Strategy, 'EntraID') {
     });
   }
 
-  validate(payload: any) {
+  validate(payload: any): User {
     console.log('payload', payload);
+    // TODO: release Emplid claim and add
+    // Here's where we can modify user object
     const roles = payload.roles || [];
-    return { ...payload, roles };
+    return { email: payload.email, name: payload.name, roles };
   }
 }
