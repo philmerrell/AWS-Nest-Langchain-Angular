@@ -12,7 +12,7 @@ export class ChatController {
   constructor(private chatService: ChatService) { }
 
   @Post()
-  @UseGuards(EntraAuthGuard, RolesGuard)
+  @UseGuards(EntraAuthGuard)
   async chat(@Body() chatRequestDto: ChatRequestDto, @Res() res: Response, @Req() req: any) {
     const user = req.user;
     return this.chatService.streamChat(chatRequestDto, res, user);
