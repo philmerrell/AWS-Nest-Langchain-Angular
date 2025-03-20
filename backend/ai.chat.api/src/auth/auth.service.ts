@@ -10,7 +10,6 @@ export class AuthService {
   }
 
   async exchangeCodeForTokens(code: string) {
-    // https://login.microsoftonline.com/${configService.get('ENTRA_TENANT_ID')}/oauth2/v2.0/token
     const tokenEndpoint = `https://login.microsoftonline.com/${this.configService.get('ENTRA_TENANT_ID')}/oauth2/v2.0/token`;
 
     const params = new URLSearchParams();
@@ -26,7 +25,6 @@ export class AuthService {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
     });
-    console.log(response);
 
     return response.data;
   }
