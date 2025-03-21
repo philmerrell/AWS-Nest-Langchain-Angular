@@ -110,4 +110,6 @@ export class CostService {
 
     await this.ddbDocClient.send(new TransactWriteCommand(transactParams));
   }
+
+  
 }

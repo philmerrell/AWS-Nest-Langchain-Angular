@@ -18,7 +18,7 @@ export class ModelPricingService {
   async getLatestPricing(modelId: string) {
     const command = new GetCommand({
       TableName: this.tableName,
-      Key: { PK: `model#${modelId}`, SK: 'PRICE' },
+      Key: { PK: `MODEL#${modelId}`, SK: 'PRICE' },
     });
 
     const { Item } = await this.dynamo.send(command);
