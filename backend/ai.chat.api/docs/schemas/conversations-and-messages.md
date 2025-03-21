@@ -1,7 +1,7 @@
 
 ### **Conversations Table**  
 - **Primary Key:**  
-  - **PK:** `userId`  
+  - **PK:** `emplId`  
   - **SK:** `timestamp`  
 - **Attributes:**  
   - `conversationId` (String, UUID)   
@@ -13,11 +13,11 @@
 
 ### **Messages Table**  
 - **Primary Key:**  
-  - **PK:** `userId#conversationId`  
+  - **PK:** `emplId#conversationId`  
   - **SK:** `timestamp`  
 - **Attributes:**  
   - `id` (String, UUID)  
-  - `role` (String)
+  - `role` (String) - `system` | `user` | `assistant`
   - `content` (String)  
   - `createdAt` (ISO timestamp)  
 

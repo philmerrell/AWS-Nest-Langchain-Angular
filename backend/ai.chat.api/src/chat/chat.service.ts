@@ -15,7 +15,7 @@ export class ChatService {
         private readonly configService: ConfigService,
         private readonly conversationService: ConversationService,
         private readonly costService: CostService,
-        private readonly messageService: MessageService
+        private readonly messageService: MessageService,
     ) {}
 
     async streamChat(chatRequestDto: ChatRequestDto, res: Response, user: User): Promise<void> {
@@ -27,7 +27,7 @@ export class ChatService {
         const systemResponse = await this.processChatStream(model, messages, res, user);
         const messagesToSave = this.getMessagesToSave(systemResponse, messages, isNewConversation);
 
-        this.messageService.addToConversation(messagesToSave, conversationId, user.email);
+        this.messageService.addToConversation(messagesToSave, conversationId, user.emplId);
         res.write(`data: [DONE]`);
         res.end();
     }
@@ -73,7 +73,7 @@ export class ChatService {
 
         res.write(`data: ${JSON.stringify({ inputTokens, outputTokens })}\n\n`);
         await this.costService.trackUsage({
-            emplId: user.emplId,
+            user,
             modelId: model.model,
             inputTokens,
             outputTokens,
@@ -91,6 +91,7 @@ export class ChatService {
             model: modelId,
             region: this.configService.get<string>('BEDROCK_AWS_REGION'),
         });
+        
     }
 
     private getSystemMessage(user: User): Message {

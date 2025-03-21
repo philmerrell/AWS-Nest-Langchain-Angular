@@ -7,9 +7,10 @@ import {
   TransactWriteCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { ModelPricingService } from './model-pricing.service'; // adjust path as needed
+import { User } from 'src/auth/strategies/entra.strategy';
 
 interface TrackUsageInput {
-  emplId: string;
+  user: User;
   modelId: string;
   inputTokens: number;
   outputTokens: number;
@@ -29,7 +30,7 @@ export class CostService {
   }
 
   async trackUsage({
-    emplId,
+    user,
     modelId,
     inputTokens,
     outputTokens,
@@ -60,7 +61,7 @@ export class CostService {
           Update: {
             TableName: this.configService.get('USER_USAGE_TABLE_NAME'),
             Key: {
-              PK: `USER#${emplId}`,
+              PK: `USER#${user.emplId}`,
               SK: `USAGE#${modelId}#${date}`,
             },
             UpdateExpression:
@@ -76,7 +77,7 @@ export class CostService {
           Update: {
             TableName: this.configService.get('USER_USAGE_TABLE_NAME'),
             Key: {
-              PK: `USER#${emplId}`,
+              PK: `USER#${user.emplId}`,
               SK: `AGG#MONTH#${yearMonth}`,
             },
             UpdateExpression: 'ADD totalCost :cost',
@@ -87,7 +88,7 @@ export class CostService {
           Update: {
             TableName: this.configService.get('USER_USAGE_TABLE_NAME'),
             Key: {
-              PK: `USER#${emplId}`,
+              PK: `USER#${user.emplId}`,
               SK: `AGG#YEAR#${year}`,
             },
             UpdateExpression: 'ADD totalCost :cost',
@@ -100,7 +101,8 @@ export class CostService {
             Item: {
               PK: 'AGGREGATE',
               SK: `DAY#${date}#${totalCost.toFixed(6).padStart(12, '0')}`,
-              emplId,
+              emplId: user.emplId,
+              email: user.email,
               totalCost,
             },
           },
