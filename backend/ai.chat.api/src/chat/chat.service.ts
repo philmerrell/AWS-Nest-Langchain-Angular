@@ -7,12 +7,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { User } from 'src/auth/strategies/entra.strategy';
 import { ConversationService } from 'src/conversations/conversation.service';
 import { Message, MessageService } from 'src/messages/message.service';
+import { CostService } from 'src/cost/cost.service';
 
 @Injectable()
 export class ChatService {
     constructor(
         private readonly configService: ConfigService,
         private readonly conversationService: ConversationService,
+        private readonly costService: CostService,
         private readonly messageService: MessageService
     ) {}
 
@@ -22,7 +24,7 @@ export class ChatService {
         const { conversationId, messages, isNewConversation } = await this.initializeConversation(chatRequestDto, user, res);
         const model = this.getModel(chatRequestDto.modelId);
         
-        const systemResponse = await this.processChatStream(model, messages, res);
+        const systemResponse = await this.processChatStream(model, messages, res, user);
         const messagesToSave = this.getMessagesToSave(systemResponse, messages, isNewConversation);
 
         this.messageService.addToConversation(messagesToSave, conversationId, user.email);
@@ -58,7 +60,7 @@ export class ChatService {
         return [...previousMessages, userMessage];
     }
 
-    private async processChatStream(model: any, messages: Message[], res: Response): Promise<Message> {
+    private async processChatStream(model: any, messages: Message[], res: Response, user: User): Promise<Message> {
         const stream = await model.stream(messages);
         let inputTokens = 0, outputTokens = 0, content = '';
 
@@ -70,6 +72,12 @@ export class ChatService {
         }
 
         res.write(`data: ${JSON.stringify({ inputTokens, outputTokens })}\n\n`);
+        await this.costService.trackUsage({
+            emplId: user.emplId,
+            modelId: model.model,
+            inputTokens,
+            outputTokens,
+          });
         return { role: 'assistant', id: uuidv4(), content };
     }
 
