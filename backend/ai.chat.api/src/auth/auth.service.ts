@@ -14,7 +14,7 @@ export class AuthService {
 
     const params = new URLSearchParams();
     params.append('client_id', this.configService.get('ENTRA_CLIENT_ID') || '');
-    params.append('scope', 'openid profile email');
+    params.append('scope', 'openid');
     params.append('code', code);
     params.append('grant_type', 'authorization_code');
     params.append('redirect_uri', this.configService.get('REDIRECT_URI') || '');

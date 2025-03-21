@@ -8,10 +8,11 @@ import { ConversationService } from './conversations/conversation.service';
 import { AuthModule } from './auth/auth.module';
 import { MessageService } from './messages/message.service';
 import { MessagesController } from './messages/messages.controller';
+import { CostService } from './cost/cost.service';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule],
   controllers: [ChatController, ConversationsController, MessagesController],
-  providers: [AppService, ChatService, ConversationService, MessageService],
+  providers: [AppService, ChatService, ConversationService, MessageService, CostService],
 })
 export class AppModule {}

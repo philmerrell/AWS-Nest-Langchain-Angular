@@ -21,10 +21,8 @@ export class ChatService {
 
         const { conversationId, messages, isNewConversation } = await this.initializeConversation(chatRequestDto, user, res);
         const model = this.getModel(chatRequestDto.modelId);
-        const formattedMessages = this.formatMessages(messages);
         
-        const systemResponse = await this.processChatStream(model, formattedMessages, res);
-
+        const systemResponse = await this.processChatStream(model, messages, res);
         const messagesToSave = this.getMessagesToSave(systemResponse, messages, isNewConversation);
 
         this.messageService.addToConversation(messagesToSave, conversationId, user.email);
@@ -41,7 +39,7 @@ export class ChatService {
     private async initializeConversation(chatRequestDto: ChatRequestDto, user: User, res: Response) {
         const isNewConversation = !chatRequestDto.conversationId;
         const conversationId = chatRequestDto.conversationId || uuidv4();
-        const userMessage: Message = { role: 'user', content: chatRequestDto.content };
+        const userMessage: Message = { role: 'user', content: chatRequestDto.content, id: chatRequestDto.id || uuidv4(),  };
         
         let messages: Message[] = isNewConversation
             ? [{ ...this.getSystemMessage(user) }, userMessage]
@@ -60,15 +58,8 @@ export class ChatService {
         return [...previousMessages, userMessage];
     }
 
-    private formatMessages(messages: Message[]) {
-        return messages.map(message => ({
-            ...message,
-            type: message.role === 'user' ? 'user' : 'assistant',
-        }));
-    }
-
-    private async processChatStream(model: any, formattedMessages: Message[], res: Response): Promise<Message> {
-        const stream = await model.stream(formattedMessages);
+    private async processChatStream(model: any, messages: Message[], res: Response): Promise<Message> {
+        const stream = await model.stream(messages);
         let inputTokens = 0, outputTokens = 0, content = '';
 
         for await (const chunk of stream) {

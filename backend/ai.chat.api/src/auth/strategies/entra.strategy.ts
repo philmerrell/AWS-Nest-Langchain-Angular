@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 
 export interface User {
   email: string;
+  emplId: string;
   name: string;
   roles: string[];
 }
@@ -16,6 +17,9 @@ export class EntraIDStrategy extends PassportStrategy(Strategy, 'EntraID') {
     const issuer = `https://login.microsoftonline.com/${configService.get('ENTRA_TENANT_ID')}/v2.0`;
     const audience = configService.get('ENTRA_CLIENT_ID');
     const jwksUri = `https://login.microsoftonline.com/${configService.get('ENTRA_TENANT_ID')}/discovery/v2.0/keys`;
+    console.log('jwksUri', jwksUri);
+    console.log('issuer', issuer);
+    console.log('audience', audience);
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       audience,
@@ -32,10 +36,10 @@ export class EntraIDStrategy extends PassportStrategy(Strategy, 'EntraID') {
   }
 
   validate(payload: any): User {
-    console.log('payload', payload);
     // TODO: release Emplid claim and add
     // Here's where we can modify user object
+    return { email: 'philmerrell@boisestate.edu', emplId: '123456789', name: 'Phil Merrell', roles: ['DotNetDevelopers'] };
     const roles = payload.roles || [];
-    return { email: payload.email, name: payload.name, roles };
+    return { email: payload.email, name: payload.name, emplId: payload.emplId, roles };
   }
 }
