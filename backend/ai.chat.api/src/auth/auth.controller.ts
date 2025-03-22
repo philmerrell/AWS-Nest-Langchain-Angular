@@ -36,6 +36,6 @@ export class AuthController {
     const jwt = await this.authService.generateJwtToken(user);
     
     // Redirect to the client app with the token
-    res.redirect(`${this.configService.get('FRONTEND_URL')}?token=${jwt}`);
+    res.redirect(`${this.configService.get('FRONTEND_URL')}/google-callback?token=${jwt}`);
   }
 }
