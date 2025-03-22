@@ -6,8 +6,16 @@ export const routes: Routes = [
     loadComponent: () => import('./conversation/conversation.page').then( m => m.ConversationPage),
     canActivate: []
   },
+  // {
+  //   path: '**',
+  //   redirectTo: ''
+  // },
   {
-    path: '**',
-    redirectTo: ''
+    path: 'google-callback',
+    loadComponent: () => import('./auth/google-callback/google-callback.page').then( m => m.GoogleCallbackPage)
+  },
+  {
+    path: 'login',
+    loadComponent: () => import('./auth/login/login.page').then( m => m.LoginPage)
   }
 ];

@@ -1,13 +1,17 @@
+// src/auth/auth.service.ts
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
+import { User } from './strategies/entra.strategy';
 
 @Injectable()
 export class AuthService {
   
-  constructor(private configService: ConfigService) {
-    
-  }
+  constructor(
+    private configService: ConfigService,
+    private jwtService: JwtService
+  ) {}
 
   async exchangeCodeForTokens(code: string) {
     const tokenEndpoint = `https://login.microsoftonline.com/${this.configService.get('ENTRA_TENANT_ID')}/oauth2/v2.0/token`;
@@ -27,5 +31,19 @@ export class AuthService {
     });
 
     return response.data;
+  }
+
+  async generateJwtToken(user: User): Promise<string> {
+    const payload = {
+      email: user.email,
+      name: user.name,
+      emplId: user.emplId,
+      picture: user.picture
+    };
+    
+    return this.jwtService.sign(payload, {
+      expiresIn: '1d',
+      secret: this.configService.get('JWT_SECRET'),
+    });
   }
 }

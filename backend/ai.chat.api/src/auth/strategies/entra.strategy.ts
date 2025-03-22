@@ -8,7 +8,8 @@ export interface User {
   email: string;
   emplId: string;
   name: string;
-  roles: string[];
+  roles?: string[];
+  picture?: string;
 }
 
 @Injectable()
