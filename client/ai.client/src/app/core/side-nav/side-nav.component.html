@@ -7,16 +7,16 @@
 <ion-list>
 
   @if(conversations.status() === status.Loading) {
-   <ion-item lines="none" color="light">
+   <ion-item lines="none">
      <ion-label>Loading Conversations</ion-label>
      <ion-spinner></ion-spinner>
    </ion-item>
   }
   
   @for(conversation of conversations.value(); track conversation.conversationId) {
-    <ion-item (click)="setConversationId(conversation.conversationId)" button>
+    <ion-item (click)="setConversation(conversation)" button>
       <ion-label>
-        {{ conversation.conversationId }}
+        {{ conversation.name }}
       </ion-label>
     </ion-item>
   }

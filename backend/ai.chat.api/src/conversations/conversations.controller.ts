@@ -1,4 +1,4 @@
-import { Controller, Req, Get, UseGuards } from '@nestjs/common';
+import { Controller, Req, Get, UseGuards, Param } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ConversationService } from './conversation.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -14,6 +14,15 @@ export class ConversationsController {
         const user = req.user;
         const conversations = await this.conversationService.getConversations(user.emplId);
         return conversations;
+    }
+
+    @Get(':conversationId')
+    @UseGuards(JwtAuthGuard)
+    async getConversationById(@Req() req: any) {
+        const user = req.user;
+        const conversationId = req.params.conversationId
+        const conversation = await this.conversationService.getConversationById(user.emplId, conversationId);
+        return conversation;
     }
 
 

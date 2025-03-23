@@ -1,4 +1,4 @@
-import { effect, Injectable, resource, Signal, signal, WritableSignal } from '@angular/core';
+import { effect, Injectable, Resource, resource, Signal, signal, WritableSignal } from '@angular/core';
 import { Conversation, Message, Model } from './conversation.model';
 import { ModelService } from './model.service';
 import { PromptService } from './prompt.service';
@@ -11,17 +11,14 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class ConversationService {  
-  private currentConversationId: WritableSignal<string> = signal('');
   private currentConversation: WritableSignal<Conversation> = signal({} as Conversation);
 
-  private conversations: WritableSignal<Conversation[]> = signal([]);
-
   private _conversationsResource = resource({
-    loader: () => this.getAllConversations()
+    loader: () => this.loadConversations()
   })
 
   get conversationsResource() {
-    return this._conversationsResource.asReadonly()
+    return this._conversationsResource
   }
 
   
@@ -30,10 +27,41 @@ export class ConversationService {
     private router: Router
   ) {
     effect(() => {
-      if(this.currentConversationId() !== '') {
-        window.history.pushState(null, '', `c/${this.currentConversationId()}`);
-        this.router.navigate(['c', this.currentConversationId()])
-      }
+      // if(!this.currentConversation().conversationId) {
+      //   window.history.pushState(null, '', ``);
+      // } else {
+      //   // window.history.pushState(null, '', `c/${this.currentConversation().conversationId}`);
+      //   this.router.navigate(['c', this.currentConversation().conversationId])
+      // //   console.log('routing to c')
+        
+      // }
+      
+    })
+  }
+
+  updateConversations() {
+
+  }
+
+  createNewConversation() {
+    const conversations = this.getConversations().value;
+    const pendingConversation = conversations()?.find(conversation => conversation.conversationId === 'pending');
+    if (pendingConversation) {
+      this.setCurrentConversation(pendingConversation);
+      return;
+    }
+    const currentConversation = this.currentConversation();
+    if(currentConversation.conversationId !== 'pending') {
+      const newConversation = { name: 'New Chat', conversationId: 'pending'} as Conversation;
+      this.setCurrentConversation(newConversation);
+      this.addConversation(newConversation);
+    }
+    
+  }
+
+  addConversation(conversation: Conversation) {
+    this._conversationsResource.update(conversations => {
+      return conversations ? [conversation, ...conversations] : [conversation];
     })
   }
 
@@ -41,20 +69,35 @@ export class ConversationService {
     return this.currentConversation;
   }
 
+  // getConversationById(conversationId: string) {
+  //   const response = this.http.get
+  // }
+
+  updatePendingConversationId(id: string) {
+    this._conversationsResource.update(conversations => {
+      return conversations?.map(conversation => 
+        conversation.conversationId === 'pending' 
+          ? { ...conversation, conversationId: id } 
+          : conversation
+      );
+    })
+  }
+
   async setCurrentConversation(conversation: Conversation) {
     this.currentConversation.set(conversation);
   }
 
-  setCurrentConversationId(id: string) {
-    this.currentConversationId.set(id);
+  setCurrentConversationId(id: string = 'pending') {
+    this.currentConversation.update(conversation => {
+      return {
+        ...conversation,
+        conversationId: id
+      }
+    })
   }
 
-  getCurrentConversationId() {
-    return this.currentConversationId;
-  }
-
-  getConversations(): WritableSignal<Conversation[]> {
-    return this.conversations;
+  getConversations() {
+    return this._conversationsResource;
   }
 
   getMessages(conversationId: string): Promise<Message[]> {
@@ -62,18 +105,25 @@ export class ConversationService {
     return lastValueFrom(request);
   }
 
-  getAllConversations() {
+  loadConversations() {
+    const newConversation = { conversationId: 'pending', name: 'New Chat'}
     const request = this.http.get<{ lastEvaluatedKey: String, items: Conversation[] }>(`${environment.chatApiUrl}/conversations`)
-      .pipe(map(response => { console.log(response); return response.items}));
+      .pipe(map(response => { 
+        return [
+          newConversation,
+          ...response.items
+        ]
+      }));
     return lastValueFrom(request)
   }
 
-  private createConversation() {
-    
+  loadConversationById(id: string): Promise<Conversation> {
+    const request = this.http.get<Conversation>(`${environment.chatApiUrl}/conversations/${id}`);
+    return lastValueFrom(request);
   }
 
   setConversations(conversations: Conversation[]) {
-    this.conversations.set(conversations);
+    this._conversationsResource.set(conversations);
   }
 
 }

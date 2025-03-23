@@ -39,8 +39,9 @@ export class ConversationPage implements OnInit {
     this.route.paramMap.subscribe(async (params) => {
       const conversationId = params.get('conversationId');
       if (conversationId) {
-        
-        const currentConversation = this.conversationService.getCurrentConversation();
+        const conversation = await this.conversationService.loadConversationById(conversationId);
+        console.log(conversation);
+        this.conversationService.setCurrentConversation(conversation);
         const messages = await this.conversationService.getMessages(conversationId);
         this.messages.set(messages);
       }

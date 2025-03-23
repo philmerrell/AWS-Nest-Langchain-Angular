@@ -19,13 +19,17 @@ export class SideNavComponent  implements OnInit {
 
   ngOnInit() {}
 
-  setConversationId(conversationId: string) {
-    this.conversationService.setCurrentConversationId(conversationId);
+  setConversation(conversation: Conversation) {
+    if(conversation.conversationId === 'pending') {
+      this.router.navigate([''])
+    } else {
+      this.router.navigate(['c', conversation.conversationId])
+      this.conversationService.setCurrentConversation(conversation);
+    }
   }
 
   newChat() {
-    this.conversationService.setCurrentConversationId('')
-    this.router.navigate([''])
+    this.conversationService.createNewConversation();
   }
 
 

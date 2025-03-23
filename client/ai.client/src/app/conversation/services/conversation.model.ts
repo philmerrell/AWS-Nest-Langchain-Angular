@@ -1,8 +1,8 @@
 export interface Conversation {
     conversationId: string;
     name: string;
-    createdAt: string;
-    messages?: any[]
+    createdAt?: string;
+    messages?: Message[]
 
 }
 

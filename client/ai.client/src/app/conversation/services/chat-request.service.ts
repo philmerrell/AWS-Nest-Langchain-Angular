@@ -1,4 +1,4 @@
-import { Injectable, Signal, signal, WritableSignal } from '@angular/core';
+import { Injectable, Resource, Signal, signal, WritableSignal } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { EventSourceMessage, EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
 import { Conversation, Message, Model } from './conversation.model';
@@ -24,19 +24,19 @@ export class ChatRequestService {
   // Add a new signal for the assistant's response
   private assistantResponseContent: WritableSignal<string> = signal('');
   private chatLoading: WritableSignal<boolean> = signal(false);
-  private conversations: WritableSignal<Conversation[]> = this.conversationService.getConversations();
+  private conversations: Resource<Conversation[] | undefined> = this.conversationService.conversationsResource;
   private currentConversation: WritableSignal<Conversation> = this.conversationService.getCurrentConversation();
   private currentRequestId = '';
   private responseContent = '';
   private selectedModel: Signal<Model> = this.modelService.getSelectedModel();
-  private selectedTemperature: Signal<number> = this.modelService.getSelectedTemperature();
+  // private selectedTemperature: Signal<number> = this.modelService.getSelectedTemperature();
 
   constructor(private authService: AuthService, private conversationService: ConversationService, private customInstructionService: CustomInstructionService, private modelService: ModelService) { }
 
   submitChatRequest(userInput: string, signal: AbortSignal) {
     this.chatLoading.set(true);
-    const currentConversationId = this.conversationService.getCurrentConversationId();
-    const userMessage = this.createUserMessage(userInput, currentConversationId());
+    const currentConversation = this.conversationService.getCurrentConversation();
+    const userMessage = this.createUserMessage(userInput, currentConversation());
     const model = this.selectedModel();
 
 
@@ -94,11 +94,13 @@ export class ChatRequestService {
   
   private handleNewConversation(conversationId: string) {
     this.conversationService.setCurrentConversationId(conversationId);
+    this.conversationService.updatePendingConversationId(conversationId);
     // Update the conversation ID in the current conversation
-    this.currentConversation.update((conversation) => ({
-      ...conversation,
-      id: conversationId
-    }));
+    // 
+    // this.currentConversation.update((conversation) => ({
+    //   ...conversation,
+    //   id: conversationId
+    // }));
     
   }
   
@@ -135,15 +137,18 @@ export class ChatRequestService {
       ...conversation,
       messages: [...(conversation.messages || []), assistantMessage]
     }));
+
     
-    // Also update the master list of conversations
-    this.conversations.update((conversations) => 
-      conversations.map(conversation => 
-        conversation.conversationId === this.currentConversation().conversationId
-          ? { ...conversation, messages: [...(conversation.messages || []), assistantMessage] }
-          : conversation
-      )
-    );
+    // this.conversationService.addConversation()
+    // // Also update the master list of conversations
+    // this.conversations
+    // this.conversations.value.update((conversations) => 
+    //   conversations.map(conversation => 
+    //     conversation.conversationId === this.currentConversation().conversationId
+    //       ? { ...conversation, messages: [...(conversation.messages || []), assistantMessage] }
+    //       : conversation
+    //   )
+    // );
     
     // Reset state for the next response
     this.responseContent = '';
@@ -154,11 +159,10 @@ export class ChatRequestService {
 
   setMetadata(data: string) {
     const response = JSON.parse(data);
-    console.log(response.conversationId);
     this.conversationService.setCurrentConversationId(response.conversationId)
   }
 
-  private createUserMessage(content: string, conversationId: string) {
+  private createUserMessage(content: string, conversation: Conversation) {
     
     const requestObject: any = {
       role: 'user',
@@ -166,8 +170,8 @@ export class ChatRequestService {
       id: uuidv4()
     };
 
-    if (conversationId !== '') {
-      requestObject.conversationId = conversationId;
+    if (conversation.conversationId !== 'pending') {
+      requestObject.conversationId = conversation.conversationId;
     }
 
     return requestObject;

@@ -64,4 +64,35 @@ export class ConversationService {
     }
   }
 
+
+  // TODO: Do I need to check emplid here to make sure user can get this conversation
+  async getConversationById(emplId: string, conversationId: string): Promise<any> {
+    const params = {
+      TableName: this.configService.get('CONVERSATIONS_TABLE_NAME'),
+      IndexName: 'ConversationByIdIndex',
+      KeyConditionExpression: 'conversationId = :conversationId',
+      ExpressionAttributeValues: {
+        ':conversationId': conversationId,
+      },
+    };
+
+    try {
+      const result = await this.client.send(new QueryCommand(params));
+      if (result.Items) {
+        result.Items = result.Items.map(item => ({
+          createdAt: item.SK,
+          conversationId: item.conversationId,
+          name: item.name
+        }));
+      }
+      if (result.Items && result.Items.length > 0) {
+        return result.Items[0];
+      } else {
+        throw new Error('Conversation not found');
+      }
+    } catch (error) {
+      throw new Error(`Error fetching conversation by ID: ${error.message}`);
+    }
+  }
+
 }
