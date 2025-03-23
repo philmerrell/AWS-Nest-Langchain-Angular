@@ -20,7 +20,7 @@ export class ConversationService {
       const params = {
         TableName: tableName,
         Item: {
-          PK: user.email,
+          PK: user.emplId,
           SK: new Date().toISOString(),
           conversationId
         }
@@ -35,21 +35,29 @@ export class ConversationService {
   }
 
 
-  async getConversations(emplId: string): Promise<any> {
-    const params = {
+  async getConversations(emplId: string, lastEvaluatedKey?: Record<string, any>): Promise<any> {
+    const params: any = {
       TableName: this.configService.get('CONVERSATIONS_TABLE_NAME'),
       KeyConditionExpression: 'PK = :emplId',
       ExpressionAttributeValues: {
         ':emplId': emplId,
       },
+      Limit: 10, // Set the page size
     };
+
+    if (lastEvaluatedKey) {
+      params.ExclusiveStartKey = lastEvaluatedKey;
+    }
 
     try {
       const result = await this.client.send(new QueryCommand(params));
-    return result.Items ? result.Items.map(conversation => ({
-      createdAt: conversation.SK,
-      conversationId: conversation.conversationId,
-    })) : [];
+      return {
+        items: result.Items ? result.Items.map(conversation => ({
+          createdAt: conversation.SK,
+          conversationId: conversation.conversationId,
+        })) : [],
+        lastEvaluatedKey: result.LastEvaluatedKey || null,
+      };
     } catch (error) {
       throw new Error(`Error fetching conversations: ${error.message}`);
     }

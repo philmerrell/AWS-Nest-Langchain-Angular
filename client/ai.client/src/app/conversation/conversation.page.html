@@ -9,7 +9,7 @@
     </ion-buttons>
     <ion-title>
       <span class="ion-hide-lg-down">
-        {{ currentConversation().name }}
+        <!-- {{ currentConversation().name }} -->
       </span>
     </ion-title>
   </ion-toolbar>
@@ -18,11 +18,11 @@
   <div class="container">
     <ion-header collapse="condense">
       <ion-toolbar>
-        <ion-title size="large">{{ currentConversation().name }}</ion-title>
+        <!-- <ion-title size="large">{{ currentConversation().name }}</ion-title> -->
       </ion-toolbar>
     </ion-header>
-    <pre>{{ currentConversation() | json }}</pre>
-    <app-conversation-text [conversation]="currentConversation()" [loading]="chatLoading()" [scroller]="scroller"></app-conversation-text>    
+    <!-- <pre>{{ currentConversation() | json }}</pre>
+    <app-conversation-text [conversation]="currentConversation()" [loading]="chatLoading()" [scroller]="scroller"></app-conversation-text>     -->
   </div>
 </ion-content>
 <ion-footer [translucent]="true" class="ion-no-border">

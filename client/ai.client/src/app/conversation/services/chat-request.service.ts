@@ -6,6 +6,7 @@ import { ConversationService } from './conversation.service';
 import { ModelService } from './model.service';
 import { v4 as uuidv4 } from 'uuid';
 import { CustomInstructionService } from './custom-instruction.service';
+import { AuthService } from 'src/app/auth/auth.service';
 
 class RetriableError extends Error { }
 class FatalError extends Error { }
@@ -16,23 +17,24 @@ class FatalError extends Error { }
 export class ChatRequestService {
   private chatLoading: WritableSignal<boolean> = signal(false);
   private conversations: WritableSignal<Conversation[]> = this.conversationService.getConversations();
-  private currentConversation: WritableSignal<Conversation> = this.conversationService.getCurrentConversation();
+  // private currentConversation: WritableSignal<Conversation> = this.conversationService.getCurrentConversation();
   private currentRequestId = '';
   private responseContent = '';
   // private responseSubscription: Subscription = new Subscription();
   private selectedModel: Signal<Model> = this.modelService.getSelectedModel();
   private selectedTemperature: Signal<number> = this.modelService.getSelectedTemperature();
 
-  constructor(private conversationService: ConversationService, private customInstructionService: CustomInstructionService, private modelService: ModelService) { }
+  constructor(private authService: AuthService, private conversationService: ConversationService, private customInstructionService: CustomInstructionService, private modelService: ModelService) { }
 
   submitChatRequest(message: string, signal: AbortSignal) {
     this.chatLoading.set(true);
-    this.updateCurrentConversationWithUserInput(message);
-    const requestObject = this.createRequestObject();
+    const requestObject = this.createRequestObject(message);
+
     fetchEventSource(`${environment.chatApiUrl}/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.authService.getToken()}`
       },
       body: JSON.stringify({ ...requestObject }),
       signal: signal,
@@ -59,70 +61,87 @@ export class ChatRequestService {
   }
 
   private parseMessage(msg: EventSourceMessage) {
+    switch(msg.event) {
+      case 'metadata':
+        this.setMetadata(msg.data);
+        break;
+      case 'delta': 
+        this.parseMessageDelta(msg.data)
+        break;
+      default:
+
+        break;
+    }
     try {
-      const message = JSON.parse(msg.data);
-      console.log(message);
+      // const message = JSON.parse(msg.data);
+
+      // console.log(message);
     } catch (error) {
       console.error('Error parsing response:', error);
     }
     
   }
 
-  private createRequestObject() {
+  setMetadata(data: string) {
+    const response = JSON.parse(data);
+    console.log(response.conversationId);
+    this.conversationService.setCurrentConversationId(response.conversationId)
+  }
+
+  private parseMessageDelta(message: string) {
+    try {
+      const response = JSON.parse(message);
+      console.log(response);
+    } catch(error) {
+
+    }
+  }
+
+  private createRequestObject(content: string) {
     const model = this.selectedModel();
-    const conversation = this.currentConversation();
-    const selectedInstructions = this.customInstructionService.getSelectedCustomInstruction();
-    this.currentRequestId = uuidv4();
 
     return {
-      messages: [
-        {
-          role: 'system',
-          id: uuidv4(),
-          content: selectedInstructions().content, // Default or user-selected system prompt.
-        },
-        ...conversation.messages
-      ],
-      model: model.id,
-      temperature: this.selectedTemperature(),
+      role: 'user',
+      content,
+      modelId: model.id
     }
   }
 
   updateCurrentConversationWithUserInput(userInput: string) {
-    const userMessage = this.initUserMessage(userInput);
-    const assistantMessage = this.initAssistantMessage();
+    // const userMessage = this.initUserMessage(userInput);
+    // const assistantMessage = this.initAssistantMessage();
 
-    // Check if it's a new conversation.
-    if (!this.currentConversation().messages.length) {
+    // // Check if it's a new conversation.
+    // if (!this.currentConversation().messages.length) {
 
-      this.currentConversation.update((c: Conversation) => {
-        return {
-          ...c,
-          messages: [userMessage]
-        }
-      });
+    //   this.currentConversation.update((c: Conversation) => {
+    //     return {
+    //       ...c,
+    //       messages: [userMessage]
+    //     }
+    //   });
 
-      // Add the new conversation to the list of all conversations.
-      this.conversations.update((conversations) => [...conversations, this.currentConversation()]);
+    //   // Add the new conversation to the list of all conversations.
+    //   this.conversations.update((conversations) => [...conversations, this.currentConversation()]);
 
-    } else {
-      // This is an existing conversation. Just append the user message.
-      this.currentConversation.update((c: Conversation) => {
-        return {
-          ...c,
-          messages: [...c.messages, userMessage]
-        }
-      });
+    // } else {
+    //   // This is an existing conversation. Just append the user message.
+    //   this.currentConversation.update((c: Conversation) => {
+    //     return {
+    //       ...c,
+    //       messages: [...c.messages, userMessage]
+    //     }
+    //   });
 
-      // Also update the master list of conversations in place.
-      this.conversations.update((c: Conversation[]) => {
-        return c.map(conversation =>
-          conversation.id === this.currentConversation().id
-            ? { ...conversation, messages: [...conversation.messages, userMessage] }
-            : conversation
-        )
-      })
-    }
+    //   // Also update the master list of conversations in place.
+    //   this.conversations.update((c: Conversation[]) => {
+    //     return c.map(conversation =>
+    //       conversation.id === this.currentConversation().id
+    //         ? { ...conversation, messages: [...conversation.messages, userMessage] }
+    //         : conversation
+    //     )
+    //   })
+    // }
   }
 
   getChatLoading(): Signal<boolean> {

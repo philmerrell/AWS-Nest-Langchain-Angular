@@ -7,9 +7,9 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { EntraIDStrategy } from './strategies/entra.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './guards/roles/roles.guard';
-import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [

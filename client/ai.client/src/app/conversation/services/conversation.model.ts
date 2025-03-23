@@ -1,12 +1,7 @@
 export interface Conversation {
-    id: string;
+    conversationId: string;
     name: string;
-    messages: Message[];
-    // model: Model;
-    prompt?: string;
-    temperature?: number;
-    instructions?: CustomInstruction;
-    tags?: string[]
+    createdAt: string;
 
 }
 

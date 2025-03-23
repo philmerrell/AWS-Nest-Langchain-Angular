@@ -1,1 +1,18 @@
 
+<ion-list>
+
+  @if(conversations.status() === status.Loading) {
+   <ion-item lines="none" color="light">
+     <ion-label>Loading Conversations</ion-label>
+     <ion-spinner></ion-spinner>
+   </ion-item>
+  }
+  
+  @for(conversation of conversations.value(); track conversation.conversationId) {
+    <ion-item>
+      <ion-label>
+        {{ conversation.conversationId }}
+      </ion-label>
+    </ion-item>
+  }
+</ion-list>

@@ -19,7 +19,7 @@ import { ModelSettingsComponent } from './components/model-settings/model-settin
   imports: [IonIcon, IonButton, IonFooter, IonContent, IonTitle, IonButtons, IonToolbar, IonHeader, ChatInputComponent, IonMenuButton, ConversationTextComponent, JsonPipe ]
 })
 export class ConversationPage implements OnInit {
-  currentConversation: Signal<Conversation> = this.conversationService.getCurrentConversation();
+  // currentConversation: Signal<Conversation> = this.conversationService.getCurrentConversation();
   chatLoading: Signal<boolean> = this.chatRequestService.getChatLoading();
   selectedModel: Signal<Model> = this.modelService.getSelectedModel();
 

@@ -6,6 +6,7 @@ import { EntraAuthGuard } from 'src/auth/guards/entra-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles/roles.guard';
 import { Role, Roles } from 'src/auth/guards/roles/roles.decorator';
 import { GoogleAuthGuard } from 'src/auth/guards/google-auth.guard';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('chat')
 export class ChatController {
@@ -13,14 +14,14 @@ export class ChatController {
   constructor(private chatService: ChatService) { }
 
   @Post()
-  @UseGuards(GoogleAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async chat(@Body() chatRequestDto: ChatRequestDto, @Res() res: Response, @Req() req: any) {
     const user = req.user;
     return this.chatService.streamChat(chatRequestDto, res, user);
   }
 
   @Get()
-  @UseGuards(GoogleAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Roles(Role.DotNetDevelopers)
   async test(@Req() req: any) {
     const user = req.user;

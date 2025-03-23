@@ -1,6 +1,6 @@
 
 
-@if(conversation()?.messages) {
+<!-- @if(conversation()?.messages) {
   <div class="ion-padding">
     <ion-grid>
       @for(message of conversation()?.messages; track message.id; let i = $index;) {
@@ -16,7 +16,6 @@
           <ion-row class="assistant-response-row">
             <ion-col size="12">
               <div class="assistant-message" [@fadeInOut]>
-                <!-- This displays files that were selected from previously uploaded files and also not listed in the datasources -->
                 <markdown clipboard mermaid [data]="message.content"></markdown>
               </div>
             </ion-col>
@@ -25,4 +24,4 @@
       }
     </ion-grid>
   </div>
-}
+} -->

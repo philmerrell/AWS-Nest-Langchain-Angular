@@ -48,7 +48,7 @@ export class ChatService {
             : await this.getPreviousMessages(chatRequestDto.conversationId!, user.email, userMessage);
         
         if (isNewConversation) {
-            res.write(`data: ${JSON.stringify({ conversationId })}\n\n`);
+            res.write(`event: metadata\ndata: ${JSON.stringify({ conversationId })}\n\n`);
             await this.conversationService.createConversation(conversationId, user);
         }
         
