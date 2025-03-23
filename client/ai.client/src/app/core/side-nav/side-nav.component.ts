@@ -1,6 +1,7 @@
 import { Component, OnInit, ResourceStatus } from '@angular/core';
 import { ConversationService } from 'src/app/conversation/services/conversation.service';
 import { IonItem, IonLabel, IonSpinner, IonList } from "@ionic/angular/standalone";
+import { Conversation } from 'src/app/conversation/services/conversation.model';
 
 @Component({
   selector: 'app-side-nav',
@@ -16,6 +17,10 @@ export class SideNavComponent  implements OnInit {
   constructor(private conversationService: ConversationService) { }
 
   ngOnInit() {}
+
+  setConversationId(conversationId: string) {
+    this.conversationService.setCurrentConversationId(conversationId);
+  }
 
 
 

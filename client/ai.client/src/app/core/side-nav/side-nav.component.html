@@ -9,7 +9,7 @@
   }
   
   @for(conversation of conversations.value(); track conversation.conversationId) {
-    <ion-item>
+    <ion-item (click)="setConversationId(conversation.conversationId)" button>
       <ion-label>
         {{ conversation.conversationId }}
       </ion-label>

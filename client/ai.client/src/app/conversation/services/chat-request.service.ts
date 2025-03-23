@@ -28,15 +28,16 @@ export class ChatRequestService {
   private currentConversation: WritableSignal<Conversation> = this.conversationService.getCurrentConversation();
   private currentRequestId = '';
   private responseContent = '';
-  // private responseSubscription: Subscription = new Subscription();
   private selectedModel: Signal<Model> = this.modelService.getSelectedModel();
   private selectedTemperature: Signal<number> = this.modelService.getSelectedTemperature();
 
   constructor(private authService: AuthService, private conversationService: ConversationService, private customInstructionService: CustomInstructionService, private modelService: ModelService) { }
 
-  submitChatRequest(message: string, signal: AbortSignal) {
+  submitChatRequest(userInput: string, signal: AbortSignal) {
     this.chatLoading.set(true);
-    const requestObject = this.createRequestObject(message);
+    const userMessage = this.createUserMessage(userInput);
+    const model = this.selectedModel();
+
 
     fetchEventSource(`${environment.chatApiUrl}/chat`, {
       method: 'POST',
@@ -44,7 +45,7 @@ export class ChatRequestService {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${this.authService.getToken()}`
       },
-      body: JSON.stringify({ ...requestObject }),
+      body: JSON.stringify({ ...userMessage, modelId: model.id }),
       signal: signal,
       async onopen(response) {
         if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
@@ -154,13 +155,11 @@ export class ChatRequestService {
     this.conversationService.setCurrentConversationId(response.conversationId)
   }
 
-  private createRequestObject(content: string) {
-    const model = this.selectedModel();
+  private createUserMessage(content: string) {
     const currentConversationId = this.conversationService.getCurrentConversationId();
     const requestObject: any = {
       role: 'user',
       content,
-      modelId: model.id,
       id: uuidv4()
     };
 

@@ -6,6 +6,7 @@ import { AuthService } from 'src/app/auth/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { lastValueFrom, map, tap } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -26,11 +27,13 @@ export class ConversationService {
 
   
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) {
     effect(() => {
       if(this.currentConversationId() !== '') {
         window.history.pushState(null, '', `c/${this.currentConversationId()}`);
+        this.router.navigate(['c', this.currentConversationId()])
       }
     })
   }
