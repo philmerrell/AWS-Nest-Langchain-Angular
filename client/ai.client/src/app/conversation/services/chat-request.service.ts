@@ -75,11 +75,17 @@ export class ChatRequestService {
     try {
       
       const message = JSON.parse(msg.data);
+      console.log(message);
       
       // Handle different message types
       if ('conversationId' in message) {
-        // This is a new conversation ID message
+        // This is a new conversation ID message`
         this.handleNewConversation(message.conversationId);
+      } else if ('conversationName' in message) {
+        console.log('conversationName')
+        // Find the conversation where conversationId matches message.conversationId
+        console.log(message);
+        this.conversationService.updateConversationName(message.conversationId, message.conversationName)
       } else if ('content' in message) {
         // This is a delta update (content chunk)
         this.handleContentDelta(message.content);

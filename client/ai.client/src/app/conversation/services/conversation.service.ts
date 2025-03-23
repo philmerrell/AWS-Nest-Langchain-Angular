@@ -25,19 +25,7 @@ export class ConversationService {
   constructor(
     private http: HttpClient,
     private router: Router
-  ) {
-    effect(() => {
-      // if(!this.currentConversation().conversationId) {
-      //   window.history.pushState(null, '', ``);
-      // } else {
-      //   // window.history.pushState(null, '', `c/${this.currentConversation().conversationId}`);
-      //   this.router.navigate(['c', this.currentConversation().conversationId])
-      // //   console.log('routing to c')
-        
-      // }
-      
-    })
-  }
+  ) {}
 
   updateConversations() {
 
@@ -76,6 +64,16 @@ export class ConversationService {
       return conversations?.map(conversation => 
         conversation.conversationId === 'pending' 
           ? { ...conversation, conversationId: id } 
+          : conversation
+      );
+    })
+  }
+
+  updateConversationName(conversationId: string, name: string) {
+    this._conversationsResource.update(conversations => {
+      return conversations?.map(conversation => 
+        conversation.conversationId === conversationId 
+          ? { ...conversation, name } 
           : conversation
       );
     })
