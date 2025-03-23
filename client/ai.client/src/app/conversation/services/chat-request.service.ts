@@ -94,14 +94,7 @@ export class ChatRequestService {
   
   private handleNewConversation(conversationId: string) {
     this.conversationService.setCurrentConversationId(conversationId);
-    this.conversationService.updatePendingConversationId(conversationId);
-    // Update the conversation ID in the current conversation
-    // 
-    // this.currentConversation.update((conversation) => ({
-    //   ...conversation,
-    //   id: conversationId
-    // }));
-    
+    this.conversationService.updatePendingConversationId(conversationId);    
   }
   
   private handleContentDelta(content: string) {

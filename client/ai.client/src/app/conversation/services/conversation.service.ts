@@ -48,15 +48,12 @@ export class ConversationService {
     const pendingConversation = conversations()?.find(conversation => conversation.conversationId === 'pending');
     if (pendingConversation) {
       this.setCurrentConversation(pendingConversation);
-      return;
-    }
-    const currentConversation = this.currentConversation();
-    if(currentConversation.conversationId !== 'pending') {
-      const newConversation = { name: 'New Chat', conversationId: 'pending'} as Conversation;
+    } else {
+      const newConversation = { name: 'New Chat', conversationId: 'pending' } as Conversation;
       this.setCurrentConversation(newConversation);
       this.addConversation(newConversation);
     }
-    
+    this.router.navigate(['']);
   }
 
   addConversation(conversation: Conversation) {
@@ -74,6 +71,7 @@ export class ConversationService {
   // }
 
   updatePendingConversationId(id: string) {
+    window.history.pushState(null, '', `c/${this.currentConversation().conversationId}`);
     this._conversationsResource.update(conversations => {
       return conversations?.map(conversation => 
         conversation.conversationId === 'pending' 
@@ -106,11 +104,10 @@ export class ConversationService {
   }
 
   loadConversations() {
-    const newConversation = { conversationId: 'pending', name: 'New Chat'}
     const request = this.http.get<{ lastEvaluatedKey: String, items: Conversation[] }>(`${environment.chatApiUrl}/conversations`)
       .pipe(map(response => { 
         return [
-          newConversation,
+          // newConversation,
           ...response.items
         ]
       }));
