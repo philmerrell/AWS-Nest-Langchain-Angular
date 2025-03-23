@@ -25,7 +25,7 @@ export class ChatRequestService {
   private assistantResponseContent: WritableSignal<string> = signal('');
   private chatLoading: WritableSignal<boolean> = signal(false);
   private conversations: WritableSignal<Conversation[]> = this.conversationService.getConversations();
-  private currentConversation: WritableSignal<Conversation> = signal({} as Conversation);
+  private currentConversation: WritableSignal<Conversation> = this.conversationService.getCurrentConversation();
   private currentRequestId = '';
   private responseContent = '';
   // private responseSubscription: Subscription = new Subscription();
@@ -37,7 +37,6 @@ export class ChatRequestService {
   submitChatRequest(message: string, signal: AbortSignal) {
     this.chatLoading.set(true);
     const requestObject = this.createRequestObject(message);
-    console.log(requestObject);
 
     fetchEventSource(`${environment.chatApiUrl}/chat`, {
       method: 'POST',
@@ -61,6 +60,7 @@ export class ChatRequestService {
         this.parseMessage(msg);
       },
       onclose: () => {
+        this.finishCurrentResponse();
         this.chatLoading.set(false);
       },
       onerror: (err) => {
@@ -71,11 +71,6 @@ export class ChatRequestService {
 
   private parseMessage(msg: EventSourceMessage) {
     try {
-      if (msg.data === '[DONE]') {
-        console.log('done')
-        this.finishCurrentResponse();
-        return;
-      }
       
       const message = JSON.parse(msg.data);
       

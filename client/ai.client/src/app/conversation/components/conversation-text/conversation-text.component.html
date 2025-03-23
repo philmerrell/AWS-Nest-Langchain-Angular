@@ -1,9 +1,9 @@
 
 
-<!-- @if(conversation()?.messages) {
+@if(messages()) {
   <div class="ion-padding">
     <ion-grid>
-      @for(message of conversation()?.messages; track message.id; let i = $index;) {
+      @for(message of messages(); track message.id; let i = $index;) {
         @if(message.role === 'user') {
           <ion-row [id]="message.id" [@slide]>
             <ion-col size="3"></ion-col>
@@ -24,4 +24,4 @@
       }
     </ion-grid>
   </div>
-} -->
+}

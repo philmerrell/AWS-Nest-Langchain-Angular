@@ -8,11 +8,12 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 export class MessagesController {
     constructor(private messageService: MessageService) {}
 
-    @Get()
+    @Get(':conversationId')
     @UseGuards(JwtAuthGuard)
-    async getMessages(@Body() conversationDto: ConversationDto, @Req() req: any) {
+    async getMessages(@Req() req: any) {
+        const conversationId = req.params.conversationId;
         const user = req.user;
-        const messages = await this.messageService.getMessages(conversationDto.conversationId, user.emplId);
+        const messages = await this.messageService.getMessages(conversationId, user.emplId);
         return messages;
     }
 }

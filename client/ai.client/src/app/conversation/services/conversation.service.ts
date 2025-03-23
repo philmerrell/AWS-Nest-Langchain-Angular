@@ -1,6 +1,5 @@
 import { effect, Injectable, resource, Signal, signal, WritableSignal } from '@angular/core';
-import { v4 as uuidv4 } from 'uuid';
-import { Conversation, Model } from './conversation.model';
+import { Conversation, Message, Model } from './conversation.model';
 import { ModelService } from './model.service';
 import { PromptService } from './prompt.service';
 import { AuthService } from 'src/app/auth/auth.service';
@@ -12,11 +11,9 @@ import { lastValueFrom, map, tap } from 'rxjs';
   providedIn: 'root'
 })
 export class ConversationService {  
-  private selectedModel: Signal<Model> = this.modelService.getSelectedModel();
-  private selectedTemperature: Signal<number> = this.modelService.getSelectedTemperature();
-  private selectedPrompt: Signal<string> = this.promptService.getSelectedPrompt();
-  // private currentConversation: WritableSignal<Conversation> = signal(this.createConversation());
   private currentConversationId: WritableSignal<string> = signal('');
+  private currentConversation: WritableSignal<Conversation> = signal({} as Conversation);
+
   private conversations: WritableSignal<Conversation[]> = signal([]);
 
   private _conversationsResource = resource({
@@ -29,9 +26,6 @@ export class ConversationService {
 
   
   constructor(
-    private authService: AuthService,
-    private modelService: ModelService,
-    private promptService: PromptService,
     private http: HttpClient
   ) {
     effect(() => {
@@ -41,13 +35,13 @@ export class ConversationService {
     })
   }
 
-  // getCurrentConversation(): WritableSignal<Conversation> {
-  //   return this.currentConversation;
-  // }
+  getCurrentConversation(): WritableSignal<Conversation> {
+    return this.currentConversation;
+  }
 
-  // async setCurrentConversation(conversation: Conversation) {
-  //   this.currentConversation.set(conversation);
-  // }
+  async setCurrentConversation(conversation: Conversation) {
+    this.currentConversation.set(conversation);
+  }
 
   setCurrentConversationId(id: string) {
     this.currentConversationId.set(id);
@@ -59,6 +53,11 @@ export class ConversationService {
 
   getConversations(): WritableSignal<Conversation[]> {
     return this.conversations;
+  }
+
+  getMessages(conversationId: string): Promise<Message[]> {
+    const request = this.http.get<Message[]>(`${environment.chatApiUrl}/messages/${conversationId}`);
+    return lastValueFrom(request);
   }
 
   getAllConversations() {

@@ -6,7 +6,7 @@ import { documentOutline, downloadOutline, imageOutline, listOutline, readerOutl
 import { UserMessageComponent } from './user-message/user-message.component';
 import { fadeInOut } from 'src/app/shared/animations/fadeInOut';
 import { slide } from 'src/app/shared/animations/slide';
-import { Conversation } from '../../services/conversation.model';
+import { Conversation, Message } from '../../services/conversation.model';
 
 @Component({
   selector: 'app-conversation-text',
@@ -17,7 +17,7 @@ import { Conversation } from '../../services/conversation.model';
   standalone: true,
 })
 export class ConversationTextComponent  implements OnInit {
-  readonly conversation = input<Conversation>();
+  readonly messages = input<Message[]>();
   readonly loading = input<boolean>();
   readonly scroller = input<IonContent>();
   
