@@ -42,6 +42,7 @@ export class ConversationService {
       ExpressionAttributeValues: {
         ':emplId': emplId,
       },
+      ScanIndexForward: false,
       Limit: 10, // Set the page size
     };
 
