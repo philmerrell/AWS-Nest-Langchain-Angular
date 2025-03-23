@@ -58,6 +58,10 @@ export class MessageService {
         try {
             const command = new QueryCommand(params);
             const result = await this.client.send(command);
+            // remove system message
+            if (result.Items && result.Items.length > 0) {
+                result.Items.shift(); // Remove the first result
+            }
             return result.Items?.map(item => ({
                 id: item.SK,
                 content: item.content,

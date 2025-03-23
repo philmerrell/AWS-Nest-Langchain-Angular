@@ -97,6 +97,7 @@ export class ChatRequestService {
       ...conversation,
       id: conversationId
     }));
+    
   }
   
   private handleContentDelta(content: string) {

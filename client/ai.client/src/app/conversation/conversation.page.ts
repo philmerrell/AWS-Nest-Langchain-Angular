@@ -38,7 +38,6 @@ export class ConversationPage implements OnInit {
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
       const conversationId = params.get('conversationId');
-      console.log('hey')
       if (conversationId) {
         this.conversationService.setCurrentConversationId(conversationId);
         const currentConversation = this.conversationService.getCurrentConversation();

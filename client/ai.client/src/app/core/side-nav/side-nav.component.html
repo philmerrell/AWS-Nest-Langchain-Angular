@@ -1,4 +1,9 @@
 
+<div class="ion-padding">
+  <ion-button (click)="newChat()" expand="block">
+    New Chat
+  </ion-button>
+</div>
 <ion-list>
 
   @if(conversations.status() === status.Loading) {

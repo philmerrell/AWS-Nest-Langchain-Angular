@@ -24,28 +24,28 @@ export class ConversationTextComponent  implements OnInit {
   constructor() {
     
     addIcons({chevronDownOutline,downloadOutline,readerOutline,documentOutline,imageOutline,listOutline});
-    // effect(() => {
-    //   if(this.conversation()) {
-    //     if (this.conversation()?.messages) {
-    //       if(this.conversation()!.messages?.length > 3) {
-    //         this.scrollToLatestUserMessage()
-    //       }
-    //     }
-    //   }
-    // })
+    effect(() => {
+      if(this.messages()) {
+        console.log(this.messages())
+          if((this.messages() ?? []).length > 3) {
+            this.scrollToLatestUserMessage()
+          }
+        
+      }
+    })
 
   }
 
   ngOnInit() {}
 
   scrollToLatestUserMessage() {
-    // const lastUserMessage = this.conversation()?.messages.filter(item => item.role === 'user').pop();
-    // if(lastUserMessage) {
-    //   setTimeout(async () => {
-    //     const element = document.getElementById(lastUserMessage.id);
-    //     this.scroller()?.scrollByPoint(0, element!.offsetTop, 700);
-    //   }, 300)
-    // }
+    const lastUserMessage = this.messages()!.filter(item => item.role === 'user').pop();
+    if(lastUserMessage) {
+      setTimeout(async () => {
+        const element = document.getElementById(lastUserMessage.id ?? '');
+        this.scroller()?.scrollByPoint(0, element!.offsetTop, 700);
+      }, 300)
+    }
   }
 
 }
