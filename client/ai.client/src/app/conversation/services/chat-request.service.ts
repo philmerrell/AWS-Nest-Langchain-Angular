@@ -35,7 +35,8 @@ export class ChatRequestService {
 
   submitChatRequest(userInput: string, signal: AbortSignal) {
     this.chatLoading.set(true);
-    const userMessage = this.createUserMessage(userInput);
+    const currentConversationId = this.conversationService.getCurrentConversationId();
+    const userMessage = this.createUserMessage(userInput, currentConversationId());
     const model = this.selectedModel();
 
 
@@ -92,6 +93,7 @@ export class ChatRequestService {
   }
   
   private handleNewConversation(conversationId: string) {
+    this.conversationService.setCurrentConversationId(conversationId);
     // Update the conversation ID in the current conversation
     this.currentConversation.update((conversation) => ({
       ...conversation,
@@ -156,16 +158,16 @@ export class ChatRequestService {
     this.conversationService.setCurrentConversationId(response.conversationId)
   }
 
-  private createUserMessage(content: string) {
-    const currentConversationId = this.conversationService.getCurrentConversationId();
+  private createUserMessage(content: string, conversationId: string) {
+    
     const requestObject: any = {
       role: 'user',
       content,
       id: uuidv4()
     };
 
-    if (currentConversationId() !== '') {
-      requestObject.conversationId = currentConversationId();
+    if (conversationId !== '') {
+      requestObject.conversationId = conversationId;
     }
 
     return requestObject;

@@ -24,6 +24,7 @@ export class SideNavComponent  implements OnInit {
   }
 
   newChat() {
+    this.conversationService.setCurrentConversationId('')
     this.router.navigate([''])
   }
 

@@ -2,7 +2,6 @@ import { effect, Injectable, resource, Signal, signal, WritableSignal } from '@a
 import { Conversation, Message, Model } from './conversation.model';
 import { ModelService } from './model.service';
 import { PromptService } from './prompt.service';
-import { AuthService } from 'src/app/auth/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { lastValueFrom, map, tap } from 'rxjs';
