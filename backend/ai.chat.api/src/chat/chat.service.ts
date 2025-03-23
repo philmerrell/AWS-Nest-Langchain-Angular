@@ -29,7 +29,9 @@ export class ChatService {
 
         this.messageService.addToConversation(messagesToSave, conversationId, user.emplId);
         if(isNewConversation) {
-            res.write(`event: metadata\ndata: ${JSON.stringify({ conversationId, conversationName: 'Test...'})}\n\n`);
+            const conversationName = 'test...'
+            res.write(`event: metadata\ndata: ${JSON.stringify({ conversationId, conversationName})}\n\n`);
+            await this.conversationService.updateConversationName(user.emplId, conversationId, conversationName);
         }
         res.write(`data: [DONE]`);
         res.end();

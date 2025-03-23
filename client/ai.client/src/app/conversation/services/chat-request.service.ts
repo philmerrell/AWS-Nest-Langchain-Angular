@@ -73,23 +73,24 @@ export class ChatRequestService {
 
   private parseMessage(msg: EventSourceMessage) {
     try {
-      
       const message = JSON.parse(msg.data);
-      console.log(message);
+      console.log('Parsed message:', message);
       
       // Handle different message types
-      if ('conversationId' in message) {
-        // This is a new conversation ID message`
+      if (message === '[DONE]') {
+        this.chatLoading.set(false);
+      } else if ('conversationId' in message && 'conversationName' in message) {
+        console.log('update name');
+        this.handleConversationName(message.conversationName, message.conversationId);
+      } else if ('conversationId' in message) {
+        // Handle new conversation ID
         this.handleNewConversation(message.conversationId);
       } else if ('content' in message) {
-        // This is a delta update (content chunk)
+        // Handle content delta
         this.handleContentDelta(message.content);
       } else if ('inputTokens' in message && 'outputTokens' in message) {
-        // This is a token usage message
+        // Handle token usage information
         this.handleTokenUsage(message.inputTokens, message.outputTokens);
-      } else if ('conversationId' in message && 'conversationName' in message) {
-        console.log('update name')
-        this.handleConversationName(message.conversationName, message.conversationId)
       }
     } catch (error) {
       console.error('Error parsing response:', error);

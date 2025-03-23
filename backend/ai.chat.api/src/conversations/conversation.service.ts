@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { User } from 'src/auth/strategies/entra.strategy';
-import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -56,6 +56,7 @@ export class ConversationService {
         items: result.Items ? result.Items.map(conversation => ({
           createdAt: conversation.SK,
           conversationId: conversation.conversationId,
+          name: conversation.name
         })) : [],
         lastEvaluatedKey: result.LastEvaluatedKey || null,
       };
@@ -92,6 +93,42 @@ export class ConversationService {
       }
     } catch (error) {
       throw new Error(`Error fetching conversation by ID: ${error.message}`);
+    }
+  }
+
+  async updateConversationName(emplId: string, conversationId: string, newName: string): Promise<void> {
+    try {
+      const tableName = this.configService.get<string>('CONVERSATIONS_TABLE_NAME');
+      if (!tableName) {
+        throw new Error('Table name is not defined in the configuration');
+      }
+
+      // Fetch the conversation to ensure it exists and belongs to the user
+      const conversation = await this.getConversationById(emplId, conversationId);
+      if (!conversation) {
+        throw new Error('Conversation not found or access denied');
+      }
+
+      const params = {
+        TableName: tableName,
+        Key: {
+          PK: emplId,
+          SK: conversation.createdAt,
+        },
+        UpdateExpression: 'SET #name = :newName',
+        ExpressionAttributeNames: {
+          '#name': 'name',
+        },
+        ExpressionAttributeValues: {
+          ':newName': newName,
+        },
+      };
+
+      await this.client.send(new UpdateCommand(params));
+      console.log('Conversation name updated successfully');
+    } catch (error) {
+      console.error('Error updating conversation name:', error);
+      throw error;
     }
   }
 
