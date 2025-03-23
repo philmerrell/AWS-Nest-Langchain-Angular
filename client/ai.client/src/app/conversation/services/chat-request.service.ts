@@ -81,21 +81,23 @@ export class ChatRequestService {
       if ('conversationId' in message) {
         // This is a new conversation ID message`
         this.handleNewConversation(message.conversationId);
-      } else if ('conversationName' in message) {
-        console.log('conversationName')
-        // Find the conversation where conversationId matches message.conversationId
-        console.log(message);
-        this.conversationService.updateConversationName(message.conversationId, message.conversationName)
       } else if ('content' in message) {
         // This is a delta update (content chunk)
         this.handleContentDelta(message.content);
       } else if ('inputTokens' in message && 'outputTokens' in message) {
         // This is a token usage message
         this.handleTokenUsage(message.inputTokens, message.outputTokens);
+      } else if ('conversationId' in message && 'conversationName' in message) {
+        console.log('update name')
+        this.handleConversationName(message.conversationName, message.conversationId)
       }
     } catch (error) {
       console.error('Error parsing response:', error);
     }
+  }
+
+  private handleConversationName(name: string, id: string) {
+    this.conversationService.updateConversationName(id, name)
   }
   
   private handleNewConversation(conversationId: string) {
