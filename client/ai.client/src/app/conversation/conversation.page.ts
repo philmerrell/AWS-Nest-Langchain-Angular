@@ -10,6 +10,7 @@ import { ConversationService } from './services/conversation.service';
 import { ModelService } from './services/model.service';
 import { JsonPipe } from '@angular/common';
 import { ModelSettingsComponent } from './components/model-settings/model-settings.component';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-conversation',
@@ -29,12 +30,19 @@ export class ConversationPage implements OnInit {
     private chatRequestService: ChatRequestService,
     private conversationService: ConversationService,
     private modalController: ModalController,
-    private modelService: ModelService,) {
+    private modelService: ModelService,
+    private route: ActivatedRoute) {
     addIcons({chevronForwardOutline});
   }
 
   ngOnInit() {
-
+    this.route.paramMap.subscribe(params => {
+      const conversationId = params.get('conversationId');
+      if (conversationId) {
+        this.conversationService.setCurrentConversationId(conversationId);
+        // You can use the conversationId here as needed
+      }
+    });
   }
 
   async openModelSettingsModal() {

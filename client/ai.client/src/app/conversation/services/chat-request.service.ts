@@ -15,9 +15,17 @@ class FatalError extends Error { }
   providedIn: 'root'
 })
 export class ChatRequestService {
+  private activeResponses = new Map<string, {
+    content: string;
+    inputTokens: number;
+    outputTokens: number;
+  }>();
+  
+  // Add a new signal for the assistant's response
+  private assistantResponseContent: WritableSignal<string> = signal('');
   private chatLoading: WritableSignal<boolean> = signal(false);
   private conversations: WritableSignal<Conversation[]> = this.conversationService.getConversations();
-  // private currentConversation: WritableSignal<Conversation> = this.conversationService.getCurrentConversation();
+  private currentConversation: WritableSignal<Conversation> = signal({} as Conversation);
   private currentRequestId = '';
   private responseContent = '';
   // private responseSubscription: Subscription = new Subscription();
@@ -29,6 +37,7 @@ export class ChatRequestService {
   submitChatRequest(message: string, signal: AbortSignal) {
     this.chatLoading.set(true);
     const requestObject = this.createRequestObject(message);
+    console.log(requestObject);
 
     fetchEventSource(`${environment.chatApiUrl}/chat`, {
       method: 'POST',
@@ -61,25 +70,87 @@ export class ChatRequestService {
   }
 
   private parseMessage(msg: EventSourceMessage) {
-    switch(msg.event) {
-      case 'metadata':
-        this.setMetadata(msg.data);
-        break;
-      case 'delta': 
-        this.parseMessageDelta(msg.data)
-        break;
-      default:
-
-        break;
-    }
     try {
-      // const message = JSON.parse(msg.data);
-
-      // console.log(message);
+      if (msg.data === '[DONE]') {
+        console.log('done')
+        this.finishCurrentResponse();
+        return;
+      }
+      
+      const message = JSON.parse(msg.data);
+      
+      // Handle different message types
+      if ('conversationId' in message) {
+        // This is a new conversation ID message
+        this.handleNewConversation(message.conversationId);
+      } else if ('content' in message) {
+        // This is a delta update (content chunk)
+        this.handleContentDelta(message.content);
+      } else if ('inputTokens' in message && 'outputTokens' in message) {
+        // This is a token usage message
+        this.handleTokenUsage(message.inputTokens, message.outputTokens);
+      }
     } catch (error) {
       console.error('Error parsing response:', error);
     }
+  }
+  
+  private handleNewConversation(conversationId: string) {
+    // Update the conversation ID in the current conversation
+    this.currentConversation.update((conversation) => ({
+      ...conversation,
+      id: conversationId
+    }));
+  }
+  
+  private handleContentDelta(content: string) {
+    // Update the assistant response content
+    this.responseContent += content;
+    this.assistantResponseContent.set(this.responseContent);
+  }
+  
+  private handleTokenUsage(inputTokens: number, outputTokens: number) {
+    // Store the token usage
+    this.activeResponses.set(this.currentRequestId, {
+      content: this.responseContent,
+      inputTokens,
+      outputTokens
+    });
+  }
+  
+  private finishCurrentResponse() {
+    console.log('finished')
+    // Get the completed response
+    const response = this.activeResponses.get(this.currentRequestId);
     
+    if (!response) return;
+    
+    // Create the assistant message
+    const assistantMessage: Message = {
+      role: 'assistant',
+      content: response.content
+    };
+    
+    // Update the conversation with the assistant message
+    this.currentConversation.update((conversation) => ({
+      ...conversation,
+      messages: [...(conversation.messages || []), assistantMessage]
+    }));
+    
+    // Also update the master list of conversations
+    this.conversations.update((conversations) => 
+      conversations.map(conversation => 
+        conversation.conversationId === this.currentConversation().conversationId
+          ? { ...conversation, messages: [...(conversation.messages || []), assistantMessage] }
+          : conversation
+      )
+    );
+    
+    // Reset state for the next response
+    this.responseContent = '';
+    this.assistantResponseContent.set('');
+    this.chatLoading.set(false);
+    this.activeResponses.delete(this.currentRequestId);
   }
 
   setMetadata(data: string) {
@@ -88,60 +159,21 @@ export class ChatRequestService {
     this.conversationService.setCurrentConversationId(response.conversationId)
   }
 
-  private parseMessageDelta(message: string) {
-    try {
-      const response = JSON.parse(message);
-      console.log(response);
-    } catch(error) {
-
-    }
-  }
-
   private createRequestObject(content: string) {
     const model = this.selectedModel();
-
-    return {
+    const currentConversationId = this.conversationService.getCurrentConversationId();
+    const requestObject: any = {
       role: 'user',
       content,
-      modelId: model.id
+      modelId: model.id,
+      id: uuidv4()
+    };
+
+    if (currentConversationId() !== '') {
+      requestObject.conversationId = currentConversationId();
     }
-  }
 
-  updateCurrentConversationWithUserInput(userInput: string) {
-    // const userMessage = this.initUserMessage(userInput);
-    // const assistantMessage = this.initAssistantMessage();
-
-    // // Check if it's a new conversation.
-    // if (!this.currentConversation().messages.length) {
-
-    //   this.currentConversation.update((c: Conversation) => {
-    //     return {
-    //       ...c,
-    //       messages: [userMessage]
-    //     }
-    //   });
-
-    //   // Add the new conversation to the list of all conversations.
-    //   this.conversations.update((conversations) => [...conversations, this.currentConversation()]);
-
-    // } else {
-    //   // This is an existing conversation. Just append the user message.
-    //   this.currentConversation.update((c: Conversation) => {
-    //     return {
-    //       ...c,
-    //       messages: [...c.messages, userMessage]
-    //     }
-    //   });
-
-    //   // Also update the master list of conversations in place.
-    //   this.conversations.update((c: Conversation[]) => {
-    //     return c.map(conversation =>
-    //       conversation.id === this.currentConversation().id
-    //         ? { ...conversation, messages: [...conversation.messages, userMessage] }
-    //         : conversation
-    //     )
-    //   })
-    // }
+    return requestObject;
   }
 
   getChatLoading(): Signal<boolean> {

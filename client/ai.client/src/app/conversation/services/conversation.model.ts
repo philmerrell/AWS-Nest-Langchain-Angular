@@ -2,13 +2,14 @@ export interface Conversation {
     conversationId: string;
     name: string;
     createdAt: string;
+    messages?: any[]
 
 }
 
 export interface Message {
     role: Role;
     content: string;
-    id: string;
+    id?: string;
 }
 
 export interface CustomInstruction {

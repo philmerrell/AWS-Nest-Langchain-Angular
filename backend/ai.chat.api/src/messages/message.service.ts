@@ -46,6 +46,7 @@ export class MessageService {
     }
 
     async getMessages(conversationId: string, emplId: string): Promise<Message[]> {
+        console.log(`${emplId}#${conversationId}`)
         const params = {
             TableName: this.tableName,
             KeyConditionExpression: "PK = :pk",

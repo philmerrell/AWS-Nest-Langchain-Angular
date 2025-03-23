@@ -6,7 +6,7 @@ export const ChatRequestSchema = z.object({
   role: z.string(),
   modelId: z.string(),
   content: z.string(),
-  id: z.string().uuid().optional(),
+  id: z.string().uuid(),
   conversationId: z.string().uuid().optional(),
 });
 
