@@ -15,18 +15,12 @@ class FatalError extends Error { }
   providedIn: 'root'
 })
 export class ChatRequestService {
-  private activeResponses = new Map<string, {
-    content: string;
-    inputTokens: number;
-    outputTokens: number;
-  }>();
-  
   // Add a new signal for the assistant's response
   private assistantResponseContent: WritableSignal<string> = signal('');
   private chatLoading: WritableSignal<boolean> = signal(false);
-  private conversations: Resource<Conversation[] | undefined> = this.conversationService.conversationsResource;
-  private currentConversation: WritableSignal<Conversation> = this.conversationService.getCurrentConversation();
-  private currentRequestId = '';
+  // private conversations: Resource<Conversation[] | undefined> = this.conversationService.conversationsResource;
+  // private currentConversation: WritableSignal<Conversation> = this.conversationService.getCurrentConversation();
+  // private currentRequestId = '';
   private responseContent = '';
   private selectedModel: Signal<Model> = this.modelService.getSelectedModel();
   // private selectedTemperature: Signal<number> = this.modelService.getSelectedTemperature();
@@ -37,6 +31,8 @@ export class ChatRequestService {
     this.chatLoading.set(true);
     const currentConversation = this.conversationService.getCurrentConversation();
     const userMessage = this.createUserMessage(userInput, currentConversation());
+    this.handleNewUserMessage(userMessage, currentConversation);
+    // update current conversation w/ user message
     const model = this.selectedModel();
 
 
@@ -114,31 +110,37 @@ export class ChatRequestService {
   
   private handleTokenUsage(inputTokens: number, outputTokens: number) {
     // Store the token usage
-    this.activeResponses.set(this.currentRequestId, {
-      content: this.responseContent,
-      inputTokens,
-      outputTokens
-    });
+    
+  }
+
+  private handleNewUserMessage(message: any, conversation: WritableSignal<Conversation>) {
+    conversation.update(conversation => {
+      return {
+        ...conversation,
+        messages: [message]
+      }
+
+    })
   }
   
   private finishCurrentResponse() {
     console.log('finished')
     // Get the completed response
-    const response = this.activeResponses.get(this.currentRequestId);
+    // const response = this.activeResponses.get(this.currentRequestId);
     
-    if (!response) return;
+    // if (!response) return;
     
-    // Create the assistant message
-    const assistantMessage: Message = {
-      role: 'assistant',
-      content: response.content
-    };
+    // // Create the assistant message
+    // const assistantResponse: Message = {
+    //   role: 'assistant',
+    //   content: response.content
+    // };
     
-    // Update the conversation with the assistant message
-    this.currentConversation.update((conversation) => ({
-      ...conversation,
-      messages: [...(conversation.messages || []), assistantMessage]
-    }));
+    // // Update the conversation with the assistant message
+    // this.currentConversation.update((conversation) => ({
+    //   ...conversation,
+    //   messages: [...(conversation.messages || []), assistantResponse]
+    // }));
 
     
     // this.conversationService.addConversation()
@@ -154,9 +156,9 @@ export class ChatRequestService {
     
     // Reset state for the next response
     this.responseContent = '';
-    this.assistantResponseContent.set('');
+    // this.assistantResponseContent.set('');
     this.chatLoading.set(false);
-    this.activeResponses.delete(this.currentRequestId);
+    // this.activeResponses.delete(this.currentRequestId);
   }
 
   setMetadata(data: string) {
@@ -183,19 +185,4 @@ export class ChatRequestService {
     return this.chatLoading;
   }
 
-  private initUserMessage(content: string = ''): Message {
-    return {
-      content,
-      id: uuidv4(),
-      role: 'user'
-    }
-  }
-
-  private initAssistantMessage(): Message {
-    return {
-      content: '',
-      id: uuidv4(),
-      role: 'assistant'
-    }
-  }
 }

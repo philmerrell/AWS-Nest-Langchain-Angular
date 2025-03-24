@@ -1,7 +1,5 @@
-import { effect, Injectable, Resource, resource, Signal, signal, WritableSignal } from '@angular/core';
-import { Conversation, Message, Model } from './conversation.model';
-import { ModelService } from './model.service';
-import { PromptService } from './prompt.service';
+import { Injectable, resource, signal, WritableSignal } from '@angular/core';
+import { Conversation, Message } from './conversation.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { lastValueFrom, map, tap } from 'rxjs';

@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 export class SideNavComponent  implements OnInit {
   status = ResourceStatus;
   conversations = this.conversationService.conversationsResource;
-
+  currentConversation = this.conversationService.getCurrentConversation();
   constructor(private conversationService: ConversationService, private router: Router) { }
 
   ngOnInit() {}
