@@ -8,7 +8,10 @@
   - `title` (String)  
   - `createdAt` (ISO timestamp)  
   - `updatedAt` (ISO timestamp)  
-
+- **Secondary Index:**  
+  - **GSI (ConversationByIdIndex):**  
+    - **PK:** `conversationId`  
+    - *Allows a user to fetch a conversation by conversationId.*  
 ---
 
 ### **Messages Table**  
