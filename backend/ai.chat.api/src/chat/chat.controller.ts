@@ -25,6 +25,6 @@ export class ChatController {
   @Roles(Role.DotNetDevelopers)
   async test(@Req() req: any) {
     const user = req.user;
-    return { message: 'Hello World', user };
+    return { message: 'Hello, Developer.', user };
   }
 }

@@ -28,11 +28,13 @@ export class ChatService {
         const messagesToSave = this.getMessagesToSave(systemResponse, messages, isNewConversation);
 
         this.messageService.addToConversation(messagesToSave, conversationId, user.emplId);
+
         if(isNewConversation) {
             const conversationName = await this.generateConversationName(chatRequestDto.content, user);
             res.write(`event: metadata\ndata: ${JSON.stringify({ conversationId, conversationName})}\n\n`);
             await this.conversationService.updateConversationName(user.emplId, conversationId, conversationName);
         }
+
         res.write(`data: [DONE]`);
         res.end();
     }
@@ -67,7 +69,10 @@ export class ChatService {
         
         let messages: Message[] = isNewConversation
             ? [{ ...this.getSystemMessage(user) }, userMessage]
-            : await this.getPreviousMessages(chatRequestDto.conversationId!, user.email, userMessage);
+            : [
+                { ...this.getSystemMessage(user) },
+                ...await this.getPreviousMessages(chatRequestDto.conversationId!, user.email, userMessage)
+            ];
         
         if (isNewConversation) {
             res.write(`event: metadata\ndata: ${JSON.stringify({ conversationId })}\n\n`);
