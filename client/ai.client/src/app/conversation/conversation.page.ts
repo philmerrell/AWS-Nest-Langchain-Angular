@@ -43,7 +43,7 @@ export class ConversationPage implements OnInit {
       if (conversationId) {
         const conversation = await this.conversationService.loadConversationById(conversationId);
         this.conversationService.setCurrentConversation(conversation);
-        this.messages = await this.messageMapService.getMessages(conversationId);
+        this.messages = await this.messageMapService.getMessagesForConversation(conversationId);
       }
     });
   }

@@ -7,6 +7,7 @@ import { ModelService } from './model.service';
 import { v4 as uuidv4 } from 'uuid';
 import { CustomInstructionService } from './custom-instruction.service';
 import { AuthService } from 'src/app/auth/auth.service';
+import { MessageMapService } from './message-map.service';
 
 class RetriableError extends Error { }
 class FatalError extends Error { }
@@ -25,7 +26,10 @@ export class ChatRequestService {
   private selectedModel: Signal<Model> = this.modelService.getSelectedModel();
   // private selectedTemperature: Signal<number> = this.modelService.getSelectedTemperature();
 
-  constructor(private authService: AuthService, private conversationService: ConversationService, private customInstructionService: CustomInstructionService, private modelService: ModelService) { }
+  constructor(private authService: AuthService,
+    private conversationService: ConversationService,
+    private messageMapService: MessageMapService,
+    private modelService: ModelService) { }
 
   submitChatRequest(userInput: string, signal: AbortSignal) {
     this.chatLoading.set(true);
@@ -114,13 +118,7 @@ export class ChatRequestService {
   }
 
   private handleNewUserMessage(message: any, conversation: WritableSignal<Conversation>) {
-    conversation.update(conversation => {
-      return {
-        ...conversation,
-        messages: [message]
-      }
-
-    })
+    this.messageMapService.addMessageToConversation(conversation().conversationId, message);
   }
   
   private finishCurrentResponse() {
