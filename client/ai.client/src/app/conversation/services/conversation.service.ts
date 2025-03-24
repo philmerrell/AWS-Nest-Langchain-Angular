@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class ConversationService {  
-  private currentConversation: WritableSignal<Conversation> = signal({conversationId: 'pending', name: 'New Chat'} as Conversation);
+  private currentConversation: WritableSignal<Conversation> = signal({conversationId: 'pending', name: ''} as Conversation);
 
   private _conversationsResource = resource({
     loader: () => this.loadConversations()
@@ -24,8 +24,16 @@ export class ConversationService {
     private router: Router
   ) {}
 
-  updateConversations() {
 
+  updateCurrentConversationName(name: string) {
+    const currentConversation = this.currentConversation();
+    if (currentConversation) {
+      this.updateConversationName(currentConversation.conversationId, name);
+      this.currentConversation.update(conversation => ({
+        ...conversation,
+        name
+      }));
+    }
   }
 
   createNewConversation() {

@@ -122,8 +122,9 @@ export class ChatRequestService {
     }
   }
 
-  private handleConversationName(name: string, id: string) {
-    this.conversationService.updateConversationName(id, name)
+  private handleConversationName(name: string, conversationId: string) {
+    this.conversationService.updateConversationName(conversationId, name);
+    this.conversationService.updateCurrentConversationName(name)
   }
   
   private handleNewConversation(conversationId: string) {
