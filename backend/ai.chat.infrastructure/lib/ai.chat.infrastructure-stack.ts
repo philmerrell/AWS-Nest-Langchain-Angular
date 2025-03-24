@@ -23,8 +23,8 @@ export class AiChatInfrastructureStack extends cdk.Stack {
     });
 
     conversationsTable.addGlobalSecondaryIndex({
-      indexName: 'ConversationByIdIndex',
-      partitionKey: { name: 'conversationId', type: dynamodb.AttributeType.STRING },
+      indexName: 'ConversationByKeyIndex',
+      partitionKey: { name: 'conversationKey', type: dynamodb.AttributeType.STRING },
     });
 
     // Messages Table
