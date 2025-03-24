@@ -95,10 +95,7 @@ export class ConversationService {
     return this._conversationsResource;
   }
 
-  getMessages(conversationId: string): Promise<Message[]> {
-    const request = this.http.get<Message[]>(`${environment.chatApiUrl}/messages/${conversationId}`);
-    return lastValueFrom(request);
-  }
+  
 
   loadConversations() {
     const request = this.http.get<{ lastEvaluatedKey: String, items: Conversation[] }>(`${environment.chatApiUrl}/conversations`)

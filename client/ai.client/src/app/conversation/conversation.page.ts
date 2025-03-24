@@ -11,6 +11,7 @@ import { ModelService } from './services/model.service';
 import { JsonPipe } from '@angular/common';
 import { ModelSettingsComponent } from './components/model-settings/model-settings.component';
 import { ActivatedRoute } from '@angular/router';
+import { MessageMapService } from './services/message-map.service';
 
 @Component({
   selector: 'app-conversation',
@@ -23,12 +24,13 @@ export class ConversationPage implements OnInit {
   currentConversation: Signal<Conversation> = this.conversationService.getCurrentConversation();
   chatLoading: Signal<boolean> = this.chatRequestService.getChatLoading();
   selectedModel: Signal<Model> = this.modelService.getSelectedModel();
-  messages: WritableSignal<Message[]> = signal([]);
+  messages: Signal<Message[]> = signal([]);
   isModalOpen = false;
 
   constructor(
     private chatRequestService: ChatRequestService,
     private conversationService: ConversationService,
+    private messageMapService: MessageMapService,
     private modalController: ModalController,
     private modelService: ModelService,
     private route: ActivatedRoute) {
@@ -41,8 +43,7 @@ export class ConversationPage implements OnInit {
       if (conversationId) {
         const conversation = await this.conversationService.loadConversationById(conversationId);
         this.conversationService.setCurrentConversation(conversation);
-        const messages = await this.conversationService.getMessages(conversationId);
-        this.messages.set(messages);
+        this.messages = await this.messageMapService.getMessages(conversationId);
       }
     });
   }
