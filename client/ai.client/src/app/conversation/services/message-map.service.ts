@@ -16,17 +16,20 @@ export class MessageMapService {
 
     constructor(private http: HttpClient) { }
 
-    async getMessagesForConversation(conversationId: string): Promise<Signal<Message[]>> {
+    getMessagesForConversation(conversationId: string): Signal<Message[]> {
         const messages = this.messageMap()[conversationId];
         if (messages) {
             return messages;
         } else {
-            const messages = await this.getMessagesByConversationId(conversationId);
+            const newSignal = signal<Message[]>([]);
             this.messageMap.update((map) => ({
                 ...map,
-                [conversationId]: signal(messages)
+                [conversationId]: newSignal
             }));
-            return signal(messages);
+            this.getMessagesByConversationId(conversationId).then(fetchedMessages => {
+                newSignal.set(fetchedMessages);
+            });
+            return newSignal;
         }
     }
 
