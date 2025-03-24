@@ -10,7 +10,7 @@
   - `updatedAt` (ISO timestamp)  
 - **Secondary Index:**  
   - **GSI (ConversationByIdIndex):**  
-    - **PK:** `conversationId`  
+    - **PK:** `conversationKey`  
     - *Allows a user to fetch a conversation by conversationId.*  
 ---
 
