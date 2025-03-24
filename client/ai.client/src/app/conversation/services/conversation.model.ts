@@ -2,8 +2,6 @@ export interface Conversation {
     conversationId: string;
     name: string;
     createdAt?: string;
-    messages?: Message[]
-
 }
 
 export interface Message {

@@ -22,6 +22,7 @@ export class ChatRequestService {
   // private conversations: Resource<Conversation[] | undefined> = this.conversationService.conversationsResource;
   // private currentConversation: WritableSignal<Conversation> = this.conversationService.getCurrentConversation();
   // private currentRequestId = '';
+  private requestId = '';
   private responseContent = '';
   private selectedModel: Signal<Model> = this.modelService.getSelectedModel();
   // private selectedTemperature: Signal<number> = this.modelService.getSelectedTemperature();
@@ -33,6 +34,7 @@ export class ChatRequestService {
 
   submitChatRequest(userInput: string, signal: AbortSignal) {
     this.chatLoading.set(true);
+    this.requestId = uuidv4();
     const currentConversation = this.conversationService.getCurrentConversation();
     const userMessage = this.createUserMessage(userInput, currentConversation());
     this.handleNewUserMessage(userMessage, currentConversation);
@@ -46,7 +48,7 @@ export class ChatRequestService {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${this.authService.getToken()}`
       },
-      body: JSON.stringify({ ...userMessage, modelId: model.id }),
+      body: JSON.stringify({ ...userMessage, modelId: model.id, requestId:  this.requestId}),
       signal: signal,
       async onopen(response) {
         if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
@@ -71,16 +73,39 @@ export class ChatRequestService {
     });
   }
 
+  private updateAssistantResponseWithDelta(contentDelta: string) {
+    const currentConversation = this.conversationService.getCurrentConversation();
+    this.responseContent += contentDelta;
+    const existingMessages = this.messageMapService.getMessagesForConversation(currentConversation().conversationId);
+    const assistantMessage = existingMessages().find(m => 
+      m.role === 'assistant' && m.id === this.requestId
+    );
+    
+    if (assistantMessage) {
+      // Update existing message
+      this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
+        ...assistantMessage,
+        content: this.responseContent
+      });
+    } else {
+      // Add new message
+      this.messageMapService.addMessageToConversation(currentConversation().conversationId, {
+        id: this.requestId,
+        role: 'assistant',
+        content: this.responseContent
+      });
+    }
+    
+  }
+
   private parseMessage(msg: EventSourceMessage) {
     try {
       const message = JSON.parse(msg.data);
-      console.log('Parsed message:', message);
       
       // Handle different message types
       if (message === '[DONE]') {
         this.chatLoading.set(false);
       } else if ('conversationId' in message && 'conversationName' in message) {
-        console.log('update name');
         this.handleConversationName(message.conversationName, message.conversationId);
       } else if ('conversationId' in message) {
         // Handle new conversation ID
@@ -108,8 +133,7 @@ export class ChatRequestService {
   
   private handleContentDelta(content: string) {
     // Update the assistant response content
-    this.responseContent += content;
-    this.assistantResponseContent.set(this.responseContent);
+    this.updateAssistantResponseWithDelta(content);
   }
   
   private handleTokenUsage(inputTokens: number, outputTokens: number) {

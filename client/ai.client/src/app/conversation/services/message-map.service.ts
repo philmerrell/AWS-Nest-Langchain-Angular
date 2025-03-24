@@ -65,6 +65,25 @@ export class MessageMapService {
         });
     }
 
+    /**
+     * Updates a specific message in a conversation
+     * If the conversation or message does not exist, no action is taken
+     */
+    updateMessage(conversationId: string, messageId: string, updatedAttributes: Partial<Message>): void {
+        this.messageMap.update(currentMap => {
+            const updatedMap = { ...currentMap };
+            const conversationMessages = updatedMap[conversationId];
+            if (conversationMessages) {
+                conversationMessages.update(messages => 
+                    messages.map(message => 
+                        message.id === messageId ? { ...message, ...updatedAttributes } : message
+                    )
+                );
+            }
+            return updatedMap;
+        });
+    }
+
 
 
 }
