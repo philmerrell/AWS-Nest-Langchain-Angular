@@ -28,7 +28,8 @@ export class ConversationTextComponent  implements OnInit {
       if(this.messages()) {
         console.log(this.messages())
           if((this.messages() ?? []).length > 3) {
-            this.scrollToLatestUserMessage()
+            
+            // this.scrollToLatestUserMessage()
           }
         
       }
@@ -39,13 +40,13 @@ export class ConversationTextComponent  implements OnInit {
   ngOnInit() {}
 
   scrollToLatestUserMessage() {
-    const lastUserMessage = this.messages()!.filter(item => item.role === 'user').pop();
-    if(lastUserMessage) {
-      setTimeout(async () => {
-        const element = document.getElementById(lastUserMessage.id ?? '');
-        this.scroller()?.scrollByPoint(0, element!.offsetTop, 700);
+    
+      setTimeout(() => {
+        this.scroller()?.scrollToBottom();
+        // const element = document.getElementById(lastUserMessage.id ?? '');
+        // this.scroller()?.scrollByPoint(0, element!.offsetTop, 700);
       }, 300)
-    }
+    
   }
 
 }
