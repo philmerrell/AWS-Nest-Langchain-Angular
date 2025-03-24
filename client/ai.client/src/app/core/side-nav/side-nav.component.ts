@@ -19,9 +19,9 @@ export class SideNavComponent  implements OnInit {
 
   ngOnInit() {}
 
-  setConversation(conversation: Conversation) {
+  setConversation(conversation: any) {
     if(conversation.conversationId === 'pending') {
-      this.router.navigate([''])
+      this.newChat();
     } else {
       this.router.navigate(['c', conversation.conversationId])
       this.conversationService.setCurrentConversation(conversation);

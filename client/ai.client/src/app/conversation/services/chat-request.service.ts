@@ -38,7 +38,7 @@ export class ChatRequestService {
     const currentConversation = this.conversationService.getCurrentConversation();
     const userMessage = this.createUserMessage(userInput, currentConversation());
     this.handleNewUserMessage(userMessage, currentConversation);
-    // update current conversation w/ user message
+    
     const model = this.selectedModel();
 
 
@@ -128,7 +128,8 @@ export class ChatRequestService {
   
   private handleNewConversation(conversationId: string) {
     this.conversationService.setCurrentConversationId(conversationId);
-    this.conversationService.updatePendingConversationId(conversationId);    
+    this.conversationService.updatePendingConversationId(conversationId);
+    this.messageMapService.updatePendingKey(conversationId);
   }
   
   private handleContentDelta(content: string) {
@@ -146,41 +147,8 @@ export class ChatRequestService {
   }
   
   private finishCurrentResponse() {
-    console.log('finished')
-    // Get the completed response
-    // const response = this.activeResponses.get(this.currentRequestId);
-    
-    // if (!response) return;
-    
-    // // Create the assistant message
-    // const assistantResponse: Message = {
-    //   role: 'assistant',
-    //   content: response.content
-    // };
-    
-    // // Update the conversation with the assistant message
-    // this.currentConversation.update((conversation) => ({
-    //   ...conversation,
-    //   messages: [...(conversation.messages || []), assistantResponse]
-    // }));
-
-    
-    // this.conversationService.addConversation()
-    // // Also update the master list of conversations
-    // this.conversations
-    // this.conversations.value.update((conversations) => 
-    //   conversations.map(conversation => 
-    //     conversation.conversationId === this.currentConversation().conversationId
-    //       ? { ...conversation, messages: [...(conversation.messages || []), assistantMessage] }
-    //       : conversation
-    //   )
-    // );
-    
-    // Reset state for the next response
     this.responseContent = '';
-    // this.assistantResponseContent.set('');
     this.chatLoading.set(false);
-    // this.activeResponses.delete(this.currentRequestId);
   }
 
   setMetadata(data: string) {

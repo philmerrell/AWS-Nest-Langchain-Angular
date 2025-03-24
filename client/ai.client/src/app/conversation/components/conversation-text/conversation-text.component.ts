@@ -26,7 +26,6 @@ export class ConversationTextComponent  implements OnInit {
     addIcons({chevronDownOutline,downloadOutline,readerOutline,documentOutline,imageOutline,listOutline});
     effect(() => {
       if(this.messages()) {
-        console.log(this.messages())
           if((this.messages() ?? []).length > 3) {
             
             // this.scrollToLatestUserMessage()

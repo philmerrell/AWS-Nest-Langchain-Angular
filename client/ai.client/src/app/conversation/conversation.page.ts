@@ -18,7 +18,7 @@ import { MessageMapService } from './services/message-map.service';
   templateUrl: './conversation.page.html',
   styleUrls: ['./conversation.page.scss'],
   standalone: true,
-  imports: [IonIcon, IonButton, IonFooter, IonContent, IonTitle, IonButtons, IonToolbar, IonHeader, ChatInputComponent, IonMenuButton, ConversationTextComponent, JsonPipe ]
+  imports: [IonIcon, IonButton, IonFooter, IonContent, IonTitle, IonButtons, IonToolbar, IonHeader, ChatInputComponent, IonMenuButton, ConversationTextComponent]
 })
 export class ConversationPage implements OnInit {
   currentConversation: Signal<Conversation> = this.conversationService.getCurrentConversation();
@@ -40,10 +40,14 @@ export class ConversationPage implements OnInit {
   ngOnInit() {
     this.route.paramMap.subscribe(async (params) => {
       const conversationId = params.get('conversationId');
+      console.log(conversationId)
       if (conversationId) {
         const conversation = await this.conversationService.loadConversationById(conversationId);
         this.conversationService.setCurrentConversation(conversation);
         this.messages = this.messageMapService.getMessagesForConversation(conversationId);
+      } else {
+        this.messages = this.messageMapService.getMessagesForConversation('pending');
+        // this.conversationService.createNewConversation();
       }
     });
   }

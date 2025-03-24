@@ -1,5 +1,5 @@
 import { Injectable, resource, signal, WritableSignal } from '@angular/core';
-import { Conversation, Message } from './conversation.model';
+import { Conversation } from './conversation.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { lastValueFrom, map, tap } from 'rxjs';
@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class ConversationService {  
-  private currentConversation: WritableSignal<Conversation> = signal({} as Conversation);
+  private currentConversation: WritableSignal<Conversation> = signal({conversationId: 'pending', name: 'New Chat'} as Conversation);
 
   private _conversationsResource = resource({
     loader: () => this.loadConversations()
@@ -18,7 +18,6 @@ export class ConversationService {
   get conversationsResource() {
     return this._conversationsResource
   }
-
   
   constructor(
     private http: HttpClient,
@@ -56,12 +55,13 @@ export class ConversationService {
   //   const response = this.http.get
   // }
 
-  updatePendingConversationId(id: string) {
-    window.history.pushState(null, '', `c/${this.currentConversation().conversationId}`);
+  updatePendingConversationId(conversationId: string) {
+    window.history.pushState(null, '', `c/${conversationId}`);
+    // this.router.navigate([`c/${conversationId}`])
     this._conversationsResource.update(conversations => {
       return conversations?.map(conversation => 
         conversation.conversationId === 'pending' 
-          ? { ...conversation, conversationId: id } 
+          ? { ...conversation, conversationId } 
           : conversation
       );
     })
@@ -98,10 +98,11 @@ export class ConversationService {
   
 
   loadConversations() {
+    const newConversation = { conversationId: 'pending', name: 'New Chat'}
     const request = this.http.get<{ lastEvaluatedKey: String, items: Conversation[] }>(`${environment.chatApiUrl}/conversations`)
       .pipe(map(response => { 
         return [
-          // newConversation,
+          newConversation,
           ...response.items
         ]
       }));

@@ -67,13 +67,11 @@ export class ConversationService {
     }
   }
 
-
-  // TODO: Do I need to check emplid here to make sure user can get this conversation
   async getConversationById(emplId: string, conversationId: string): Promise<any> {
     const conversationKey = `${emplId}#${conversationId}`;
     const params = {
       TableName: this.configService.get('CONVERSATIONS_TABLE_NAME'),
-      IndexName: 'ConversationByIdIndex',
+      IndexName: 'ConversationByKeyIndex',
       KeyConditionExpression: 'conversationKey = :conversationKey',
       ExpressionAttributeValues: {
       ':conversationKey': conversationKey,

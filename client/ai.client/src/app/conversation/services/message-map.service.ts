@@ -39,17 +39,34 @@ export class MessageMapService {
     }
 
     /**
+     * Finds the key with 'pending' and updates it to the provided conversationId
+     */
+    updatePendingKey(conversationId: string): void {
+        this.messageMap.update(currentMap => {
+            const updatedMap = { ...currentMap };
+            const pendingKey = Object.keys(updatedMap).find(key => key === 'pending');
+            if (pendingKey) {
+                updatedMap[conversationId] = updatedMap[pendingKey];
+                delete updatedMap[pendingKey];
+            }
+            return updatedMap;
+        });
+    }
+
+    /**
      * Adds a single message to a conversation in the messageMap
      * Creates the conversation entry if it doesn't exist
      */
     addMessageToConversation(conversationId: string, message: Message): void {
         this.messageMap.update(currentMap => {
+            console.log(currentMap);
         const updatedMap = { ...currentMap };
         if (!updatedMap[conversationId]) {
-            updatedMap[conversationId] = signal([]);
+            updatedMap[conversationId] = signal([message]);
         }
-        updatedMap[conversationId].update(messages => [...messages, message]);
-        return updatedMap;
+        const updatedMessages = updatedMap[conversationId]().concat(message);
+        updatedMap[conversationId].set(updatedMessages);
+        return { ...updatedMap };
         });
     }
 
