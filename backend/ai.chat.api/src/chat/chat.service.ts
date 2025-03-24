@@ -29,12 +29,29 @@ export class ChatService {
 
         this.messageService.addToConversation(messagesToSave, conversationId, user.emplId);
         if(isNewConversation) {
-            const conversationName = 'test...'
+            const conversationName = await this.generateConversationName(chatRequestDto.content, user);
             res.write(`event: metadata\ndata: ${JSON.stringify({ conversationId, conversationName})}\n\n`);
             await this.conversationService.updateConversationName(user.emplId, conversationId, conversationName);
         }
         res.write(`data: [DONE]`);
         res.end();
+    }
+
+    private async generateConversationName(userInput: string, user: User) {
+        const model = new ChatBedrockConverse({
+            model: 'amazon.nova-micro-v1:0',
+            region: this.configService.get<string>('BEDROCK_AWS_REGION'),
+        });
+        const response = await model.invoke([['system', 'Respond with only a title name and nothing else. Do not put the title in quotes'], ['user', `Look at the following prompt: ${userInput} \n\nYour task: As an AI proficient in summarization, create a short concise title for the given prompt. Ensure the title is under 30 characters.`]]);
+        const inputTokens = response.usage_metadata?.input_tokens || 0;
+        const outputTokens = response.usage_metadata?.output_tokens || 0;
+        await this.costService.trackUsage({
+            user,
+            modelId: model.model,
+            inputTokens,
+            outputTokens
+          });
+        return response.content
     }
 
     private setupSSEHeaders(res: Response): void {
@@ -76,7 +93,7 @@ export class ChatService {
             res.write(`event: delta\ndata: ${JSON.stringify({ content: chunk.content })}\n\n`);
         }
 
-        res.write(`data: ${JSON.stringify({ inputTokens, outputTokens })}\n\n`);
+        // res.write(`data: ${JSON.stringify({ inputTokens, outputTokens })}\n\n`);
         await this.costService.trackUsage({
             user,
             modelId: model.model,

@@ -3,6 +3,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { User } from 'src/auth/strategies/entra.strategy';
 import { PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { ConfigService } from '@nestjs/config';
+import { MessageContent } from '@langchain/core/messages';
 
 @Injectable()
 export class ConversationService {
@@ -96,7 +97,7 @@ export class ConversationService {
     }
   }
 
-  async updateConversationName(emplId: string, conversationId: string, newName: string): Promise<void> {
+  async updateConversationName(emplId: string, conversationId: string, newName: MessageContent): Promise<void> {
     try {
       const tableName = this.configService.get<string>('CONVERSATIONS_TABLE_NAME');
       if (!tableName) {
