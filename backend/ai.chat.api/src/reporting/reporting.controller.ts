@@ -1,12 +1,12 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { ReportingService } from './reporting.service';
 import {
-  EmplIdParamDto,
   YearMonthParamDto,
   YearParamDto,
   DateParamDto,
   PaginationQueryDto,
 } from './reporting.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('reporting')
 export class ReportingController {
@@ -14,25 +14,34 @@ export class ReportingController {
 
   // USER
 
-  @Get('users/:emplId/monthly/:yearMonth')
+  @Get('users/monthly/:yearMonth')
+  @UseGuards(JwtAuthGuard)
   async getUserMonthlyCost(
-    @Param() params: EmplIdParamDto & YearMonthParamDto,
+    @Param() params: YearMonthParamDto,
+    @Req() req: any
   ) {
-    return this.reportingService.getUserMonthlyCost(params.emplId, params.yearMonth);
+    const user = req.user;
+    return this.reportingService.getUserMonthlyCost(user.emplId, params.yearMonth);
   }
 
-  @Get('users/:emplId/yearly/:year')
+  @Get('users/yearly/:year')
+  @UseGuards(JwtAuthGuard)
   async getUserYearlyCost(
-    @Param() params: EmplIdParamDto & YearParamDto,
+    @Param() params: YearParamDto,
+    @Req() req: any
   ) {
-    return this.reportingService.getUserYearlyCost(params.emplId, params.year);
+    const user = req.user;
+    return this.reportingService.getUserYearlyCost(user.emplId, params.year);
   }
 
-  @Get('users/:emplId/daily-breakdown/:date')
+  @Get('users/daily-breakdown/:date')
+  @UseGuards(JwtAuthGuard)
   async getUserDailyBreakdown(
-    @Param() params: EmplIdParamDto & DateParamDto,
+    @Param() params: DateParamDto,
+    @Req() req: any
   ) {
-    return this.reportingService.getUserUsageBreakdown(params.emplId, params.date);
+    const user = req.user;
+    return this.reportingService.getUserUsageBreakdown(user.emplId, params.date);
   }
 
   // ADMIN

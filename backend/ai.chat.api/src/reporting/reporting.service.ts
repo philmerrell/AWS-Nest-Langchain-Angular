@@ -26,7 +26,7 @@ export class ReportingService {
       },
     }));
 
-    return result.Items?.[0]?.totalCost ?? 0;
+    return { cost: result.Items?.[0]?.totalCost ?? 0 };
   }
 
   async getUserYearlyCost(emplId: string, year: string) {
@@ -39,7 +39,7 @@ export class ReportingService {
       },
     }));
 
-    return result.Items?.[0]?.totalCost ?? 0;
+    return { cost: result.Items?.[0]?.totalCost ?? 0 };
   }
 
 async getAllUserDailyCosts(date: string, limit = 10, lastKey?: Record<string, any>) {
