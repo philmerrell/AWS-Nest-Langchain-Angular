@@ -1,5 +1,5 @@
 // src/app/auth/auth.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -9,8 +9,7 @@ import { environment } from 'src/environments/environment';
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<any>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
+  currentUser = signal<any>(null);
   private tokenKey = 'auth_token';
 
   constructor(private http: HttpClient) {
@@ -30,6 +29,10 @@ export class AuthService {
     }
   }
 
+  getCurrentUser() {
+    return this.currentUser
+  }
+
   initiateGoogleLogin(): void {
     window.location.href = `${environment.chatApiUrl}/auth/google`;
   }
@@ -37,12 +40,14 @@ export class AuthService {
   loadUserFromToken(token: string): void {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      this.currentUserSubject.next(payload);
+      this.currentUser.set(payload);
+      console.log(this.currentUser())
     } catch (e) {
       console.error('Invalid token', e);
       this.logout();
     }
   }
+  
 
   setToken(token: string): void {
     localStorage.setItem(this.tokenKey, token);
@@ -59,6 +64,5 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(this.tokenKey);
-    this.currentUserSubject.next(null);
   }
 }
