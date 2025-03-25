@@ -1,4 +1,5 @@
 <div class="user-message">
+  <div class="user-initial">P</div>
   @if((message.content | truncateUserInput).truncated) {
     @if(!expanded) {
       <div class="truncated-message">{{ (message.content | truncateUserInput).text }}</div>
