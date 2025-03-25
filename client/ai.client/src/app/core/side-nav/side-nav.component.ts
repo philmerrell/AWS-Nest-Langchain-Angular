@@ -1,6 +1,6 @@
 import { Component, OnInit, ResourceStatus } from '@angular/core';
 import { ConversationService } from 'src/app/conversation/services/conversation.service';
-import { IonItem, IonLabel, IonSpinner, IonList, IonButton, IonText, IonImg, IonThumbnail, IonItemDivider, IonIcon } from "@ionic/angular/standalone";
+import { IonItem, IonLabel, IonSpinner, IonList, IonButton, IonText, IonImg, IonThumbnail, IonItemDivider, IonIcon, IonContent } from "@ionic/angular/standalone";
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { createOutline } from 'ionicons/icons';
@@ -9,7 +9,7 @@ import { createOutline } from 'ionicons/icons';
   selector: 'app-side-nav',
   templateUrl: './side-nav.component.html',
   styleUrls: ['./side-nav.component.scss'],
-  imports: [IonIcon, IonItemDivider, IonImg, IonText, IonButton, IonList, IonSpinner, IonLabel, IonThumbnail, IonItem],
+  imports: [IonItemDivider, IonList, IonSpinner, IonLabel, IonItem],
   standalone: true
 })
 export class SideNavComponent  implements OnInit {
@@ -17,10 +17,13 @@ export class SideNavComponent  implements OnInit {
   conversations = this.conversationService.conversationsResource;
   currentConversation = this.conversationService.getCurrentConversation();
   constructor(private conversationService: ConversationService, private router: Router) {
-    addIcons({createOutline})
   }
 
   ngOnInit() {}
+
+  newChat() {
+    this.conversationService.createNewConversation();
+  }
 
   setConversation(conversation: any) {
     if(conversation.conversationId === 'pending') {
@@ -31,9 +34,7 @@ export class SideNavComponent  implements OnInit {
     }
   }
 
-  newChat() {
-    this.conversationService.createNewConversation();
-  }
+  
 
 
 
