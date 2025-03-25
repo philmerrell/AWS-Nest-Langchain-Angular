@@ -12,6 +12,7 @@
         {{ currentConversation().name }}
       </span>
     </ion-title>
+
     <ion-buttons slot="end">
       <ion-button id="user-button" shape="round" color="primary" size="small">
         <ion-avatar slot="icon-only" style="border: 1px solid black">
@@ -22,7 +23,7 @@
         <ng-template>
           <ion-content>
             <ion-item>
-              Reports
+              {{ monthToDateUserCost.value()?.cost | currency }}
             </ion-item>
           </ion-content>
         </ng-template>
