@@ -1,13 +1,26 @@
 
-<div class="ion-padding">
+<ion-item lines="none" color="light">
+  <ion-thumbnail>
+    <ion-img src="/assets/logo-light.png"></ion-img>
+  </ion-thumbnail>
+  <ion-label>
+    <ion-text style="font-size: 1.5em; font-weight: 900; margin-left: 10px;">boisestate.ai</ion-text>
+  </ion-label>
+</ion-item>
+<div class="ion-padding button-container">
   <ion-button (click)="newChat()" expand="block">
+    <ion-icon slot="start" name="create-outline"></ion-icon>
     New Chat
   </ion-button>
 </div>
 <ion-list>
 
+  <ion-item-divider sticky>
+    Conversations
+  </ion-item-divider>
+
   @if(conversations.status() === status.Loading) {
-   <ion-item lines="none">
+   <ion-item lines="none" color="light">
      <ion-label>Loading Conversations</ion-label>
      <ion-spinner></ion-spinner>
    </ion-item>
@@ -16,7 +29,7 @@
   @for(conversation of conversations.value(); track conversation.conversationId) {
     <ion-item (click)="setConversation(conversation)"
       lines="none"
-      [color]="currentConversation().conversationId === conversation.conversationId ? 'light' : ''" button detail="false">
+      [color]="currentConversation().conversationId === conversation.conversationId ? 'medium' : 'light'" button [detail]="currentConversation().conversationId === conversation.conversationId">
       <ion-label>
         {{ conversation.name }}
       </ion-label>

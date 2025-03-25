@@ -1,6 +1,6 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { IonContent, IonItem, IonItemDivider } from '@ionic/angular/standalone';
+import { IonContent, IonItem, IonItemDivider, IonLabel, IonText } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/auth/auth.service';
 import { ReportingService } from 'src/app/reporting/reporting.service';
 
@@ -9,7 +9,7 @@ import { ReportingService } from 'src/app/reporting/reporting.service';
   templateUrl: './user-menu.component.html',
   styleUrls: ['./user-menu.component.scss'],
   standalone: true,
-  imports: [IonItemDivider, IonItem, IonContent, CurrencyPipe]
+  imports: [IonText, IonLabel, IonItemDivider, IonItem, IonContent, CurrencyPipe]
 })
 export class UserMenuComponent  implements OnInit {
   monthToDateUserCost = this.reportingService.monthToDateUserCostResource;

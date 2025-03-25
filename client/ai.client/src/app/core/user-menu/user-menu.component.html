@@ -2,8 +2,12 @@
   <ion-item-divider color="light">
     {{ user().name }}
   </ion-item-divider>
-  <ion-item>
-    {{ monthToDateUserCost.value()?.cost | currency }}
+  <ion-item lines="none">
+    <ion-label>
+
+      <h2>Month to date: </h2>
+    </ion-label>
+    <ion-text slot="end">{{ monthToDateUserCost.value()?.cost | currency }}</ion-text>
   </ion-item>
 </ion-content>
 
