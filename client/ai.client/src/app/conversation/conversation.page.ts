@@ -2,7 +2,7 @@ import { Component, OnInit, signal, Signal, WritableSignal  } from '@angular/cor
 import { ChatInputComponent } from './components/chat-input/chat-input.component';
 import { addIcons } from 'ionicons';
 import { chevronForwardOutline } from 'ionicons/icons';
-import { IonHeader, IonToolbar, IonButtons, IonTitle, IonContent, IonFooter, IonMenuButton, IonButton, IonIcon, ModalController, IonAvatar, IonPopover, IonItem } from "@ionic/angular/standalone";
+import { IonHeader, IonToolbar, IonButtons, IonTitle, IonContent, IonFooter, IonMenuButton, IonButton, IonIcon, ModalController, IonAvatar, IonPopover, IonItem, PopoverController } from "@ionic/angular/standalone";
 import { ConversationTextComponent } from './components/conversation-text/conversation-text.component';
 import { Conversation, Message, Model } from './services/conversation.model';
 import { ChatRequestService } from './services/chat-request.service';
@@ -13,7 +13,7 @@ import { ModelSettingsComponent } from './components/model-settings/model-settin
 import { ActivatedRoute } from '@angular/router';
 import { MessageMapService } from './services/message-map.service';
 import { AuthService } from '../auth/auth.service';
-import { ReportingService } from '../reporting/reporting.service';
+import { UserMenuComponent } from '../core/user-menu/user-menu.component';
 
 @Component({
   selector: 'app-conversation',
@@ -25,7 +25,6 @@ import { ReportingService } from '../reporting/reporting.service';
 export class ConversationPage implements OnInit {
   currentUser: Signal<any> = this.authService.getCurrentUser();
   currentConversation: Signal<Conversation> = this.conversationService.getCurrentConversation();
-  monthToDateUserCost = this.reportingService.monthToDateUserCostResource
   chatLoading: Signal<boolean> = this.chatRequestService.getChatLoading();
   selectedModel: Signal<Model> = this.modelService.getSelectedModel();
   messages: Signal<Message[]> = signal([]);
@@ -39,7 +38,7 @@ export class ConversationPage implements OnInit {
     private messageMapService: MessageMapService,
     private modalController: ModalController,
     private modelService: ModelService,
-    private reportingService: ReportingService,
+    private popoverController: PopoverController,
     private route: ActivatedRoute) {
     addIcons({chevronForwardOutline});
   }
@@ -58,6 +57,17 @@ export class ConversationPage implements OnInit {
     });
   }
 
+  async presentPopover(e: Event) {
+    const popover = await this.popoverController.create({
+      component: UserMenuComponent,
+      event: e,
+    });
+
+    await popover.present();
+
+    const { role } = await popover.onDidDismiss();
+    console.log(`Popover dismissed with role: ${role}`);
+  }
 
 
   async openModelSettingsModal() {

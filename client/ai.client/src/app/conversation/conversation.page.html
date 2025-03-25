@@ -14,20 +14,11 @@
     </ion-title>
 
     <ion-buttons slot="end">
-      <ion-button id="user-button" shape="round" color="primary" size="small">
+      <ion-button (click)="presentPopover($event)" shape="round" color="primary" size="small">
         <ion-avatar slot="icon-only" style="border: 1px solid black">
           <img [src]="currentUser().picture" alt="User Avatar">
         </ion-avatar>        
       </ion-button>
-      <ion-popover trigger="user-button" triggerAction="click">
-        <ng-template>
-          <ion-content>
-            <ion-item>
-              {{ monthToDateUserCost.value()?.cost | currency }}
-            </ion-item>
-          </ion-content>
-        </ng-template>
-      </ion-popover>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
