@@ -52,7 +52,7 @@ export class ConversationPage implements OnInit {
         this.conversationService.setCurrentConversation(conversation);
         this.messages = this.messageMapService.getMessagesForConversation(conversationId);
       } else {
-        this.messages = signal([]);
+        this.messages = this.messageMapService.getMessagesForConversation('pending')
         this.conversationService.setCurrentConversation({ conversationId: 'pending', name: 'New Chat'})
       }
     });
