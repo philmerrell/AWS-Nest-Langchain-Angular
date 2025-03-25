@@ -9,6 +9,7 @@
     <ion-text slot="end">{{ monthToDateUserCost.value()?.cost | currency }}</ion-text>
   </ion-item>
   <ion-item button (click)="dismiss()" routerLink="/reporting" lines="none">
+    <ion-icon slot="start" name="stats-chart-outline" color="secondary"></ion-icon>
     <ion-label>
       <h2>Reporting</h2>
     </ion-label>
