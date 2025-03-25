@@ -45,7 +45,7 @@ export class ConversationService {
         ':emplId': emplId,
       },
       ScanIndexForward: false,
-      Limit: 10, // Set the page size
+      Limit: 20, // Set the page size
     };
 
     if (lastEvaluatedKey) {
