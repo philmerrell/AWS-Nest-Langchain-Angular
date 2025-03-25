@@ -4,10 +4,14 @@
   </ion-item-divider>
   <ion-item lines="none">
     <ion-label>
-
       <h2>Month to date: </h2>
     </ion-label>
     <ion-text slot="end">{{ monthToDateUserCost.value()?.cost | currency }}</ion-text>
+  </ion-item>
+  <ion-item button (click)="dismiss()" routerLink="/reporting" lines="none">
+    <ion-label>
+      <h2>Reporting</h2>
+    </ion-label>
   </ion-item>
 </ion-content>
 
