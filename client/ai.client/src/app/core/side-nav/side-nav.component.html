@@ -16,7 +16,7 @@
   @for(conversation of conversations.value(); track conversation.conversationId) {
     <ion-item (click)="setConversation(conversation)"
       lines="none"
-      [color]="currentConversation().conversationId === conversation.conversationId ? 'light' : ''" button>
+      [color]="currentConversation().conversationId === conversation.conversationId ? 'light' : ''" button detail="false">
       <ion-label>
         {{ conversation.name }}
       </ion-label>

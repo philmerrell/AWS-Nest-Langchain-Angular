@@ -5,7 +5,7 @@
     <ion-grid>
       @for(message of messages(); track message.id; let i = $index;) {
         @if(message.role === 'user') {
-          <ion-row [id]="message.id" [@slide]>
+          <ion-row [id]="message.id">
             <ion-col>
               <app-user-message [message]="message"></app-user-message>
             </ion-col>
