@@ -20,7 +20,7 @@
    </div>
 
   <ion-list>
-    <ion-item-divider>Daily Cost Breakdown</ion-item-divider>
+    <ion-item-divider>{{ today | date }} - Daily Cost Breakdown</ion-item-divider>
     @for(cost of daily; let index = $index; track index) {
       <ion-item>
         <ion-label>

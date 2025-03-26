@@ -20,7 +20,7 @@ import { UserMenuComponent } from '../core/user-menu/user-menu.component';
   templateUrl: './conversation.page.html',
   styleUrls: ['./conversation.page.scss'],
   standalone: true,
-  imports: [CurrencyPipe, IonItem, IonPopover, IonAvatar, IonIcon, IonButton, IonFooter, IonContent, IonTitle, IonButtons, IonToolbar, IonHeader, ChatInputComponent, IonMenuButton, ConversationTextComponent]
+  imports: [ IonAvatar, IonIcon, IonButton, IonFooter, IonContent, IonTitle, IonButtons, IonToolbar, IonHeader, ChatInputComponent, IonMenuButton, ConversationTextComponent]
 })
 export class ConversationPage implements OnInit {
   currentUser: Signal<any> = this.authService.getCurrentUser();

@@ -12,6 +12,7 @@ import { DailyCost, ReportingService } from './reporting.service';
   imports: [IonBackButton, IonButtons, IonItemDivider, IonBadge, IonLabel, IonList, IonItem, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule]
 })
 export class ReportingPage implements OnInit {
+  today = new Date();
   daily: DailyCost[] = [];
   monthly = { cost: 0 };
   yearly = { cost: 0 };

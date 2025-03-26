@@ -48,7 +48,7 @@ export class ChatRequestService {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${this.authService.getToken()}`
       },
-      body: JSON.stringify({ ...userMessage, modelId: model.id, requestId:  this.requestId}),
+      body: JSON.stringify({ ...userMessage, modelId: model.modelId, requestId:  this.requestId}),
       signal: signal,
       async onopen(response) {
         if (response.ok && response.headers.get('content-type') === EventStreamContentType) {

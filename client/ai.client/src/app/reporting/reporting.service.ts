@@ -11,6 +11,7 @@ export interface DailyCost {
   providedIn: 'root'
 })
 export class ReportingService {
+
   private _monthToDateUserCostResource = resource({
     loader: async () => {
       const result = await this.loadUserMonthToDateCost();

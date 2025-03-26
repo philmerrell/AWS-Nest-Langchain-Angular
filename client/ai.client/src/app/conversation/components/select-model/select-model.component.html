@@ -9,18 +9,18 @@
 <ion-content>
   <ion-list>
     
-    <ion-item (click)="navigateToAdvancedSettings()" button>
+    <!-- <ion-item (click)="navigateToAdvancedSettings()" button>
       <ion-icon slot="start" color="secondary" name="settings-outline"></ion-icon>
       Advanced Settings
-    </ion-item>
+    </ion-item> -->
     <ion-item-divider sticky>Models</ion-item-divider>
-    @for(model of models; track model.id) {
-      <ion-item (click)="selectModel(model)" button>
+    @for(model of models; track model.modelId) {
+      <ion-item (click)="selectModel(model)" button detail="false">
         <ion-label>
           <h2>{{ model.name }}</h2>
           <!-- <p>{{ model.description }}</p> -->
         </ion-label>
-        @if(model.id === selectedModel().id) {
+        @if(model.modelId === selectedModel().modelId) {
           <ion-icon slot="end" name="checkmark-circle" color="success"></ion-icon>
         }
       </ion-item>

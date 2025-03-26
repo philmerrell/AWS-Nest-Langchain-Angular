@@ -18,8 +18,17 @@ export interface CustomInstruction {
 }
 
 export interface Model {
-    id: string;
+    modelId: string;
+    enabled: boolean;
+    updatedAt: string;
+    createdAt: string;
+    description: string;
+    outputPricePerMillionTokens: number;
+    inputPricePerMillionTokens: number;
     name: string;
+    sortOrder: number;
+    isDefault: boolean;
+
 }
 
 export type Role = 'assistant' | 'user' | 'system';

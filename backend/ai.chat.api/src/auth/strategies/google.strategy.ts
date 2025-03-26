@@ -36,6 +36,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       email: email,
       name: name.givenName + ' ' + name.familyName,
       picture: photo,
+      roles: ['DotNetDevelopers'],
       emplId: profile.id, // Using Google profile ID as emplId
     };
     

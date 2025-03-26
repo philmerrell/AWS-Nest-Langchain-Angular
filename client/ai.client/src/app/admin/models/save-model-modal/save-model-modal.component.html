@@ -1,5 +1,11 @@
 <ion-header>
-  <ion-toolbar></ion-toolbar>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        Cancel
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
 </ion-header>
   <ion-content>
     <form [formGroup]="form">
@@ -11,10 +17,10 @@
           label="Name"
           labelPlacement="floating"
           placeholder="Enter Name"
+          errorText="Name is required."
           required
         ></ion-input>
       </ion-item>
-
       <!-- Model ID Input -->
       <ion-item>
         <ion-input
@@ -22,6 +28,7 @@
           label="Model ID"
           labelPlacement="floating"
           placeholder="Enter Model ID"
+          errorText="Model Id is required."
           required
         ></ion-input>
       </ion-item>
@@ -33,9 +40,18 @@
           label="Description"
           labelPlacement="floating"
           placeholder="Enter Description"
-          required
         ></ion-textarea>
       </ion-item>
+      <ion-item>
+        <ion-input
+          formControlName="creator"
+          label="Creator"
+          labelPlacement="floating"
+          placeholder="Enter Name"
+          required
+        ></ion-input>
+      </ion-item>
+
 
       <ion-grid>
         <ion-row>
@@ -48,6 +64,7 @@
                 labelPlacement="floating"
                 type="number"
                 placeholder="Enter Input Price"
+                errorText="Input price required."
                 required
               ></ion-input>
             </ion-item>
@@ -61,36 +78,42 @@
                 labelPlacement="floating"
                 type="number"
                 placeholder="Enter Output Price"
+                errorText="Output price required."
                 required
               ></ion-input>
             </ion-item>
-            <ion-row>
-              <ion-col size="6">
-                <!-- Sort Order Input -->
-                <ion-item>
-                  <ion-input
-                    formControlName="sortOrder"
-                    label="Sort Order"
-                    labelPlacement="floating"
-                    type="number"
-                    placeholder="Enter Sort Order"
-                    required
-                  ></ion-input>
-                </ion-item>
-              </ion-col>
-              <ion-col size="6"><!-- Enabled Checkbox -->
-                <ion-item>
-                  <ion-checkbox
-                    formControlName="enabled"
-                    label="Enabled"
-                    labelPlacement="start"
-                  >Enabled</ion-checkbox>
-                </ion-item>
-              </ion-col>
-            </ion-row>
           </ion-col>
         </ion-row>
       </ion-grid>
+        <ion-item>
+            <ion-input
+              formControlName="sortOrder"
+              label="Sort Order"
+              labelPlacement="floating"
+              type="number"
+              placeholder="Enter Sort Order"
+              errorText="Sort order is required."
+              required
+            ></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-checkbox
+              formControlName="enabled"
+              label="Enabled"
+              labelPlacement="start"
+            >Enabled</ion-checkbox>
+          </ion-item>
+            <ion-item>
+              <ion-input
+                formControlName="effectiveDate"
+                label="Effective Date"
+                labelPlacement="floating"
+                type="date"
+                placeholder="Select Effective Date"
+                errorText="Effective Date is required."
+                required
+              ></ion-input>
+            </ion-item>
   
     </form>
   </ion-content>

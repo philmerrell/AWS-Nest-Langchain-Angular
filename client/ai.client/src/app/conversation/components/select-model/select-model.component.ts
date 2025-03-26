@@ -32,8 +32,8 @@ export class SelectModelComponent  implements OnInit {
     this.modalController.dismiss();
   }
 
-  getModels() {
-    this.models = this.modelService.getModels();
+  async getModels() {
+    this.models = await this.modelService.loadModels();
   }
 
   navigateToAdvancedSettings() {

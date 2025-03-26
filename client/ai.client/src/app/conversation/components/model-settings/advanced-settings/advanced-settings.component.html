@@ -18,7 +18,7 @@
   <ion-item>
     <ion-select (ionChange)="handleModelChange($event)" [interfaceOptions]="modelPopoverOptions"
       [value]="selectedModel()" interface="popover" label="Model" label-placement="floating">
-      @for(model of models; track model.id) {
+      @for(model of models; track model.modelId) {
       <ion-select-option [value]="model">{{ model.name }}</ion-select-option>
       }
 
