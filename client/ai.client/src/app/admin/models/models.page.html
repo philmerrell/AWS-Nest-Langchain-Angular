@@ -1,0 +1,38 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Models</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Models</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <div class="container">
+    <ion-card>
+      <ion-item lines="none">
+        <ion-label>
+          <!-- <ion-text style="font-size: 1.2em; font-weight: 400;">Manage Models</ion-text> -->
+        </ion-label>
+        <ion-button slot="end">Create</ion-button>
+      </ion-item>
+
+      
+        @for(model of models; track model.modelId) {
+          <ion-item (click)="presentEditModelModal(model)" button>
+            <ion-label>
+              <h2>{{model.name}}</h2>
+              <p>{{model.modelId}}</p>
+            </ion-label>
+          </ion-item>
+        }
+
+
+    </ion-card>
+  </div>
+</ion-content>

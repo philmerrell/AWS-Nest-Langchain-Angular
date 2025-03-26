@@ -1,0 +1,101 @@
+<ion-header>
+  <ion-toolbar></ion-toolbar>
+</ion-header>
+  <ion-content>
+    <form [formGroup]="form">
+
+      <!-- Name Input -->
+      <ion-item>
+        <ion-input
+          formControlName="name"
+          label="Name"
+          labelPlacement="floating"
+          placeholder="Enter Name"
+          required
+        ></ion-input>
+      </ion-item>
+
+      <!-- Model ID Input -->
+      <ion-item>
+        <ion-input
+          formControlName="modelId"
+          label="Model ID"
+          labelPlacement="floating"
+          placeholder="Enter Model ID"
+          required
+        ></ion-input>
+      </ion-item>
+  
+      <!-- Description Textarea -->
+      <ion-item>
+        <ion-textarea
+          formControlName="description"
+          label="Description"
+          labelPlacement="floating"
+          placeholder="Enter Description"
+          required
+        ></ion-textarea>
+      </ion-item>
+
+      <ion-grid>
+        <ion-row>
+          <ion-col>
+            <!-- Input Price Per Million Tokens Input -->
+            <ion-item>
+              <ion-input
+                formControlName="inputPricePerMillionTokens"
+                label="Input Price Per Million Tokens"
+                labelPlacement="floating"
+                type="number"
+                placeholder="Enter Input Price"
+                required
+              ></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col>
+            <!-- Output Price Per Million Tokens Input -->
+            <ion-item>
+              <ion-input
+                formControlName="outputPricePerMillionTokens"
+                label="Output Price Per Million Tokens"
+                labelPlacement="floating"
+                type="number"
+                placeholder="Enter Output Price"
+                required
+              ></ion-input>
+            </ion-item>
+            <ion-row>
+              <ion-col size="6">
+                <!-- Sort Order Input -->
+                <ion-item>
+                  <ion-input
+                    formControlName="sortOrder"
+                    label="Sort Order"
+                    labelPlacement="floating"
+                    type="number"
+                    placeholder="Enter Sort Order"
+                    required
+                  ></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="6"><!-- Enabled Checkbox -->
+                <ion-item>
+                  <ion-checkbox
+                    formControlName="enabled"
+                    label="Enabled"
+                    labelPlacement="start"
+                  >Enabled</ion-checkbox>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+  
+    </form>
+  </ion-content>
+  <ion-footer>
+    <ion-toolbar>
+      <ion-button (click)="saveModel()" expand="block" shape="round">Save</ion-button>
+    </ion-toolbar>
+  </ion-footer>
