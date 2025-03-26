@@ -26,14 +26,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     console.log(profile);
     
     // Check if the email is from Boise State domain
-    const email = emails[0].value;
+    const email:string = emails[0].value;
     const photo = photos[0].value;
     if (!email.endsWith('@boisestate.edu')) {
       return done(new Error('Only Boise State emails are allowed'), null);
     }
     
     const user: User = {
-      email: email,
+      email: email.toLowerCase(),
       name: name.givenName + ' ' + name.familyName,
       picture: photo,
       roles: ['DotNetDevelopers'],

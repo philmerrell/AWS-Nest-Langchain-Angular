@@ -9,7 +9,7 @@ import { validateAllFormFields } from 'src/app/shared/form-utils';
   templateUrl: './save-model-modal.component.html',
   styleUrls: ['./save-model-modal.component.scss'],
   standalone: true,
-  imports: [IonButtons, IonLabel, IonCol, IonRow, IonGrid, IonFooter, IonTextarea, IonCheckbox, IonInput, IonItem, IonButton, IonContent, IonToolbar, IonHeader, ReactiveFormsModule ]
+  imports: [IonButtons, IonCol, IonRow, IonGrid, IonFooter, IonTextarea, IonCheckbox, IonInput, IonItem, IonButton, IonContent, IonToolbar, IonHeader, ReactiveFormsModule ]
 })
 export class SaveModelModalComponent  implements OnInit {
   form: FormGroup =  this.fb.group({
@@ -18,11 +18,11 @@ export class SaveModelModalComponent  implements OnInit {
     isDefault: [true, Validators.required],
     description: [''],
     creator: [''],
-    outputPricePerMillionTokens: [0, Validators.required],
+    outputPricePerMillionTokens: [0, [Validators.required, Validators.min(0.00001)]],
     name: ['', Validators.required],
-    inputPricePerMillionTokens: [0, Validators.required],
+    inputPricePerMillionTokens: [0, [Validators.required, Validators.min(0.00001)]],
     sortOrder: [1, Validators.required],
-    effectiveDate: [new Date().toISOString(), Validators.required]
+    effectiveDate: ['', Validators.required]
   });
 
   constructor(private fb: FormBuilder, private modelService: ModelService, private modalController: ModalController) { }
@@ -38,8 +38,8 @@ export class SaveModelModalComponent  implements OnInit {
   saveModel() {
     this.form.value
     if(this.form.valid) {
-
-      this.modelService.addModel(this.form.value)
+      console.log(this.form.value)
+      // this.modelService.addModel(this.form.value)
     } else {
       validateAllFormFields(this.form)
     }
