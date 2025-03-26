@@ -6,6 +6,8 @@ import {
   ScanCommand,
   GetCommand,
   TransactWriteCommand,
+  QueryCommand,
+  UpdateCommand
 } from '@aws-sdk/lib-dynamodb';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
@@ -24,11 +26,14 @@ export class ModelService {
     this.pricingTableName = this.configService.get('MODEL_PRICING_TABLE_NAME') || '';
   }
 
-  
-
-  async createOrUpdateModel(dto: ModelWithPricingDto) {
+  async createOrUpdateModelWithPricing(dto: ModelWithPricingDto) {
     const now = new Date().toISOString();
     const dateKey = now.split('T')[0].replace(/-/g, ''); // Format: YYYYMMDD
+
+    // If this model is being set as default, clear any existing default first
+    if (dto.isDefault) {
+      await this.clearDefaultModel();
+    }
 
     // Prepare model item
     const modelItem = {
@@ -38,6 +43,7 @@ export class ModelService {
       inputPricePerMillionTokens: dto.inputPricePerMillionTokens,
       outputPricePerMillionTokens: dto.outputPricePerMillionTokens,
       enabled: dto.enabled,
+      isDefault: dto.isDefault,
       sortOrder: dto.sortOrder,
       createdAt: dto.createdAt ?? now,
       updatedAt: now,
@@ -96,7 +102,7 @@ export class ModelService {
     };
   }
 
-  async getModel(modelId: string) {
+  async getModelWithPricing(modelId: string) {
     // Get model details
     const modelResult = await this.docClient.send(
       new GetCommand({
@@ -124,7 +130,7 @@ export class ModelService {
     };
   }
 
-  async getModels() {
+  async getModelsWithPricing() {
     const modelsResult = await this.docClient.send(
       new ScanCommand({
         TableName: this.modelsTableName,
@@ -155,5 +161,102 @@ export class ModelService {
     );
 
     return modelsWithPricing.sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async getDefaultModel() {
+    const result = await this.docClient.send(
+      new ScanCommand({
+        TableName: this.modelsTableName,
+        FilterExpression: 'isDefault = :isDefault AND enabled = :enabled',
+        ExpressionAttributeValues: {
+          ':isDefault': true,
+          ':enabled': true,
+        },
+      }),
+    );
+
+    if (!result.Items || result.Items.length === 0) {
+      // No default model found, return the first enabled model
+      const fallbackResult = await this.docClient.send(
+        new ScanCommand({
+          TableName: this.modelsTableName,
+          FilterExpression: 'enabled = :enabled',
+          ExpressionAttributeValues: {
+            ':enabled': true,
+          },
+          Limit: 1,
+        }),
+      );
+      
+      return fallbackResult.Items?.[0] || null;
+    }
+
+    // Get pricing for the default model
+    const model = result.Items[0];
+    const pricingResult = await this.docClient.send(
+      new GetCommand({
+        TableName: this.pricingTableName,
+        Key: { PK: `MODEL#${model.PK}`, SK: 'PRICE' },
+      }),
+    );
+
+    return {
+      ...model,
+      ...(pricingResult.Item || {}),
+    };
+  }
+
+  async setDefaultModel(modelId: string) {
+    // First, validate the model exists
+    const model = await this.getModelWithPricing(modelId);
+    if (!model) {
+      throw new Error(`Model with ID ${modelId} not found`);
+    }
+
+    // Clear any existing default model
+    await this.clearDefaultModel();
+
+    // Set this model as default
+    await this.docClient.send(
+      new UpdateCommand({
+        TableName: this.modelsTableName,
+        Key: { PK: modelId },
+        UpdateExpression: 'SET isDefault = :isDefault',
+        ExpressionAttributeValues: {
+          ':isDefault': true,
+        },
+      }),
+    );
+
+    return { success: true, modelId };
+  }
+
+  private async clearDefaultModel() {
+    // Find current default model
+    const defaultModelResult = await this.docClient.send(
+      new ScanCommand({
+        TableName: this.modelsTableName,
+        FilterExpression: 'isDefault = :isDefault',
+        ExpressionAttributeValues: {
+          ':isDefault': true,
+        },
+      }),
+    );
+
+    // If a default model exists, clear its default status
+    if (defaultModelResult.Items && defaultModelResult.Items.length > 0) {
+      for (const model of defaultModelResult.Items) {
+        await this.docClient.send(
+          new UpdateCommand({
+            TableName: this.modelsTableName,
+            Key: { PK: model.PK },
+            UpdateExpression: 'SET isDefault = :isDefault',
+            ExpressionAttributeValues: {
+              ':isDefault': false,
+            },
+          }),
+        );
+      }
+    }
   }
 }

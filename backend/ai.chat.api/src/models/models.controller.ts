@@ -13,14 +13,20 @@ export class ModelsController {
   @UseGuards(JwtAuthGuard)
   async getModels(@Req() req: any) {
     const user = req.user;
-    const models = await this.modelService.getModels();
+    const models = await this.modelService.getModelsWithPricing();
     return models;
+  }
+
+  @Get('default')
+  @UseGuards(JwtAuthGuard)
+  async getDefaultModel() {
+    return this.modelService.getDefaultModel();
   }
 
   @Get(':modelId')
   @UseGuards(JwtAuthGuard)
   async getModel(@Param('modelId') modelId: string) {
-    return this.modelService.getModel(modelId);
+    return this.modelService.getModelWithPricing(modelId);
   }
 
   @Post()
@@ -28,7 +34,7 @@ export class ModelsController {
   @Roles(Role.DotNetDevelopers)
   async createModel(@Body() modelDto: ModelWithPricingDto, @Req() req: any) {
     const user = req.user;
-    return this.modelService.createOrUpdateModel(modelDto);
+    return this.modelService.createOrUpdateModelWithPricing(modelDto);
   }
 
   @Put(':modelId')
@@ -45,6 +51,13 @@ export class ModelsController {
     }
     
     const user = req.user;
-    return this.modelService.createOrUpdateModel(modelDto);
+    return this.modelService.createOrUpdateModelWithPricing(modelDto);
+  }
+
+  @Put(':modelId/default')
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.DotNetDevelopers)
+  async setDefaultModel(@Param('modelId') modelId: string) {
+    return this.modelService.setDefaultModel(modelId);
   }
 }

@@ -9,6 +9,8 @@ const ModelWithPricingSchema = z.object({
   description: z.string().optional(),
   enabled: z.boolean().default(true),
   sortOrder: z.number().int().default(0),
+  isDefault: z.boolean().default(false),
+
   
   // Pricing properties
   inputPricePerMillionTokens: z.number().nonnegative(),
