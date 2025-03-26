@@ -1,4 +1,4 @@
-import { Injectable, signal, Signal, WritableSignal } from '@angular/core';
+import { Injectable, resource, signal, Signal, WritableSignal } from '@angular/core';
 import { Model } from './conversation.model';
 import { environment } from 'src/environments/environment';
 import { HttpClient } from '@angular/common/http';
@@ -12,6 +12,13 @@ export class ModelService {
   defaultModel = 'anthropic.claude-3-5-sonnet-20240620-v1:0';
   selectedModel: WritableSignal<Model> = signal(this.getModels()[0]);
   selectedTemperature: WritableSignal<number> = signal(0.5);
+  private _modelsResource = resource({
+    loader: () => this.loadModels()
+  })
+
+  get models() {
+    return this._modelsResource.asReadonly()
+  }
   constructor(private http: HttpClient) { }
 
   getModels(): Model[] {
@@ -26,7 +33,7 @@ export class ModelService {
     return lastValueFrom(response);
   }
 
-  loadModels(): Promise<Model[]> {
+  private loadModels(): Promise<Model[]> {
     const response = this.http.get<Model[]>(`${environment.chatApiUrl}/models`)
     return lastValueFrom(response);
   }

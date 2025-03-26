@@ -1,5 +1,5 @@
-import { Component, Input, OnInit, Signal } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, ModalController, IonList, IonItem, IonLabel, IonButtons, IonButton, IonIcon, IonNav, IonNavLink, IonItemDivider } from "@ionic/angular/standalone";
+import { Component, Input, OnInit, ResourceStatus, Signal } from '@angular/core';
+import { IonHeader, IonToolbar, IonTitle, IonContent, ModalController, IonList, IonItem, IonLabel, IonButtons, IonButton, IonIcon, IonNav, IonNavLink, IonItemDivider, IonSkeletonText, IonText } from "@ionic/angular/standalone";
 import { addIcons } from 'ionicons';
 import { checkmarkCircle, settingsOutline } from 'ionicons/icons';
 import { AdvancedSettingsComponent } from '../model-settings/advanced-settings/advanced-settings.component';
@@ -11,11 +11,12 @@ import { ModelService } from '../../services/model.service';
   templateUrl: './select-model.component.html',
   styleUrls: ['./select-model.component.scss'],
   standalone: true,
-  imports: [IonItemDivider, IonIcon, IonButton, IonButtons, IonLabel, IonItem, IonList, IonContent, IonTitle, IonToolbar, IonHeader, ]
+  imports: [IonText, IonSkeletonText, IonItemDivider, IonIcon, IonButton, IonButtons, IonLabel, IonItem, IonList, IonContent, IonTitle, IonToolbar, IonHeader, ]
 })
 export class SelectModelComponent  implements OnInit {
   @Input() nav!: IonNav;
-  models: Model[] = [];
+  status = ResourceStatus;
+  models = this.modelService.models;
   selectedModel: Signal<Model> = this.modelService.getSelectedModel();
 
   constructor(
@@ -25,15 +26,10 @@ export class SelectModelComponent  implements OnInit {
   }
 
   ngOnInit() {
-    this.getModels();
   }
 
   dismiss() {
     this.modalController.dismiss();
-  }
-
-  async getModels() {
-    this.models = await this.modelService.loadModels();
   }
 
   navigateToAdvancedSettings() {

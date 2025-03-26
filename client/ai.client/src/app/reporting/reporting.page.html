@@ -14,13 +14,13 @@
     </ion-toolbar>
   </ion-header>
   <!-- Daily: {{ daily.cost | currency }} -->
-   <div class="ion-padding">
+   <div class="ion-padding" style="font-size: 1.2em;">
      Monthly: <b>{{ monthly.cost | currency }}</b>
      Yearly: <b>{{ yearly.cost | currency }}</b>
    </div>
 
   <ion-list>
-    <ion-item-divider>{{ today | date }} - Daily Cost Breakdown</ion-item-divider>
+    <ion-item-divider>Daily Cost Breakdown - {{ today | date }}</ion-item-divider>
     @for(cost of daily; let index = $index; track index) {
       <ion-item>
         <ion-label>

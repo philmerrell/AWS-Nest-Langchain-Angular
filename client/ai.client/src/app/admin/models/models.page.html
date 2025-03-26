@@ -14,25 +14,51 @@
     </ion-toolbar>
   </ion-header>
   <div class="container">
-    <ion-card>
-      <ion-item lines="none">
-        <ion-label>
-          <!-- <ion-text style="font-size: 1.2em; font-weight: 400;">Manage Models</ion-text> -->
-        </ion-label>
-        <ion-button (click)="presentEditModelModal()" slot="end">Create</ion-button>
-      </ion-item>
 
-      
-        @for(model of models; track model.modelId) {
-          <ion-item (click)="presentEditModelModal(model)" button>
-            <ion-label>
-              <h2>{{model.name}}</h2>
-              <p>{{model.modelId}}</p>
-            </ion-label>
-          </ion-item>
+    <ion-card>
+      <ion-list-header>
+        Manage Models
+      </ion-list-header>
+      <ion-list>
+
+        @if(models.status() === status.Loading) {
+          @for(loading of [1,2,3,4,5]; track loading) {
+            <ion-item>
+              <ion-label>
+                <ion-skeleton-text animated></ion-skeleton-text>
+                <p><ion-skeleton-text style="width: 60%"></ion-skeleton-text></p>
+              </ion-label>
+            </ion-item>
+          }
         }
 
-
+        @if(models.status() === status.Resolved) {
+            <ion-item (click)="presentEditModelModal()" button>
+              <ion-icon color="secondary" slot="start" name="add"></ion-icon>
+              <ion-label>
+                <h2>Add a new model</h2>
+                <p>Before adding models, make sure they are set up with the provider.</p>
+              </ion-label>
+            </ion-item>
+            @for(model of models.value(); track model.modelId) {
+              <ion-item (click)="presentEditModelModal(model)" button>
+                <ion-label>
+                  <h2>{{model.name}}</h2>
+                  <p>{{model.modelId}}</p>
+                </ion-label>
+              </ion-item>
+            } @empty {
+              @if(models.status() === status.Resolved) {
+                <ion-item lines="none">
+                  <ion-label>
+                    <h1>No models are set up...</h1>
+                    <p><ion-text color="medium">Click the create button to get started.</ion-text></p>
+                  </ion-label>
+                </ion-item>
+              }
+            }
+        }
+      </ion-list>
     </ion-card>
   </div>
 </ion-content>

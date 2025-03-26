@@ -19,5 +19,15 @@
           {{ conversation.name }}
         </ion-label>
       </ion-item>
+    } @empty {
+      @if(conversations.status() === status.Resolved) {
+      <ion-item lines="none">
+        <ion-icon slot="start" name="chatbox-outline" color="secondary"></ion-icon>
+        <ion-label>
+          <h1>There's nothing here...</h1>
+          <p><ion-text color="medium">Let's get started by creating a new conversation.</ion-text></p>
+        </ion-label>
+      </ion-item>
+      }
     }
   </ion-list>
