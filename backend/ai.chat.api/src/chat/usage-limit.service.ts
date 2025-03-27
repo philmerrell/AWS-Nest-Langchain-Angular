@@ -15,7 +15,7 @@ export class UsageLimitService {
     'Students': 3, // $3/month for each student
     'Faculty': 20, // $20/month for each faculty member
     'Staff': 10,   // $10/month for each staff member
-    'DotNetDevelopers': 0.3 // $50/month for each developer
+    'DotNetDevelopers': 1 // $50/month for each developer
   };
 
   constructor(private readonly configService: ConfigService) {

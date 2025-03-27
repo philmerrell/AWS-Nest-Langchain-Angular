@@ -44,7 +44,7 @@ export class ChatService {
             res.end();
 
         } catch (error) {
-            res.write(`event: error\ndata: ${JSON.stringify({ message: error.message || 'An error occurred' })}\n\n`);
+            res.write(`event: error\ndata: ${JSON.stringify({ error: error.message || 'An error occurred' })}\n\n`);
             res.end();
             throw error;
         }

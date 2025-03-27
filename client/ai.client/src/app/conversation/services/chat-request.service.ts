@@ -17,16 +17,10 @@ class FatalError extends Error { }
   providedIn: 'root'
 })
 export class ChatRequestService {
-  // Add a new signal for the assistant's response
-  private assistantResponseContent: WritableSignal<string> = signal('');
   private chatLoading: WritableSignal<boolean> = signal(false);
-  // private conversations: Resource<Conversation[] | undefined> = this.conversationService.conversationsResource;
-  // private currentConversation: WritableSignal<Conversation> = this.conversationService.getCurrentConversation();
-  // private currentRequestId = '';
   private requestId = '';
   private responseContent = '';
   private selectedModel: Signal<Model> = this.modelService.getSelectedModel();
-  // private selectedTemperature: Signal<number> = this.modelService.getSelectedTemperature();
 
   constructor(private authService: AuthService,
     private conversationService: ConversationService,
@@ -119,7 +113,7 @@ export class ChatRequestService {
     
   }
 
-  private parseMessage(msg: EventSourceMessage) {
+  private async parseMessage(msg: EventSourceMessage) {
     try {
       const message = JSON.parse(msg.data);
       switch(msg.event) {
@@ -139,7 +133,13 @@ export class ChatRequestService {
           }
         break;
         case 'error':
-          
+          const toast = await this.toastController.create({
+            message: message.error,
+            color: 'danger',
+            duration: 0,
+            buttons: ['Ok']
+          });
+          toast.present()
         break;
         default:
           if (message === '[DONE]') {
