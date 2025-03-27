@@ -1,5 +1,5 @@
 import { Component, effect, input, OnInit, Signal } from '@angular/core';
-import { IonGrid, IonRow, IonCol, IonContent } from "@ionic/angular/standalone";
+import { IonGrid, IonRow, IonCol, IonContent, IonButton } from "@ionic/angular/standalone";
 import { MarkdownComponent } from 'ngx-markdown';
 import { addIcons } from 'ionicons';
 import { documentOutline, downloadOutline, imageOutline, listOutline, readerOutline, chevronDownOutline } from 'ionicons/icons';
@@ -13,13 +13,15 @@ import { Conversation, Message } from '../../services/conversation.model';
   templateUrl: './conversation-text.component.html',
   styleUrls: ['./conversation-text.component.scss'],
   animations: [fadeInOut, slide],
-  imports: [ UserMessageComponent, IonGrid, IonRow, IonCol, MarkdownComponent],
+  imports: [IonButton,  UserMessageComponent, IonGrid, IonRow, IonCol, MarkdownComponent],
   standalone: true,
 })
 export class ConversationTextComponent  implements OnInit {
   readonly messages = input<Message[]>();
   readonly loading = input<boolean>();
   readonly scroller = input<IonContent>();
+  // Add this to your ConversationTextComponent class
+  showReasoning: boolean = false;
   
   constructor() {
     
@@ -37,6 +39,10 @@ export class ConversationTextComponent  implements OnInit {
   }
 
   ngOnInit() {}
+
+  toggleReasoning() {
+    this.showReasoning = !this.showReasoning;
+  }
 
   scrollToLatestUserMessage() {
     

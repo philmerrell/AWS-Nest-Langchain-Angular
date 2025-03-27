@@ -8,6 +8,7 @@ export interface Message {
     role: Role;
     content: string;
     id?: string;
+    reasoning?: any[]; // Add this new property
 }
 
 export interface CustomInstruction {

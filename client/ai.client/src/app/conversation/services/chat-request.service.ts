@@ -20,6 +20,7 @@ export class ChatRequestService {
   private chatLoading: WritableSignal<boolean> = signal(false);
   private requestId = '';
   private responseContent = '';
+  private reasoningContent: any[] = [];
   private selectedModel: Signal<Model> = this.modelService.getSelectedModel();
 
   constructor(private authService: AuthService,
@@ -88,30 +89,64 @@ export class ChatRequestService {
       });
     }
 
-  private updateAssistantResponseWithDelta(contentDelta: string) {
-    const currentConversation = this.conversationService.getCurrentConversation();
-    this.responseContent += contentDelta;
-    const existingMessages = this.messageMapService.getMessagesForConversation(currentConversation().conversationId);
-    const assistantMessage = existingMessages().find(m => 
-      m.role === 'assistant' && m.id === this.requestId
-    );
-    
-    if (assistantMessage) {
-      // Update existing message
-      this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
-        ...assistantMessage,
-        content: this.responseContent
-      });
-    } else {
-      // Add new message
-      this.messageMapService.addMessageToConversation(currentConversation().conversationId, {
-        id: this.requestId,
-        role: 'assistant',
-        content: this.responseContent
-      });
+    private updateAssistantResponseWithDelta(contentDelta: string | any) {
+      if (typeof contentDelta === 'string') {
+        this.handleTextContent(contentDelta);
+      } else {
+        this.handleReasoningContent(contentDelta);
+      }
     }
-    
-  }
+
+    private handleTextContent(contentDelta: string) {
+      const currentConversation = this.conversationService.getCurrentConversation();
+      this.responseContent += contentDelta;
+      
+      const existingMessages = this.messageMapService.getMessagesForConversation(currentConversation().conversationId);
+      const assistantMessage = existingMessages().find(m => 
+        m.role === 'assistant' && m.id === this.requestId
+      );
+      
+      if (assistantMessage) {
+        // Update existing message
+        this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
+          ...assistantMessage,
+          content: this.responseContent
+        });
+      } else {
+        // Add new message
+        this.messageMapService.addMessageToConversation(currentConversation().conversationId, {
+          id: this.requestId,
+          role: 'assistant',
+          content: this.responseContent,
+          reasoning: this.reasoningContent.length > 0 ? this.reasoningContent : undefined
+        });
+      }
+    }
+
+    private updateAssistantResponseWithReasoning() {
+      const currentConversation = this.conversationService.getCurrentConversation();
+      const existingMessages = this.messageMapService.getMessagesForConversation(currentConversation().conversationId);
+      const assistantMessage = existingMessages().find(m => 
+        m.role === 'assistant' && m.id === this.requestId
+      );
+      
+      if (assistantMessage) {
+        // Update existing message with reasoning
+        this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
+          ...assistantMessage,
+          content: this.responseContent,
+          reasoning: this.reasoningContent
+        });
+      } else {
+        // Add new message with reasoning
+        this.messageMapService.addMessageToConversation(currentConversation().conversationId, {
+          id: this.requestId,
+          role: 'assistant',
+          content: this.responseContent,
+          reasoning: this.reasoningContent
+        });
+      }
+    }
 
   private async parseMessage(msg: EventSourceMessage) {
     try {
@@ -119,10 +154,13 @@ export class ChatRequestService {
       switch(msg.event) {
         case 'delta':
           if ('content' in message) {
-            // Handle content delta
+            // Handle content delta (string)
             this.handleContentDelta(message.content);
+          } else if ('reasoning_content' in message) {
+            // Handle reasoning content (array of objects)
+            this.handleReasoningContent(message.reasoning_content);
           }
-        break;
+          break;
         case 'metadata':
           if ('conversationId' in message) {
             // Handle new conversation ID
@@ -153,6 +191,19 @@ export class ChatRequestService {
     }
   }
 
+  private handleReasoningContent(reasoningContent: any) {
+    // Add the reasoning content to our array
+    if (Array.isArray(reasoningContent)) {
+      this.reasoningContent.push(...reasoningContent);
+    } else {
+      this.reasoningContent.push(reasoningContent);
+    }
+    
+    // Update the UI with reasoning content
+    this.updateAssistantResponseWithReasoning();
+  }
+  
+
   private handleConversationName(name: string, conversationId: string) {
     this.conversationService.updateConversationName(conversationId, name);
     this.conversationService.updateCurrentConversationName(name)
@@ -166,6 +217,7 @@ export class ChatRequestService {
   
   private handleContentDelta(content: string) {
     // Update the assistant response content
+
     this.updateAssistantResponseWithDelta(content);
   }
   
@@ -179,6 +231,7 @@ export class ChatRequestService {
   }
   
   private finishCurrentResponse() {
+    this.reasoningContent = [];
     this.responseContent = '';
     this.chatLoading.set(false);
   }
