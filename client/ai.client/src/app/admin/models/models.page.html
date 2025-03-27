@@ -41,7 +41,7 @@
               </ion-label>
             </ion-item>
             @for(model of models.value(); track model.modelId) {
-              <ion-item (click)="presentEditModelModal(model)" button>
+              <ion-item>
                 <ion-label>
                   <h2>{{model.name}}</h2>
                   <p>{{model.modelId}}</p>

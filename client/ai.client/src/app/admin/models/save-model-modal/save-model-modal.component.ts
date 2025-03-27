@@ -38,8 +38,7 @@ export class SaveModelModalComponent  implements OnInit {
   saveModel() {
     this.form.value
     if(this.form.valid) {
-      console.log(this.form.value)
-      // this.modelService.addModel(this.form.value)
+      this.modelService.addModel(this.form.value)
     } else {
       validateAllFormFields(this.form)
     }

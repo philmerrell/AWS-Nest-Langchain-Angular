@@ -14,10 +14,21 @@ import { CostService } from './cost/cost.service';
 import { ModelPricingService } from './cost/model-pricing.service';
 import { ReportingController } from './reporting/reporting.controller';
 import { ReportingService } from './reporting/reporting.service';
+import { UsageLimitService } from './chat/usage-limit.service';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule],
   controllers: [ChatController, ConversationsController, MessagesController, ModelsController, ReportingController],
-  providers: [AppService, ChatService, CostService, ConversationService, MessageService, ModelService, ModelPricingService, ReportingService],
+  providers: [
+    AppService,
+    ChatService,
+    CostService,
+    ConversationService,
+    MessageService,
+    ModelService,
+    ModelPricingService,
+    ReportingService,
+    UsageLimitService
+  ],
 })
 export class AppModule {}

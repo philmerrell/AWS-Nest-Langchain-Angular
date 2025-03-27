@@ -17,6 +17,7 @@
           labelPlacement="floating"
           placeholder="Enter Name"
           errorText="Name is required."
+          helperText="This is what users will see."
           required
         ></ion-input>
       <!-- Model ID Input -->
@@ -26,8 +27,20 @@
           labelPlacement="floating"
           placeholder="Enter Model ID"
           errorText="Model Id is required."
+          helperText="The unique model id from the provider."
           required
         ></ion-input>
+
+        <ion-input
+                formControlName="effectiveDate"
+                label="Effective Date"
+                labelPlacement="floating"
+                type="date"
+                placeholder="Select Effective Date"
+                errorText="Effective Date is required."
+                helperText="The date this pricing takes effect."
+                required
+              ></ion-input>
   
       <!-- Description Textarea -->
         <ion-textarea
@@ -35,12 +48,14 @@
           label="Description"
           labelPlacement="floating"
           placeholder="Enter Description"
+          helperText="Help users understand what this model is good at and when they should use it."
         ></ion-textarea>
         <ion-input
           formControlName="creator"
           label="Creator"
           labelPlacement="floating"
           placeholder="Enter Name"
+          helperText="The model vendor (e.g., OpenAI, Anthropic, AWS, etc..)"
         ></ion-input>
 
       <ion-grid>
@@ -87,16 +102,6 @@
               labelPlacement="start"
             >Enabled</ion-checkbox>
           </ion-item>
-              <ion-input
-                formControlName="effectiveDate"
-                label="Effective Date"
-                labelPlacement="floating"
-                type="date"
-                placeholder="Select Effective Date"
-                helperText="test"
-                errorText="Effective Date is required."
-                required
-              ></ion-input>
   
     </form>
   </ion-content>

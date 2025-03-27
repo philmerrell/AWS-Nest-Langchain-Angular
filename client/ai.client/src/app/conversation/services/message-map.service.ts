@@ -59,7 +59,6 @@ export class MessageMapService {
      */
     addMessageToConversation(conversationId: string, message: Message): void {
         this.messageMap.update(currentMap => {
-            console.log(currentMap);
         const updatedMap = { ...currentMap };
         if (!updatedMap[conversationId]) {
             updatedMap[conversationId] = signal([message]);

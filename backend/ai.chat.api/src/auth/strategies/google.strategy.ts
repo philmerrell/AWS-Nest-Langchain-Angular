@@ -23,7 +23,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     done: VerifyCallback,
   ): Promise<any> {
     const { name, emails, photos } = profile;
-    console.log(profile);
     
     // Check if the email is from Boise State domain
     const email:string = emails[0].value;
@@ -39,6 +38,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       roles: ['DotNetDevelopers'],
       emplId: profile.id, // Using Google profile ID as emplId
     };
+
+    console.log(user);
     
     return done(null, user);
   }

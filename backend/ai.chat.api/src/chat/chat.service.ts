@@ -8,6 +8,10 @@ import { User } from 'src/auth/strategies/entra.strategy';
 import { ConversationService } from 'src/conversations/conversation.service';
 import { Message, MessageService } from 'src/messages/message.service';
 import { CostService } from 'src/cost/cost.service';
+import {
+    BedrockRuntimeClient,
+    ConverseCommand,
+  } from "@aws-sdk/client-bedrock-runtime";
 
 @Injectable()
 export class ChatService {
@@ -23,20 +27,28 @@ export class ChatService {
 
         const { conversationId, messages, isNewConversation } = await this.initializeConversation(chatRequestDto, user, res);
         const model = this.getModel(chatRequestDto.modelId);
-        
-        const systemResponse = await this.processChatStream(model, messages, res, user);
-        const messagesToSave = this.getMessagesToSave(systemResponse, messages, isNewConversation);
 
-        this.messageService.addToConversation(messagesToSave, conversationId, user.emplId);
+        try {
+            const systemResponse = await this.processChatStream(model, messages, res, user);
+            const messagesToSave = this.getMessagesToSave(systemResponse, messages, isNewConversation);
+    
+            this.messageService.addToConversation(messagesToSave, conversationId, user.emplId);
+    
+            if(isNewConversation) {
+                const conversationName = await this.generateConversationName(chatRequestDto.content, user);
+                res.write(`event: metadata\ndata: ${JSON.stringify({ conversationId, conversationName})}\n\n`);
+                await this.conversationService.updateConversationName(user.emplId, conversationId, conversationName);
+            }
+    
+            res.write(`data: [DONE]`);
+            res.end();
 
-        if(isNewConversation) {
-            const conversationName = await this.generateConversationName(chatRequestDto.content, user);
-            res.write(`event: metadata\ndata: ${JSON.stringify({ conversationId, conversationName})}\n\n`);
-            await this.conversationService.updateConversationName(user.emplId, conversationId, conversationName);
+        } catch (error) {
+            res.write(`event: error\ndata: ${JSON.stringify({ message: error.message || 'An error occurred' })}\n\n`);
+            res.end();
+            throw error;
         }
-
-        res.write(`data: [DONE]`);
-        res.end();
+        
     }
 
     private async generateConversationName(userInput: string, user: User) {
@@ -98,21 +110,15 @@ export class ChatService {
             res.write(`event: delta\ndata: ${JSON.stringify({ content: chunk.content })}\n\n`);
         }
 
-        // res.write(`data: ${JSON.stringify({ inputTokens, outputTokens })}\n\n`);
         await this.costService.trackUsage({
             user,
             modelId: model.model,
             inputTokens,
             outputTokens,
-          });
+        });
         return { role: 'assistant', id: uuidv4(), content };
     }
-
-    private getMessagesToSave(systemResponse: Message, messages: Message[], isNewConversation: boolean): Message[] {
-        messages.push(systemResponse);
-        return isNewConversation ? messages : messages.slice(-2);
-    }
-
+    
     private getModel(modelId: string) {
         return new ChatBedrockConverse({
             model: modelId,
@@ -120,6 +126,12 @@ export class ChatService {
         });
         
     }
+
+    private getMessagesToSave(systemResponse: Message, messages: Message[], isNewConversation: boolean): Message[] {
+        messages.push(systemResponse);
+        return isNewConversation ? messages : messages.slice(-2);
+    }
+
 
     private getSystemMessage(user: User): Message {
         return {
