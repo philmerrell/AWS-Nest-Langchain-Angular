@@ -5,7 +5,6 @@ import { Conversation, Message, Model } from './conversation.model';
 import { ConversationService } from './conversation.service';
 import { ModelService } from './model.service';
 import { v4 as uuidv4 } from 'uuid';
-import { CustomInstructionService } from './custom-instruction.service';
 import { AuthService } from 'src/app/auth/auth.service';
 import { MessageMapService } from './message-map.service';
 import { ToastController } from '@ionic/angular/standalone';
