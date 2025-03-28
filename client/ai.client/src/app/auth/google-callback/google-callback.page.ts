@@ -27,9 +27,9 @@ export class GoogleCallbackPage implements OnInit {
       const token = urlParams.get('token');
 
       if (!token) {
-        this.statusMessage = 'No authentication token found';
+        this.statusMessage = 'Fetching token';
         setTimeout(() => {
-          this.router.navigate(['/login']);
+          this.router.navigate(['/']);
         }, 2000);
         return;
       }

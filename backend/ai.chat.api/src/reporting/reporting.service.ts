@@ -68,42 +68,60 @@ export class ReportingService {
 
   // ADMIN METHODS
 
-  async getAllUserDailyCosts(date: string, limit = 10, lastKey?: Record<string, any>) {
+  async getTopUsersByCost(dateParam: string, limit = 10, lastKey?: Record<string, any>): Promise<any> {
+    // Determine the type of date parameter (day, month, or year)
+    const dateType = this.getDateParamType(dateParam);
+    
+    // Query based on date format
+    const queryPrefix = dateType === 'day' 
+      ? `DAY#${dateParam}#` 
+      : dateType === 'month' 
+        ? `MONTH#${dateParam}#` 
+        : `YEAR#${dateParam}#`;
+    
+    // Get all records for the time period
     const result = await this.ddbDocClient.send(new QueryCommand({
       TableName: this.configService.get('ADMIN_AGGREGATES_TABLE_NAME'),
       KeyConditionExpression: 'PK = :pk and begins_with(SK, :sk)',
       ExpressionAttributeValues: {
         ':pk': 'AGGREGATE',
-        ':sk': `DAY#${date}#`,
+        ':sk': queryPrefix,
       },
-      ScanIndexForward: false, // Newest first
-      Limit: limit,
-      ExclusiveStartKey: lastKey,
     }));
-
+    
+    // Aggregate by user
+    const userMap = new Map<string, { emplId: string, email: string, totalCost: number }>();
+    
+    result.Items?.forEach(item => {
+      const userKey = item.emplId;
+      if (!userMap.has(userKey)) {
+        userMap.set(userKey, { 
+          emplId: item.emplId, 
+          email: item.email, 
+          totalCost: 0 
+        });
+      }
+      userMap.get(userKey)!.totalCost += (item.totalCost || 0);
+    });
+    
+    // Convert to array and sort by cost (highest first)
+    const aggregatedUsers = Array.from(userMap.values())
+      .sort((a, b) => b.totalCost - a.totalCost)
+      .slice(0, limit);
+    
     return {
-      items: result.Items ?? [],
-      lastKey: result.LastEvaluatedKey,
+      items: aggregatedUsers,
+      // We're aggregating in memory, so pagination changes to be simpler
+      lastKey: aggregatedUsers.length === limit ? { lastEmplId: aggregatedUsers[aggregatedUsers.length - 1].emplId } : null,
     };
   }
-
-  async getTopUsersByCost(date: string, limit = 10, lastKey?: Record<string, any>) {
-    const result = await this.ddbDocClient.send(new QueryCommand({
-      TableName: this.configService.get('ADMIN_AGGREGATES_TABLE_NAME'),
-      KeyConditionExpression: 'PK = :pk and begins_with(SK, :sk)',
-      ExpressionAttributeValues: {
-        ':pk': 'AGGREGATE',
-        ':sk': `DAY#${date}#`,
-      },
-      ScanIndexForward: false, // Sort by cost (descending)
-      Limit: limit,
-      ExclusiveStartKey: lastKey,
-    }));
-
-    return {
-      items: result.Items ?? [],
-      lastKey: result.LastEvaluatedKey,
-    };
+  
+  // Helper to determine date parameter type
+  private getDateParamType(dateParam: string): 'day' | 'month' | 'year' {
+    const parts = dateParam.split('-');
+    if (parts.length === 3) return 'day';
+    if (parts.length === 2) return 'month';
+    return 'year';
   }
 
   async getAdminMonthlySummary(yearMonth: string) {

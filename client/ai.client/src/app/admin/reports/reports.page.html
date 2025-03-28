@@ -4,7 +4,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/"></ion-back-button>
     </ion-buttons>
-    <ion-title>Admin Reports</ion-title>
+    <ion-title>Top Users</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="refresh()">
         <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
@@ -15,16 +15,20 @@
     </ion-buttons>
   </ion-toolbar>
   
-  <ion-toolbar>
-    <ion-segment [(ngModel)]="selectedSegment" (ionChange)="segmentChanged($event)">
-      <ion-segment-button value="daily">
-        <ion-label>Daily Reports</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="topUsers">
-        <ion-label>Top Users</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-  </ion-toolbar>
+  
+    <ion-toolbar>
+      <ion-segment [(ngModel)]="selectedPeriod" (ionChange)="periodChanged($event)">
+        <ion-segment-button value="day">
+          <ion-label>Daily</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="month">
+          <ion-label>Monthly</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="year">
+          <ion-label>Yearly</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -39,51 +43,36 @@
   </ion-card>
   
   <!-- Loading Skeleton -->
-  <div *ngIf="isLoading">
-    <ion-card *ngFor="let i of [1,2,3,4,5]">
-      <ion-item lines="none">
-        <ion-label>
-          <h2><ion-skeleton-text [animated]="true" style="width: 60%"></ion-skeleton-text></h2>
-          <p><ion-skeleton-text [animated]="true" style="width: 80%"></ion-skeleton-text></p>
-        </ion-label>
-        <ion-skeleton-text [animated]="true" slot="end" style="width: 70px; height: 20px"></ion-skeleton-text>
+   @if(isLoading) {
+    @for(loading of [1,2,3,4,5]; track loading) {
+      <ion-item>
+        <ion-skeleton-text animated></ion-skeleton-text>
       </ion-item>
-    </ion-card>
-  </div>
-  
-  <!-- Daily User Costs View -->
-  <ion-list *ngIf="selectedSegment === 'daily' && !isLoading">
-    <ion-item *ngFor="let item of dailyReports">
-      <ion-label>
-        <h2>{{ item.email }}</h2>
-        <p>{{ item.emplId }}</p>
-      </ion-label>
-      <ion-badge slot="end" color="primary">{{ item.totalCost | currency }}</ion-badge>
-    </ion-item>
-    
-    <ion-item *ngIf="dailyReports.length === 0">
-      <ion-label class="ion-text-center">
-        <h2>No usage data found for this date</h2>
-      </ion-label>
-    </ion-item>
-  </ion-list>
-  
+    }
+   }
+
+   @if(!isLoading) {
+     <ion-list>
+      @for(user of topUsers; track user.empid; let i = $index) {
+        <ion-item>
+          <ion-label>
+            <h2>{{ i + 1 }}. {{ user.email }}</h2>
+            <p>{{ user.emplId }}</p>
+          </ion-label>
+          <ion-badge slot="end" color="primary">{{ user.totalCost | currency }}</ion-badge>
+        </ion-item>
+      }
+       
+      @if(topUsers.length === 0) {
+        <ion-item>
+          <ion-label class="ion-text-center">
+            <h2>No user data found for this date</h2>
+          </ion-label>
+        </ion-item>
+      }
+     </ion-list>
+   }
   <!-- Top Users View -->
-  <ion-list *ngIf="selectedSegment === 'topUsers' && !isLoading">
-    <ion-item *ngFor="let user of topUsers; let i = index">
-      <ion-label>
-        <h2>{{ i + 1 }}. {{ user.email }}</h2>
-        <p>{{ user.emplId }}</p>
-      </ion-label>
-      <ion-badge slot="end" color="primary">{{ user.totalCost | currency }}</ion-badge>
-    </ion-item>
-    
-    <ion-item *ngIf="topUsers.length === 0">
-      <ion-label class="ion-text-center">
-        <h2>No user data found for this date</h2>
-      </ion-label>
-    </ion-item>
-  </ion-list>
   
   <!-- Infinite Scroll -->
   <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMore($event)" *ngIf="lastEvaluatedKey">

@@ -26,18 +26,18 @@ import { DatePipe, CurrencyPipe } from '@angular/common';
 export class ReportsPage implements OnInit {
   currentDate: string;
   selectedSegment: string = 'daily';
+  selectedPeriod: string = 'day';
   isDatePickerOpen: boolean = false;
   
   // Data states
   isLoading: boolean = false;
-  dailyReports: any[] = [];
   topUsers: any[] = [];
   lastEvaluatedKey: any = null;
   
   constructor(private adminReportService: AdminReportService) { 
     addIcons({ calendarOutline, chevronForwardOutline, refreshOutline });
     
-    // Initialize with current date in YYYY-MM-DD format
+    // Initialize with current date
     const today = new Date();
     this.currentDate = today.toISOString().split('T')[0];
   }
@@ -46,9 +46,20 @@ export class ReportsPage implements OnInit {
     this.loadReports();
   }
 
-  segmentChanged(event: any) {
-    this.selectedSegment = event.detail.value;
+  periodChanged(event: any) {
+    this.selectedPeriod = event.detail.value;
     this.lastEvaluatedKey = null;
+    
+    // Adjust date format based on period
+    const today = new Date();
+    if (this.selectedPeriod === 'day') {
+      this.currentDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
+    } else if (this.selectedPeriod === 'month') {
+      this.currentDate = today.toISOString().substring(0, 7); // YYYY-MM
+    } else if (this.selectedPeriod === 'year') {
+      this.currentDate = today.getFullYear().toString(); // YYYY
+    }
+    
     this.loadReports(true);
   }
 
@@ -56,31 +67,35 @@ export class ReportsPage implements OnInit {
     this.isLoading = true;
     
     if (refresh) {
-      this.dailyReports = [];
       this.topUsers = [];
       this.lastEvaluatedKey = null;
     }
     
     try {
-      if (this.selectedSegment === 'daily') {
-        const result = await this.adminReportService.getDailyUserCosts(
-          this.currentDate, 
-          20, 
-          refresh ? null : this.lastEvaluatedKey
-        );
+        // Load top users based on selected period
+        let result;
+        if (this.selectedPeriod === 'day') {
+          result = await this.adminReportService.getTopUsers(
+            this.currentDate,
+            20,
+            refresh ? null : this.lastEvaluatedKey
+          );
+        } else if (this.selectedPeriod === 'month') {
+          result = await this.adminReportService.getTopUsersByMonth(
+            this.currentDate,
+            20,
+            refresh ? null : this.lastEvaluatedKey
+          );
+        } else if (this.selectedPeriod === 'year') {
+          result = await this.adminReportService.getTopUsersByYear(
+            this.currentDate,
+            20,
+            refresh ? null : this.lastEvaluatedKey
+          );
+        }
         
-        this.dailyReports = refresh ? result.items : [...this.dailyReports, ...result.items];
-        this.lastEvaluatedKey = result.lastKey;
-      } else {
-        const result = await this.adminReportService.getTopUsers(
-          this.currentDate,
-          20,
-          refresh ? null : this.lastEvaluatedKey
-        );
-        
-        this.topUsers = refresh ? result.items : [...this.topUsers, ...result.items];
-        this.lastEvaluatedKey = result.lastKey;
-      }
+        this.topUsers = refresh ? (result?.items ?? []) : [...this.topUsers, ...(result?.items ?? [])];
+        this.lastEvaluatedKey = result?.lastKey;
     } catch (error) {
       console.error('Error loading reports:', error);
     } finally {

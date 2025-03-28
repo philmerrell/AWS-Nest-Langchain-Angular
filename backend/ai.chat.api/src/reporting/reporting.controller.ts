@@ -49,16 +49,17 @@ export class ReportingController {
 
   // ADMIN ENDPOINTS
 
-  @Get('admin/daily/:date')
+  @Get('admin/top-users/yearly/:year')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.DotNetDevelopers)
-  async getAllUserDailyCosts(
-    @Param() params: DateParamDto,
+  async getTopUsersByYear(
+    @Param() params: YearParamDto,
     @Query() query: PaginationQueryDto,
   ) {
     const lastKey = query.lastKey ? JSON.parse(query.lastKey) : undefined;
-    return this.reportingService.getAllUserDailyCosts(params.date, query.limit, lastKey);
+    return this.reportingService.getTopUsersByCost(params.year, query.limit, lastKey);
   }
+ 
 
   @Get('admin/top-users/:date')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -78,5 +79,16 @@ export class ReportingController {
     @Param() params: YearMonthParamDto,
   ) {
     return this.reportingService.getAdminMonthlySummary(params.yearMonth);
+  }
+
+  @Get('admin/top-users/monthly/:yearMonth')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.DotNetDevelopers)
+  async getTopUsersByMonth(
+    @Param() params: YearMonthParamDto,
+    @Query() query: PaginationQueryDto,
+  ) {
+    const lastKey = query.lastKey ? JSON.parse(query.lastKey) : undefined;
+    return this.reportingService.getTopUsersByCost(params.yearMonth, query.limit, lastKey);
   }
 }

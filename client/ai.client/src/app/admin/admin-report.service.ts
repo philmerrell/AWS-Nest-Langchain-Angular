@@ -15,16 +15,8 @@ export interface AdminReportResponse {
 export class AdminReportService {
   constructor(private http: HttpClient) { }
 
-  /**
-   * Gets daily cost reports for all users on a specific date
-   * 
-   * @param date Date in YYYY-MM-DD format
-   * @param limit Number of items to return
-   * @param lastKey Last evaluated key for pagination
-   * @returns Promise with items and pagination key
-   */
-  async getDailyUserCosts(date: string, limit: number = 20, lastKey?: any): Promise<AdminReportResponse> {
-    let url = `${environment.chatApiUrl}/reporting/admin/daily/${date}?limit=${limit}`;
+  async getTopUsersByMonth(yearMonth: string, limit: number = 20, lastKey?: any): Promise<AdminReportResponse> {
+    let url = `${environment.chatApiUrl}/reporting/admin/top-users/monthly/${yearMonth}?limit=${limit}`;
     
     if (lastKey) {
       url += `&lastKey=${encodeURIComponent(JSON.stringify(lastKey))}`;
@@ -32,6 +24,17 @@ export class AdminReportService {
     
     return lastValueFrom(this.http.get<AdminReportResponse>(url));
   }
+  
+  async getTopUsersByYear(year: string, limit: number = 20, lastKey?: any): Promise<AdminReportResponse> {
+    let url = `${environment.chatApiUrl}/reporting/admin/top-users/yearly/${year}?limit=${limit}`;
+    
+    if (lastKey) {
+      url += `&lastKey=${encodeURIComponent(JSON.stringify(lastKey))}`;
+    }
+    
+    return lastValueFrom(this.http.get<AdminReportResponse>(url));
+  }
+
 
   /**
    * Gets top users by cost for a specific date
