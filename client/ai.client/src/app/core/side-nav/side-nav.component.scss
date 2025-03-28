@@ -1,19 +1,15 @@
 // client/ai.client/src/app/core/side-nav/side-nav.component.scss
 ion-item {
-    position: relative;
     
-    ion-buttons {
-      opacity: 0.7;
-      transition: opacity 0.2s ease;
-      
-      &:hover {
+    
+    ion-button {
+      opacity: 0;
+      transition: opacity 0.2s ease; 
+    }
+
+    &:hover ion-button {
         opacity: 1;
-      }
+        transition: opacity 0.2s ease; 
     }
   }
   
-  // Make the ellipsis button more subtle
-  ion-button {
-    --padding-start: 4px;
-    --padding-end: 4px;
-  }

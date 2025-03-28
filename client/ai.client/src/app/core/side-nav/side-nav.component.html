@@ -16,18 +16,18 @@
       lines="none"
       [color]="currentConversation().conversationId === conversation.conversationId ? 'medium' : 'light'" 
       button 
-      [detail]="currentConversation().conversationId === conversation.conversationId">
+      [detail]="false">
       <ion-label>
         {{ conversation.name }}
       </ion-label>
       
       <!-- Ellipsis button for conversation actions -->
       @if(conversation.conversationId !== 'pending') {
-        <ion-buttons slot="end">
-          <ion-button (click)="presentActionPopover($event, conversation)" size="small">
+        
+          <ion-button (click)="presentActionPopover($event, conversation)" slot="end" size="small" fill="clear">
             <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
           </ion-button>
-        </ion-buttons>
+        
       }
     </ion-item>
   } @empty {
