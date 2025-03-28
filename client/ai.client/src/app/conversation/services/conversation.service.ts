@@ -110,7 +110,7 @@ export class ConversationService {
     const request = this.http.get<{ lastEvaluatedKey: String, items: Conversation[] }>(`${environment.chatApiUrl}/conversations`)
       .pipe(map(response => { 
         return [
-          newConversation,
+          //newConversation,
           ...response.items
         ]
       }));

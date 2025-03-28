@@ -9,27 +9,22 @@
     <ion-row class="assistant-response-row">
       <ion-col size="12">
         <div class="assistant-message" [@fadeInOut]>
-          <!-- Show reasoning if available and user has toggled it -->
-          @if(message.reasoning && showReasoning) {
-            <div class="reasoning-container">
-              <h4>AI Reasoning</h4>
-              @for(reason of message.reasoning; track $index) {
-                <div class="reasoning-step">
-                  @if(reason.type === "reasoning_content" && reason.text) {
-                    <p>{{ reason.text }}</p>
-                  }
-                </div>
-              }
-            </div>
-          }
-          <markdown clipboard mermaid [data]="message.content"></markdown>
-          
-          <!-- Add a toggle button for reasoning if available -->
-          @if(message.reasoning && message.reasoning.length > 0) {
+
+          @if(message.reasoning) {
             <ion-button size="small" (click)="toggleReasoning()" fill="clear">
               {{ showReasoning ? 'Hide Reasoning' : 'Show Reasoning' }}
             </ion-button>
           }
+          <!-- Show reasoning if available and user has toggled it -->
+          @if(message.reasoning && showReasoning) {
+            <div class="reasoning-container">
+              <h4>AI Reasoning</h4>
+              {{ message.reasoning }}
+              
+            </div>
+          }
+          <markdown clipboard mermaid [data]="message.content"></markdown>
+                    
         </div>
       </ion-col>
     </ion-row>

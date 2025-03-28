@@ -8,6 +8,7 @@ export interface Message {
     id?: string;
     content: string;
     createdAt?: string;
+    reasoning?: string;
     role: 'system' | 'user' | 'assistant';
 }
 
@@ -67,6 +68,7 @@ export class MessageService {
                 content: item.content,
                 createdAt: item.SK,
                 role: item.role,
+                reasoning: item.reasoning
             })) || [];
 
             

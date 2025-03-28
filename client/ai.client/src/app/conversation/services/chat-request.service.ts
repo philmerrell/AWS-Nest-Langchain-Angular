@@ -20,7 +20,7 @@ export class ChatRequestService {
   private chatLoading: WritableSignal<boolean> = signal(false);
   private requestId = '';
   private responseContent = '';
-  private reasoningContent: any[] = [];
+  private reasoningContent = '';
   private selectedModel: Signal<Model> = this.modelService.getSelectedModel();
 
   constructor(private authService: AuthService,
@@ -89,15 +89,7 @@ export class ChatRequestService {
       });
     }
 
-    private updateAssistantResponseWithDelta(contentDelta: string | any) {
-      if (typeof contentDelta === 'string') {
-        this.handleTextContent(contentDelta);
-      } else {
-        this.handleReasoningContent(contentDelta);
-      }
-    }
-
-    private handleTextContent(contentDelta: string) {
+    private handleAssistantResponse(contentDelta: string) {
       const currentConversation = this.conversationService.getCurrentConversation();
       this.responseContent += contentDelta;
       
@@ -155,12 +147,13 @@ export class ChatRequestService {
         case 'delta':
           if ('content' in message) {
             // Handle content delta (string)
-            this.handleContentDelta(message.content);
-          } else if ('reasoning_content' in message) {
-            // Handle reasoning content (array of objects)
-            this.handleReasoningContent(message.reasoning_content);
-          }
+            this.handleAssistantResponse(message.content);
+          } 
           break;
+        case 'reasoning':
+            this.handleReasoningContent(message.reasoning);
+            this.updateAssistantResponseWithReasoning()
+        break;
         case 'metadata':
           if ('conversationId' in message) {
             // Handle new conversation ID
@@ -191,16 +184,8 @@ export class ChatRequestService {
     }
   }
 
-  private handleReasoningContent(reasoningContent: any) {
-    // Add the reasoning content to our array
-    if (Array.isArray(reasoningContent)) {
-      this.reasoningContent.push(...reasoningContent);
-    } else {
-      this.reasoningContent.push(reasoningContent);
-    }
-    
-    // Update the UI with reasoning content
-    this.updateAssistantResponseWithReasoning();
+  private handleReasoningContent(reasoningContent: string) {
+    this.reasoningContent = this.reasoningContent += reasoningContent
   }
   
 
@@ -214,24 +199,13 @@ export class ChatRequestService {
     this.conversationService.updatePendingConversationId(conversationId);
     this.messageMapService.updatePendingKey(conversationId);
   }
-  
-  private handleContentDelta(content: string) {
-    // Update the assistant response content
-
-    this.updateAssistantResponseWithDelta(content);
-  }
-  
-  private handleTokenUsage(inputTokens: number, outputTokens: number) {
-    // Store the token usage
-    
-  }
 
   private handleNewUserMessage(message: any, conversation: WritableSignal<Conversation>) {
     this.messageMapService.addMessageToConversation(conversation().conversationId, message);
   }
   
   private finishCurrentResponse() {
-    this.reasoningContent = [];
+    this.reasoningContent = '';
     this.responseContent = '';
     this.chatLoading.set(false);
   }

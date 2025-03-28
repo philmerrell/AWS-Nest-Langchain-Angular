@@ -13,7 +13,7 @@ import { Conversation, Message } from '../../services/conversation.model';
   templateUrl: './conversation-text.component.html',
   styleUrls: ['./conversation-text.component.scss'],
   animations: [fadeInOut, slide],
-  imports: [IonButton,  UserMessageComponent, IonGrid, IonRow, IonCol, MarkdownComponent],
+  imports: [IonButton,  UserMessageComponent, IonRow, IonCol, MarkdownComponent],
   standalone: true,
 })
 export class ConversationTextComponent  implements OnInit {

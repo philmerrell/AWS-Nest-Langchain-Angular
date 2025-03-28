@@ -8,10 +8,7 @@ import { User } from 'src/auth/strategies/entra.strategy';
 import { ConversationService } from 'src/conversations/conversation.service';
 import { Message, MessageService } from 'src/messages/message.service';
 import { CostService } from 'src/cost/cost.service';
-import {
-    BedrockRuntimeClient,
-    ConverseCommand,
-  } from "@aws-sdk/client-bedrock-runtime";
+
 
 @Injectable()
 export class ChatService {
@@ -101,13 +98,26 @@ export class ChatService {
 
     private async processChatStream(model: any, messages: Message[], res: Response, user: User): Promise<Message> {
         const stream = await model.stream(messages);
-        let inputTokens = 0, outputTokens = 0, content = '';
+        let inputTokens = 0, outputTokens = 0, content = '', reasoningResponse = '';
+        
 
         for await (const chunk of stream) {
             inputTokens += chunk.usage_metadata?.input_tokens || 0;
             outputTokens += chunk.usage_metadata?.output_tokens || 0;
-            content += chunk.content;
-            res.write(`event: delta\ndata: ${JSON.stringify({ content: chunk.content })}\n\n`);
+            console.log(chunk)
+            // If the chunk contains reasoning data
+            if (Array.isArray(chunk.content)) {
+                for (const reasoningContent of chunk.content) {
+                    if (reasoningContent.type === 'reasoning_content') {
+                        reasoningResponse += reasoningContent.reasoningText.text;
+                        res.write(`event: reasoning\ndata: ${JSON.stringify({ reasoning: reasoningContent.reasoningText.text })}\n\n`);
+                    }
+                }
+            } else {
+                // Normal content handling
+                content += chunk.content;
+                res.write(`event: delta\ndata: ${JSON.stringify({ content: chunk.content })}\n\n`);
+            }
         }
 
         await this.costService.trackUsage({
@@ -116,7 +126,12 @@ export class ChatService {
             inputTokens,
             outputTokens,
         });
-        return { role: 'assistant', id: uuidv4(), content };
+        return { 
+            role: 'assistant', 
+            id: uuidv4(), 
+            content,
+            ...(reasoningResponse && { reasoning: reasoningResponse })
+        };
     }
     
     private getModel(modelId: string) {
