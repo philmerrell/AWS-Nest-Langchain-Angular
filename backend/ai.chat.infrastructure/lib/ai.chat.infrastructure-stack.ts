@@ -74,6 +74,12 @@ export class AiChatInfrastructureStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN, // Change to DESTROY for dev environments
     });
 
+    modelsTable.addGlobalSecondaryIndex({
+      indexName: 'ModelsByRoleIndex',
+      partitionKey: { name: 'allowedRole', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL
+    });
+
     // User Model Usage Table
     const userModelUsageTable = new dynamodb.Table(this, 'BoiseState.ai.UserModelUsage.DynamoDB', {
       tableName: `${props?.environment}-BoiseState.ai.UserModelUsage`,

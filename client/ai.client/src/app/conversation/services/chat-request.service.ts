@@ -7,7 +7,8 @@ import { ModelService } from './model.service';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthService } from 'src/app/auth/auth.service';
 import { MessageMapService } from './message-map.service';
-import { ToastController } from '@ionic/angular/standalone';
+import { ModalController, ToastController } from '@ionic/angular/standalone';
+import { ModelSettingsComponent } from '../components/model-settings/model-settings.component';
 
 class RetriableError extends Error { }
 class FatalError extends Error { }
@@ -25,6 +26,7 @@ export class ChatRequestService {
   constructor(private authService: AuthService,
     private conversationService: ConversationService,
     private messageMapService: MessageMapService,
+    private modalController: ModalController,
     private modelService: ModelService,
     private toastController: ToastController) { }
 
@@ -163,13 +165,19 @@ export class ChatRequestService {
           }
         break;
         case 'error':
+        const errorMessage = message.error || 'An error occurred';
           const toast = await this.toastController.create({
-            message: message.error,
+            message: errorMessage,
             color: 'danger',
-            duration: 0,
+            duration: 3000,
             buttons: ['Ok']
           });
-          toast.present()
+          toast.present();
+          
+          // If it's a model access error, redirect to model selection
+          if (errorMessage.includes('do not have access to the selected model')) {
+            this.openModelSelectionModal();
+          }
         break;
         default:
           if (message === '[DONE]') {
@@ -181,6 +189,16 @@ export class ChatRequestService {
       catch (error) {
       console.error('Error parsing response:', error);
     }
+  }
+
+  private async openModelSelectionModal() {
+    const modal = await this.modalController.create({
+      component: ModelSettingsComponent,
+      componentProps: {
+        showAccessError: true
+      }
+    });
+    modal.present();
   }
 
   private handleReasoningContent(reasoningContent: string) {

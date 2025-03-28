@@ -1,16 +1,18 @@
-// src/models/model-with-pricing.dto.ts
+// Update src/models/model.dto.ts
 import { z } from 'zod';
 import { createZodDto } from 'nestjs-zod';
 
 const ModelWithPricingSchema = z.object({
-  // Model properties
+  // Existing fields...
   modelId: z.string().min(1),
   name: z.string().min(1),
   description: z.string().optional(),
   enabled: z.boolean().default(true),
   sortOrder: z.number().int().default(0),
   isDefault: z.boolean().default(false),
-
+  
+  // Add allowed roles field
+  allowedRoles: z.array(z.string()).default([]),
   
   // Pricing properties
   inputPricePerMillionTokens: z.number().nonnegative(),

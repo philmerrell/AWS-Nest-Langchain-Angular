@@ -29,17 +29,18 @@ export class ModelService {
   async createOrUpdateModelWithPricing(dto: ModelWithPricingDto) {
     const now = new Date().toISOString();
     const dateKey = now.split('T')[0].replace(/-/g, ''); // Format: YYYYMMDD
-
+  
     // If this model is being set as default, clear any existing default first
     if (dto.isDefault) {
       await this.clearDefaultModel();
     }
-
-    // Prepare model item
+  
+    // Prepare model item with allowed roles
     const modelItem = {
       modelId: dto.modelId,
       name: dto.name,
       description: dto.description,
+      allowedRoles: dto.allowedRoles || [],
       inputPricePerMillionTokens: dto.inputPricePerMillionTokens,
       outputPricePerMillionTokens: dto.outputPricePerMillionTokens,
       enabled: dto.enabled,
@@ -130,8 +131,44 @@ export class ModelService {
     };
   }
 
-  async getModelsWithPricing() {
-    const modelsResult = await this.docClient.send(
+  async getModelsWithPricing(userRoles: string[] = []) {
+    // If no roles provided or empty array, use a scan operation
+    if (!userRoles || userRoles.length === 0) {
+      const modelsResult = await this.docClient.send(
+        new ScanCommand({
+          TableName: this.modelsTableName,
+          FilterExpression: 'enabled = :enabled',
+          ExpressionAttributeValues: {
+            ':enabled': true,
+          },
+        }),
+      );
+      
+      // Rest of your existing code for processing models...
+      const models = modelsResult.Items || [];
+      
+      // Get pricing for each model
+      const modelsWithPricing = await Promise.all(
+        models.map(async (model) => {
+          const pricingResult = await this.docClient.send(
+            new GetCommand({
+              TableName: this.pricingTableName,
+              Key: { PK: `MODEL#${model.PK}`, SK: 'PRICE' },
+            }),
+          );
+          
+          return {
+            ...model,
+            ...(pricingResult.Item || {}),
+          };
+        }),
+      );
+  
+      return modelsWithPricing.sort((a, b) => a.sortOrder - b.sortOrder);
+    }
+  
+    // Otherwise, for role-based filtering, we'll first get all models
+    const allModelsResult = await this.docClient.send(
       new ScanCommand({
         TableName: this.modelsTableName,
         FilterExpression: 'enabled = :enabled',
@@ -140,10 +177,19 @@ export class ModelService {
         },
       }),
     );
-
-    const models = modelsResult.Items || [];
+  
+    // Filter models by user roles
+    const models = (allModelsResult.Items || []).filter(model => {
+      // If model has no allowedRoles, it's accessible to everyone
+      if (!model.allowedRoles || model.allowedRoles.length === 0) {
+        return true;
+      }
+      
+      // Check if any of the user's roles match the model's allowed roles
+      return userRoles.some(role => model.allowedRoles.includes(role));
+    });
     
-    // Get pricing for each model
+    // Get pricing for each model (same as before)
     const modelsWithPricing = await Promise.all(
       models.map(async (model) => {
         const pricingResult = await this.docClient.send(
@@ -159,7 +205,7 @@ export class ModelService {
         };
       }),
     );
-
+  
     return modelsWithPricing.sort((a, b) => a.sortOrder - b.sortOrder);
   }
 

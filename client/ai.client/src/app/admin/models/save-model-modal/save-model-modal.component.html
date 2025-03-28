@@ -30,7 +30,6 @@
           helperText="The unique model id from the provider."
           required
         ></ion-input>
-
         <ion-input
                 formControlName="effectiveDate"
                 label="Effective Date"
@@ -102,6 +101,26 @@
               labelPlacement="start"
             >Enabled</ion-checkbox>
           </ion-item>
+          <ion-card>
+          
+            <ion-item>
+              <ion-label>Restrict Access By Role</ion-label>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-label>
+                <p>If no roles are selected, all users will have access to this model.</p>
+              </ion-label>
+            </ion-item>
+            @for(role of availableRoles; track role.value) {
+              <ion-item>
+                <ion-checkbox 
+                  [checked]="isRoleSelected(role.value)" 
+                  (ionChange)="toggleRole(role.value)">
+                  {{ role.name }}
+                </ion-checkbox>
+              </ion-item>
+            }
+          </ion-card>
   
     </form>
   </ion-content>

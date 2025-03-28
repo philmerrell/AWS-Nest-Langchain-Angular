@@ -11,10 +11,14 @@ import { SelectModelComponent } from '../select-model/select-model.component';
 })
 export class ModelSettingsComponent  implements OnInit {
   @ViewChild('nav', {read: ElementRef, static: true}) nav!: ElementRef<IonNav>
+  @Input() showAccessError: boolean = false;
   constructor() { }
 
   ngOnInit() {
-    this.nav.nativeElement.setRoot(SelectModelComponent, { nav: this.nav.nativeElement })
+    this.nav.nativeElement.setRoot(SelectModelComponent, { 
+      nav: this.nav.nativeElement,
+      showAccessError: this.showAccessError
+    });
   }
 
 }

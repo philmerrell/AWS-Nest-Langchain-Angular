@@ -13,7 +13,7 @@ export class ModelsController {
   @UseGuards(JwtAuthGuard)
   async getModels(@Req() req: any) {
     const user = req.user;
-    const models = await this.modelService.getModelsWithPricing();
+    const models = await this.modelService.getModelsWithPricing(user.roles);
     return models;
   }
 
