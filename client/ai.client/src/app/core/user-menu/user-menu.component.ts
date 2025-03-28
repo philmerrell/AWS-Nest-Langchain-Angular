@@ -1,9 +1,16 @@
+// client/ai.client/src/app/core/user-menu/user-menu.component.ts
 import { CurrencyPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonItem, IonItemDivider, IonLabel, IonText, PopoverController, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { lockClosedOutline, statsChartOutline } from 'ionicons/icons';
+import { 
+  barChartOutline, 
+  lockClosedOutline, 
+  logOutOutline, 
+  settingsOutline, 
+  statsChartOutline 
+} from 'ionicons/icons';
 import { AuthService } from 'src/app/auth/auth.service';
 import { ReportingService } from 'src/app/reporting/reporting.service';
 
@@ -16,16 +23,39 @@ import { ReportingService } from 'src/app/reporting/reporting.service';
 })
 export class UserMenuComponent  implements OnInit {
   monthToDateUserCost = this.reportingService.monthToDateUserCostResource;
-  user = this.authService.currentUser;
-  constructor(private reportingService: ReportingService, private authService: AuthService, private popoverController: PopoverController) {
-    addIcons({statsChartOutline, lockClosedOutline})
+  user = this.authService.getCurrentUser();
+  
+  constructor(
+    private reportingService: ReportingService, 
+    private authService: AuthService, 
+    private popoverController: PopoverController,
+    private router: Router
+  ) {
+    addIcons({
+      statsChartOutline, 
+      lockClosedOutline, 
+      barChartOutline, 
+      settingsOutline,
+      logOutOutline
+    });
   }
 
   ngOnInit() {
   }
 
-  dismiss() {
-    this.popoverController.dismiss()
+  hasAdminRole(): boolean {
+    return true;
+    const userRoles = this.user()?.roles || [];
+    return userRoles.includes('DotNetDevelopers');
   }
 
+  logout() {
+    this.authService.logout();
+    this.dismiss();
+    this.router.navigate(['/login']);
+  }
+
+  dismiss() {
+    this.popoverController.dismiss();
+  }
 }

@@ -1,0 +1,39 @@
+// client/ai.client/src/app/admin/reports/reports.page.scss
+.date-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+    margin: 0.5rem 0;
+  }
+  
+  ion-card {
+    margin-bottom: 0.5rem;
+  }
+  
+  ion-segment {
+    --background: var(--ion-color-light);
+  }
+  
+  ion-badge {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --padding-top: 4px;
+    --padding-bottom: 4px;
+    margin-left: 8px;
+  }
+  
+  .header-row {
+    background: var(--ion-color-light);
+    font-weight: bold;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .empty-list-message {
+    text-align: center;
+    padding: 2rem;
+    color: var(--ion-color-medium);
+  }
