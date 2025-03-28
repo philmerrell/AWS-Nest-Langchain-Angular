@@ -1,33 +1,44 @@
+<!-- client/ai.client/src/app/core/side-nav/side-nav.component.html -->
+<ion-list>
+  <ion-item-divider sticky>
+    Conversations
+  </ion-item-divider>
 
-  <ion-list>
-    <ion-item-divider sticky>
-      Conversations
-    </ion-item-divider>
+  @if(conversations.status() === status.Loading) {
+   <ion-item lines="none" color="light">
+     <ion-label>Loading Conversations</ion-label>
+     <ion-spinner></ion-spinner>
+   </ion-item>
+  }
   
-    @if(conversations.status() === status.Loading) {
-     <ion-item lines="none" color="light">
-       <ion-label>Loading Conversations</ion-label>
-       <ion-spinner></ion-spinner>
-     </ion-item>
-    }
-    
-    @for(conversation of conversations.value(); track conversation.conversationId) {
-      <ion-item (click)="setConversation(conversation)"
-        lines="none"
-        [color]="currentConversation().conversationId === conversation.conversationId ? 'medium' : 'light'" button [detail]="currentConversation().conversationId === conversation.conversationId">
-        <ion-label>
-          {{ conversation.name }}
-        </ion-label>
-      </ion-item>
-    } @empty {
-      @if(conversations.status() === status.Resolved) {
-      <ion-item lines="none">
-        <ion-icon slot="start" name="chatbox-outline" color="secondary"></ion-icon>
-        <ion-label>
-          <h1>There's nothing here...</h1>
-          <p><ion-text color="medium">Let's get started by creating a new conversation.</ion-text></p>
-        </ion-label>
-      </ion-item>
+  @for(conversation of conversations.value(); track conversation.conversationId) {
+    <ion-item (click)="setConversation(conversation)"
+      lines="none"
+      [color]="currentConversation().conversationId === conversation.conversationId ? 'medium' : 'light'" 
+      button 
+      [detail]="currentConversation().conversationId === conversation.conversationId">
+      <ion-label>
+        {{ conversation.name }}
+      </ion-label>
+      
+      <!-- Ellipsis button for conversation actions -->
+      @if(conversation.conversationId !== 'pending') {
+        <ion-buttons slot="end">
+          <ion-button (click)="presentActionPopover($event, conversation)" size="small">
+            <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
+          </ion-button>
+        </ion-buttons>
       }
+    </ion-item>
+  } @empty {
+    @if(conversations.status() === status.Resolved) {
+    <ion-item lines="none">
+      <ion-icon slot="start" name="chatbox-outline" color="secondary"></ion-icon>
+      <ion-label>
+        <h1>There's nothing here...</h1>
+        <p><ion-text color="medium">Let's get started by creating a new conversation.</ion-text></p>
+      </ion-label>
+    </ion-item>
     }
-  </ion-list>
+  }
+</ion-list>

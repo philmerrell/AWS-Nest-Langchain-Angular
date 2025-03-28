@@ -15,6 +15,7 @@ import { ModelPricingService } from './cost/model-pricing.service';
 import { ReportingController } from './reporting/reporting.controller';
 import { ReportingService } from './reporting/reporting.service';
 import { UsageLimitService } from './chat/usage-limit.service';
+import { ConversationSharingService } from './conversations/conversation-sharing.service';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule],
@@ -24,6 +25,7 @@ import { UsageLimitService } from './chat/usage-limit.service';
     ChatService,
     CostService,
     ConversationService,
+    ConversationSharingService,
     MessageService,
     ModelService,
     ModelPricingService,

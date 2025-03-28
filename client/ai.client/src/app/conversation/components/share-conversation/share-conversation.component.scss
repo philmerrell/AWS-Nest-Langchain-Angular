@@ -1,0 +1,13 @@
+/* client/ai.client/src/app/conversation/components/share-conversation/share-conversation.component.scss */
+.share-link {
+    background-color: var(--ion-color-light);
+    padding: 12px;
+    border-radius: 4px;
+    word-break: break-all;
+    margin-bottom: 16px;
+    font-family: monospace;
+  }
+  
+  ion-datetime {
+    max-width: 100%;
+  }

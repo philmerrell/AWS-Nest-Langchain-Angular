@@ -1,0 +1,71 @@
+<!-- client/ai.client/src/app/conversation/components/share-conversation/share-conversation.component.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Share Conversation</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="shareForm">
+    <ion-list>
+      <ion-item>
+        <ion-label position="stacked">Email addresses (separate with commas)</ion-label>
+        <ion-input type="text" formControlName="emails" placeholder="user@example.com, another@example.com"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Make publicly accessible</ion-label>
+        <ion-checkbox slot="end" formControlName="isPublic"></ion-checkbox>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Set expiration date</ion-label>
+        <ion-checkbox slot="end" formControlName="hasExpiration" (ionChange)="toggleExpiration($event)"></ion-checkbox>
+      </ion-item>
+
+      @if(shareForm.get('hasExpiration')?.value) {
+        <ion-item>
+          <ion-label position="stacked">Expires on</ion-label>
+          <ion-datetime 
+            presentation="date" 
+            formControlName="expiresAt"
+            [min]="">
+          </ion-datetime>
+        </ion-item>
+      }
+    </ion-list>
+
+    @if(shareableLink) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Share this link</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p class="share-link">{{ shareableLink }}</p>
+          <ion-button expand="block" (click)="copyLink()">
+            <ion-icon name="copy-outline" slot="start"></ion-icon>
+            Copy Link
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    }
+  </form>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-button expand="block" (click)="shareConversation()" [disabled]="isLoading">
+      <ion-icon name="share-outline" slot="start"></ion-icon>
+      @if(isLoading) {
+        Sharing...
+      } @else {
+        Share Conversation
+      }
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>
