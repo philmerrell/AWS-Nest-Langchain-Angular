@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { Response } from 'express';
 import { ChatRequestDto } from './chat-request.dto';
@@ -19,6 +19,13 @@ export class ChatController {
   async chat(@Body() chatRequestDto: ChatRequestDto, @Res() res: Response, @Req() req: any) {
     const user = req.user;
     return this.chatService.streamChat(chatRequestDto, res, user);
+  }
+
+  @Post('cancel/:requestId')
+  @UseGuards(JwtAuthGuard)
+  async cancelChat(@Param('requestId') requestId: string, @Res() res: Response) {
+    const success = this.chatService.cancelStream(requestId);
+    return res.status(200).json({ success, message: success ? 'Request canceled' : 'Request not found' });
   }
 
   @Get()

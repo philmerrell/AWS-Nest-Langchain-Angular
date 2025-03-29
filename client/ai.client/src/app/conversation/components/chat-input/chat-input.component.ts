@@ -57,13 +57,13 @@ export class ChatInputComponent  implements OnInit {
   private submitChatRequest() {
     const message = this.message.trim();
     if (message !== '') {
-      this.chatRequestService.submitChatRequest(this.message, new AbortController().signal);
+      this.chatRequestService.submitChatRequest(this.message);
     }
     this.message = ''
   }
 
   private cancelChatRequest() {
-    // this.chatRequestService.cancelChatRequest();
+    this.chatRequestService.cancelChatRequest();
   }
 
 }

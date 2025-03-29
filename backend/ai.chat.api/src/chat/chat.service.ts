@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ChatBedrockConverse } from "@langchain/aws";
 import { Response } from 'express';
@@ -11,7 +11,9 @@ import { CostService } from 'src/cost/cost.service';
 
 
 @Injectable()
-export class ChatService {
+export class ChatService implements OnModuleInit {
+    private activeStreams = new Map<string, { aborted: boolean }>();
+  
     constructor(
         private readonly configService: ConfigService,
         private readonly conversationService: ConversationService,
@@ -19,34 +21,68 @@ export class ChatService {
         private readonly messageService: MessageService,
     ) {}
 
-    async streamChat(chatRequestDto: ChatRequestDto, res: Response, user: User): Promise<void> {
-        this.setupSSEHeaders(res);
+    onModuleInit() {
+        // Clean up any stale streams on initialization
+        this.activeStreams.clear();
+      }
 
+      async streamChat(chatRequestDto: ChatRequestDto, res: Response, user: User): Promise<void> {
+        this.setupSSEHeaders(res);
+        
+        // Create stream context and track it
+        const requestId = chatRequestDto.requestId;
+        const streamContext = { aborted: false };
+        this.activeStreams.set(requestId, streamContext);
+        
+        // Set up request abort handler
+        res.on('close', () => {
+          // Mark this stream as aborted when the connection is closed
+          if (this.activeStreams.has(requestId)) {
+            const context = this.activeStreams.get(requestId)!;
+            context.aborted = true;
+          }
+        });
+    
         const { conversationId, messages, isNewConversation } = await this.initializeConversation(chatRequestDto, user, res);
         const model = this.getModel(chatRequestDto.modelId);
-
+    
         try {
-            const systemResponse = await this.processChatStream(model, messages, res, user);
+          // Process stream (see below for updated method)
+          const systemResponse = await this.processChatStream(model, messages, res, user, streamContext, requestId);
+          
+          // Only save results if not aborted
+          if (!streamContext.aborted) {
             const messagesToSave = this.getMessagesToSave(systemResponse, messages, isNewConversation);
-    
             this.messageService.addToConversation(messagesToSave, conversationId, user.emplId);
-    
+            
             if(isNewConversation) {
-                const conversationName = await this.generateConversationName(chatRequestDto.content, user);
-                res.write(`event: metadata\ndata: ${JSON.stringify({ conversationId, conversationName})}\n\n`);
-                await this.conversationService.updateConversationName(user.emplId, conversationId, conversationName);
+              const conversationName = await this.generateConversationName(chatRequestDto.content, user);
+              res.write(`event: metadata\ndata: ${JSON.stringify({ conversationId, conversationName})}\n\n`);
+              await this.conversationService.updateConversationName(user.emplId, conversationId, conversationName);
             }
-    
+            
             res.write(`data: [DONE]`);
-            res.end();
-
+          }
+          
+          res.end();
         } catch (error) {
-            res.write(`event: error\ndata: ${JSON.stringify({ error: error.message || 'An error occurred' })}\n\n`);
-            res.end();
-            throw error;
+          res.write(`event: error\ndata: ${JSON.stringify({ error: error.message || 'An error occurred' })}\n\n`);
+          res.end();
+          throw error;
+        } finally {
+          // Clean up stream context
+          this.activeStreams.delete(requestId);
         }
-        
-    }
+      }
+
+      cancelStream(requestId: string): boolean {
+        if (this.activeStreams.has(requestId)) {
+          const context = this.activeStreams.get(requestId)!;
+          context.aborted = true;
+          return true;
+        }
+        return false;
+      }
 
     private async generateConversationName(userInput: string, user: User) {
         const model = new ChatBedrockConverse({
@@ -96,43 +132,58 @@ export class ChatService {
         return [...previousMessages, userMessage];
     }
 
-    private async processChatStream(model: any, messages: Message[], res: Response, user: User): Promise<Message> {
+    private async processChatStream(
+        model: any, 
+        messages: Message[], 
+        res: Response, 
+        user: User,
+        streamContext: { aborted: boolean },
+        requestId: string
+      ): Promise<Message> {
         const stream = await model.stream(messages);
         let inputTokens = 0, outputTokens = 0, content = '', reasoningResponse = '';
         
-
         for await (const chunk of stream) {
-            inputTokens += chunk.usage_metadata?.input_tokens || 0;
-            outputTokens += chunk.usage_metadata?.output_tokens || 0;
-            console.log(chunk)
-            // If the chunk contains reasoning data
-            if (Array.isArray(chunk.content)) {
-                for (const reasoningContent of chunk.content) {
-                    if (reasoningContent.type === 'reasoning_content') {
-                        reasoningResponse += reasoningContent.reasoningText.text;
-                        res.write(`event: reasoning\ndata: ${JSON.stringify({ reasoning: reasoningContent.reasoningText.text })}\n\n`);
-                    }
-                }
-            } else {
-                // Normal content handling
-                content += chunk.content;
-                res.write(`event: delta\ndata: ${JSON.stringify({ content: chunk.content })}\n\n`);
+          // Check if request has been aborted
+          if (streamContext.aborted) {
+            break; // Exit the loop if request was aborted
+          }
+    
+          inputTokens += chunk.usage_metadata?.input_tokens || 0;
+          outputTokens += chunk.usage_metadata?.output_tokens || 0;
+          
+          // Process chunk as before...
+          if (Array.isArray(chunk.content)) {
+            for (const reasoningContent of chunk.content) {
+              if (reasoningContent.type === 'reasoning_content') {
+                reasoningResponse += reasoningContent.reasoningText.text;
+                res.write(`event: reasoning\ndata: ${JSON.stringify({ reasoning: reasoningContent.reasoningText.text })}\n\n`);
+              }
             }
+          } else {
+            content += chunk.content;
+            res.write(`event: delta\ndata: ${JSON.stringify({ content: chunk.content })}\n\n`);
+          }
         }
-
-        await this.costService.trackUsage({
+    
+        // Only track usage if not aborted (optional, depending on your requirements)
+        if (!streamContext.aborted) {
+          await this.costService.trackUsage({
             user,
             modelId: model.model,
             inputTokens,
             outputTokens,
-        });
+          });
+        }
+        
         return { 
-            role: 'assistant', 
-            id: uuidv4(), 
-            content,
-            ...(reasoningResponse && { reasoning: reasoningResponse })
+          role: 'assistant', 
+          id: requestId, // Use the requestId for consistency
+          content,
+          ...(reasoningResponse && { reasoning: reasoningResponse })
         };
-    }
+      }
+    
     
     private getModel(modelId: string) {
         return new ChatBedrockConverse({

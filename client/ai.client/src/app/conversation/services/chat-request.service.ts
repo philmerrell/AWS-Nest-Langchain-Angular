@@ -1,7 +1,7 @@
-import { Injectable, Resource, Signal, signal, WritableSignal } from '@angular/core';
+import { Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { EventSourceMessage, EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
-import { Conversation, Message, Model } from './conversation.model';
+import { Conversation, Model } from './conversation.model';
 import { ConversationService } from './conversation.service';
 import { ModelService } from './model.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -9,6 +9,7 @@ import { AuthService } from 'src/app/auth/auth.service';
 import { MessageMapService } from './message-map.service';
 import { ModalController, ToastController } from '@ionic/angular/standalone';
 import { ModelSettingsComponent } from '../components/model-settings/model-settings.component';
+import { HttpClient } from '@angular/common/http';
 
 class RetriableError extends Error { }
 class FatalError extends Error { }
@@ -22,15 +23,18 @@ export class ChatRequestService {
   private responseContent = '';
   private reasoningContent = '';
   private selectedModel: Signal<Model | null> = this.modelService.getSelectedModel();
+  private abortController = new AbortController();
 
   constructor(private authService: AuthService,
     private conversationService: ConversationService,
+    private http: HttpClient,
     private messageMapService: MessageMapService,
     private modalController: ModalController,
     private modelService: ModelService,
     private toastController: ToastController) { }
 
-    submitChatRequest(userInput: string, signal: AbortSignal) {
+    submitChatRequest(userInput: string) {
+      this.abortController = new AbortController();
       this.chatLoading.set(true);
       this.requestId = uuidv4();
       const currentConversation = this.conversationService.getCurrentConversation();
@@ -47,7 +51,7 @@ export class ChatRequestService {
           'Authorization': `Bearer ${this.authService.getToken()}`
         },
         body: JSON.stringify({ ...userMessage, modelId: model!.modelId, requestId: this.requestId}),
-        signal: signal,
+        signal: this.abortController.signal,
         async onopen(response) {
           if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
             return; // everything's good
@@ -88,6 +92,23 @@ export class ChatRequestService {
           throw err;
         }
       });
+    }
+
+    cancelChatRequest() {
+      if (this.abortController) {
+        // First abort the client-side request
+        this.abortController.abort();
+        this.abortController = new AbortController();
+        
+        // Then notify the server to stop processing
+        if (this.requestId) {
+          this.http.post(`${environment.chatApiUrl}/chat/cancel/${this.requestId}`, {}).subscribe();
+          this.requestId = '';
+        }
+        
+        this.finishCurrentResponse();
+        this.chatLoading.set(false);
+      }
     }
 
     private handleAssistantResponse(contentDelta: string) {
