@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { User } from 'src/auth/strategies/entra.strategy';
-import { PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { DeleteCommand, PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { ConfigService } from '@nestjs/config';
 import { MessageContent } from '@langchain/core/messages';
 
@@ -32,6 +32,31 @@ export class ConversationService {
       console.log('Conversation created successfully');
     } catch (error) {
       console.error('Error creating conversation:', error);
+      throw error;
+    }
+  }
+
+  async deleteConversation(emplId: string, conversationId: string): Promise<void> {
+    try {
+      // First, find the conversation to ensure it exists and belongs to the user
+      const conversation = await this.getConversationById(emplId, conversationId);
+      if (!conversation) {
+        throw new Error('Conversation not found or access denied');
+      }
+  
+      // Delete the conversation record
+      const deleteParams = {
+        TableName: this.configService.get<string>('CONVERSATIONS_TABLE_NAME'),
+        Key: {
+          PK: emplId,
+          SK: conversation.createdAt,
+        },
+      };
+  
+      await this.client.send(new DeleteCommand(deleteParams));
+      console.log('Conversation deleted successfully');
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
       throw error;
     }
   }

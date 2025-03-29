@@ -1,6 +1,6 @@
 // client/ai.client/src/app/core/conversation-actions/conversation-actions.component.ts
 import { Component, Input, OnInit } from '@angular/core';
-import { IonItem, IonIcon, IonList, ModalController, PopoverController, AlertController } from '@ionic/angular/standalone';
+import { IonItem, IonIcon, IonList, ModalController, PopoverController, AlertController, ToastController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { shareOutline, trashOutline, downloadOutline, pencilOutline } from 'ionicons/icons';
 import { Conversation } from 'src/app/conversation/services/conversation.model';
@@ -15,6 +15,11 @@ import { ConversationService } from 'src/app/conversation/services/conversation.
         <ion-icon name="share-outline" slot="start" color="primary"></ion-icon>
         Share
       </ion-item>
+
+      <ion-item button (click)="deleteConversation()">
+        <ion-icon name="trash-outline" slot="start" color="danger"></ion-icon>
+        Delete
+      </ion-item>
       
       <!-- <ion-item button (click)="renameConversation()">
         <ion-icon name="pencil-outline" slot="start" color="primary"></ion-icon>
@@ -25,11 +30,7 @@ import { ConversationService } from 'src/app/conversation/services/conversation.
         <ion-icon name="download-outline" slot="start" color="primary"></ion-icon>
         Export
       </ion-item>
-      
-      <ion-item button (click)="deleteConversation()">
-        <ion-icon name="trash-outline" slot="start" color="danger"></ion-icon>
-        Delete
-      </ion-item> -->
+       -->
     </ion-list>
   `,
   styles: [`
@@ -46,6 +47,7 @@ export class ConversationActionsComponent implements OnInit {
   
   constructor(
     private alertController: AlertController,
+    private toastController: ToastController,
     private popoverController: PopoverController,
     private modalController: ModalController,
     private conversationService: ConversationService
@@ -73,6 +75,51 @@ export class ConversationActionsComponent implements OnInit {
     });
     
     await modal.present();
+  }
+
+  async deleteConversation() {
+    this.popoverController.dismiss();
+    
+    const alert = await this.alertController.create({
+      header: 'Delete Conversation',
+      message: 'Are you sure you want to delete this conversation? This action cannot be undone.',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: async () => {
+            try {
+              // Call your conversation service to delete the conversation
+              await this.conversationService.deleteConversation(this.conversation.conversationId);
+              
+              // Show success message
+              const toast = await this.toastController.create({
+                message: 'Conversation deleted successfully',
+                duration: 2000,
+                color: 'success'
+              });
+              toast.present();
+            } catch (error) {
+              console.error('Error deleting conversation:', error);
+              
+              // Show error message
+              const toast = await this.toastController.create({
+                message: 'Failed to delete conversation',
+                duration: 2000,
+                color: 'danger'
+              });
+              toast.present();
+            }
+          }
+        }
+      ]
+    });
+    
+    await alert.present();
   }
   
   async renameConversation() {
@@ -121,37 +168,4 @@ export class ConversationActionsComponent implements OnInit {
     // Logic for exporting conversation would go here
   }
   
-  async deleteConversation() {
-    this.popoverController.dismiss();
-    
-    const alert = await this.alertController.create({
-      header: 'Delete Conversation',
-      message: 'Are you sure you want to delete this conversation? This action cannot be undone.',
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
-          text: 'Delete',
-          role: 'destructive',
-          handler: async () => {
-            try {
-              // Call your conversation service to delete the conversation
-              // await this.conversationService.deleteConversation(this.conversation.conversationId);
-              
-              // You would need to implement this method in your ConversationService
-              // This would require a new backend endpoint as well
-              
-              console.log('Delete conversation:', this.conversation.conversationId);
-            } catch (error) {
-              console.error('Error deleting conversation:', error);
-            }
-          }
-        }
-      ]
-    });
-    
-    await alert.present();
-  }
 }

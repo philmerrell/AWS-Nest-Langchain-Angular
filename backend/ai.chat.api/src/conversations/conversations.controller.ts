@@ -1,15 +1,16 @@
-import { Controller, Req, Get, UseGuards, Param, Post, Body } from '@nestjs/common';
+import { Controller, Req, Get, UseGuards, Param, Post, Body, Delete } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ConversationService } from './conversation.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ConversationSharingService } from './conversation-sharing.service';
 import { GetShareableLinkDto, ShareConversationDto } from './share-conversation.dto';
+import { MessageService } from 'src/messages/message.service';
 
 @Controller('conversations')
 export class ConversationsController {
 
     constructor(
-        private configService: ConfigService,
+        private messageService: MessageService,
         private conversationService: ConversationService,
         private conversationSharingService: ConversationSharingService) { }
 
@@ -28,6 +29,20 @@ export class ConversationsController {
         const conversationId = req.params.conversationId
         const conversation = await this.conversationService.getConversationById(user.emplId, conversationId);
         return conversation;
+    }
+
+    @Delete(':conversationId')
+    @UseGuards(JwtAuthGuard)
+    async deleteConversation(@Param('conversationId') conversationId: string, @Req() req: any) {
+        const user = req.user;
+        
+        // First delete all messages
+        await this.messageService.deleteConversationMessages(conversationId, user.emplId);
+        
+        // Then delete the conversation itself
+        await this.conversationService.deleteConversation(user.emplId, conversationId);
+        
+        return { success: true, message: 'Conversation and messages deleted successfully' };
     }
 
     @Post('share')

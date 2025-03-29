@@ -76,4 +76,52 @@ export class MessageService {
             throw new Error(`Failed to get messages: ${error.message}`);
         }
     }
+
+    async deleteConversationMessages(conversationId: string, emplId: string): Promise<void> {
+        const params = {
+          TableName: this.tableName,
+          KeyConditionExpression: "PK = :pk",
+          ExpressionAttributeValues: {
+            ":pk": `${emplId}#${conversationId}`,
+          },
+        };
+      
+        try {
+          // First, query all messages for this conversation
+          const command = new QueryCommand(params);
+          const result = await this.client.send(command);
+          
+          if (!result.Items || result.Items.length === 0) {
+            return; // No messages to delete
+          }
+          
+          // Prepare batch delete requests
+          const batchSize = 25; // DynamoDB batch operations limit
+          const deleteRequests = result.Items.map(item => ({
+            DeleteRequest: {
+              Key: {
+                PK: `${emplId}#${conversationId}`,
+                SK: item.SK
+              }
+            }
+          }));
+          
+          // Process in batches if needed
+          for (let i = 0; i < deleteRequests.length; i += batchSize) {
+            const batchToProcess = deleteRequests.slice(i, i + batchSize);
+            
+            const batchParams = {
+              RequestItems: {
+                [this.tableName]: batchToProcess
+              }
+            };
+            
+            await this.client.send(new BatchWriteCommand(batchParams));
+          }
+          
+          console.log(`Successfully deleted ${deleteRequests.length} messages for conversation ${conversationId}`);
+        } catch (error) {
+          throw new Error(`Failed to delete conversation messages: ${error.message}`);
+        }
+      }
 }

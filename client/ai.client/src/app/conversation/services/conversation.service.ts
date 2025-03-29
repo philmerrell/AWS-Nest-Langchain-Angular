@@ -55,6 +55,33 @@ export class ConversationService {
     })
   }
 
+  async deleteConversation(conversationId: string): Promise<void> {
+    try {
+      // Make the API call to delete the conversation
+      await lastValueFrom(
+        this.http.delete<any>(`${environment.chatApiUrl}/conversations/${conversationId}`)
+      );
+      
+      // Update local state by removing the conversation
+      this._conversationsResource.update(conversations => {
+        return conversations?.filter(conversation => 
+          conversation.conversationId !== conversationId
+        );
+      });
+      
+      // If the deleted conversation was the current one, create a new conversation
+      const currentConversation = this.currentConversation();
+      if (currentConversation.conversationId === conversationId) {
+        this.createNewConversation();
+      }
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      return Promise.reject(error);
+    }
+  }
+
   getCurrentConversation(): WritableSignal<Conversation> {
     return this.currentConversation;
   }
