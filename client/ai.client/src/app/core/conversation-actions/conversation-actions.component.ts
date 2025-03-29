@@ -21,16 +21,11 @@ import { ConversationService } from 'src/app/conversation/services/conversation.
         Delete
       </ion-item>
       
-      <!-- <ion-item button (click)="renameConversation()">
+      <ion-item button (click)="renameConversation()">
         <ion-icon name="pencil-outline" slot="start" color="primary"></ion-icon>
         Rename
       </ion-item>
       
-      <ion-item button (click)="exportConversation()">
-        <ion-icon name="download-outline" slot="start" color="primary"></ion-icon>
-        Export
-      </ion-item>
-       -->
     </ion-list>
   `,
   styles: [`
@@ -145,12 +140,38 @@ export class ConversationActionsComponent implements OnInit {
           handler: async (data) => {
             if (data.name && data.name.trim() !== '') {
               try {
-                await this.conversationService.updateConversationName(
+                // Update the conversation name locally
+                this.conversationService.updateConversationName(
                   this.conversation.conversationId, 
                   data.name.trim()
                 );
+                
+                // Update the conversation name on the server
+                await this.conversationService.updateConversationNameOnServer(
+                  this.conversation.conversationId,
+                  data.name.trim()
+                );
+                
+                // Show success message
+                const toast = await this.toastController.create({
+                  message: 'Conversation renamed successfully',
+                  duration: 2000,
+                  color: 'success',
+                  position: 'bottom'
+                });
+                toast.present();
+                
               } catch (error) {
                 console.error('Error renaming conversation:', error);
+                
+                // Show error message
+                const toast = await this.toastController.create({
+                  message: 'Failed to rename conversation',
+                  duration: 2000,
+                  color: 'danger',
+                  position: 'bottom'
+                });
+                toast.present();
               }
             }
           }

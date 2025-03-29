@@ -86,9 +86,22 @@ export class ConversationService {
     return this.currentConversation;
   }
 
-  // getConversationById(conversationId: string) {
-  //   const response = this.http.get
-  // }
+  async updateConversationNameOnServer(conversationId: string, name: string): Promise<void> {
+    try {
+      await lastValueFrom(
+        this.http.patch(`${environment.chatApiUrl}/conversations/${conversationId}/name`, { name })
+      );
+      
+      // If this is the current conversation, update its name in the current conversation signal as well
+      const currentConversation = this.currentConversation();
+      if (currentConversation && currentConversation.conversationId === conversationId) {
+        this.updateCurrentConversationName(name);
+      }
+    } catch (error) {
+      console.error('Error updating conversation name on server:', error);
+      throw error;
+    }
+  }
 
   updatePendingConversationId(conversationId: string) {
     window.history.pushState(null, '', `c/${conversationId}`);

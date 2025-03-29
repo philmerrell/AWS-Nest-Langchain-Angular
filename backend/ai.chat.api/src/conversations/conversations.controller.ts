@@ -1,10 +1,11 @@
-import { Controller, Req, Get, UseGuards, Param, Post, Body, Delete } from '@nestjs/common';
+import { Controller, Req, Get, UseGuards, Param, Post, Body, Delete, Patch } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ConversationService } from './conversation.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ConversationSharingService } from './conversation-sharing.service';
 import { GetShareableLinkDto, ShareConversationDto } from './share-conversation.dto';
 import { MessageService } from 'src/messages/message.service';
+import { RenameConversationDto } from './rename-conversation.dto';
 
 @Controller('conversations')
 export class ConversationsController {
@@ -29,6 +30,20 @@ export class ConversationsController {
         const conversationId = req.params.conversationId
         const conversation = await this.conversationService.getConversationById(user.emplId, conversationId);
         return conversation;
+    }
+
+    // In backend/ai.chat.api/src/conversations/conversations.controller.ts
+
+    @Patch(':conversationId/name')
+    @UseGuards(JwtAuthGuard)
+    async updateConversationName(
+        @Param('conversationId') conversationId: string,
+        @Body() renameDto: RenameConversationDto,
+        @Req() req: any
+    ) {
+        const user = req.user;
+        await this.conversationService.updateConversationName(user.emplId, conversationId, renameDto.name);
+        return { success: true };
     }
 
     @Delete(':conversationId')
