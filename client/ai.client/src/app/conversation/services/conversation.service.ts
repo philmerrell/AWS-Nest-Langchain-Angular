@@ -116,7 +116,6 @@ export class ConversationService {
   }
 
   updateConversationName(conversationId: string, name: string) {
-    console.log('update conversation name')
     this._conversationsResource.update(conversations => {
       return conversations?.map(conversation => 
         conversation.conversationId === conversationId 

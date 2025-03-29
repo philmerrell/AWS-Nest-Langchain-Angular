@@ -15,15 +15,15 @@ import { ConversationService } from 'src/app/conversation/services/conversation.
         <ion-icon name="share-outline" slot="start" color="primary"></ion-icon>
         Share
       </ion-item>
-
-      <ion-item button (click)="deleteConversation()">
-        <ion-icon name="trash-outline" slot="start" color="danger"></ion-icon>
-        Delete
-      </ion-item>
       
       <ion-item button (click)="renameConversation()">
         <ion-icon name="pencil-outline" slot="start" color="primary"></ion-icon>
         Rename
+      </ion-item>
+
+      <ion-item button (click)="deleteConversation()">
+        <ion-icon name="trash-outline" slot="start" color="danger"></ion-icon>
+        Delete
       </ion-item>
       
     </ion-list>
