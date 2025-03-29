@@ -20,13 +20,12 @@ import { UserMenuComponent } from '../core/user-menu/user-menu.component';
   templateUrl: './conversation.page.html',
   styleUrls: ['./conversation.page.scss'],
   standalone: true,
-  imports: [ IonAvatar, IonIcon, IonButton, IonFooter, IonContent, IonTitle, IonButtons, IonToolbar, IonHeader, ChatInputComponent, IonMenuButton, ConversationTextComponent]
+  imports: [ IonAvatar, IonButton, IonFooter, IonContent, IonTitle, IonButtons, IonToolbar, IonHeader, ChatInputComponent, IonMenuButton, ConversationTextComponent]
 })
 export class ConversationPage implements OnInit {
   currentUser: Signal<any> = this.authService.getCurrentUser();
   currentConversation: Signal<Conversation> = this.conversationService.getCurrentConversation();
   chatLoading: Signal<boolean> = this.chatRequestService.getChatLoading();
-  selectedModel: Signal<Model | null> = this.modelService.getSelectedModel();
   messages: Signal<Message[]> = signal([]);
   isModalOpen = false;
   monthToDateCost = { cost: 0 };
@@ -36,11 +35,9 @@ export class ConversationPage implements OnInit {
     private chatRequestService: ChatRequestService,
     private conversationService: ConversationService,
     private messageMapService: MessageMapService,
-    private modalController: ModalController,
-    private modelService: ModelService,
     private popoverController: PopoverController,
     private route: ActivatedRoute) {
-    addIcons({chevronForwardOutline});
+    addIcons({});
   }
 
   ngOnInit() {
@@ -68,16 +65,5 @@ export class ConversationPage implements OnInit {
     const { role } = await popover.onDidDismiss();
     console.log(`Popover dismissed with role: ${role}`);
   }
-
-
-  async openModelSettingsModal() {
-    const modal = await this.modalController.create({
-      component: ModelSettingsComponent,
-    });
-    modal.present();
-  }
-
-
-
 
 }

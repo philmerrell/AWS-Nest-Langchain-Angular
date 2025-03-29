@@ -10,15 +10,29 @@
         placeholder="How can I help you?"
         value=""
       >
-      <ion-button (click)="handleSubmitChat()" shape="round" slot="end" aria-label="Submit chat" [color]="chatLoading() ? 'danger' : 'primary'">
-        @if (chatLoading()) {
-          <ion-icon slot="icon-only" name="stop" aria-hidden="true"></ion-icon>
-        } @else {
-          <ion-icon slot="icon-only" name="arrow-up-outline" aria-hidden="true"></ion-icon>
-        }
-      </ion-button>          
+             
     </ion-textarea>
-  
+    <ion-grid class="ion-no-padding">
+      <ion-row>
+        <ion-col>
+
+        </ion-col>
+        <ion-col class="ion-text-right">
+          <ion-button (click)="openModelSettingsModal()" size="small" fill="clear">
+            {{ selectedModel()?.name }}
+            <!-- <ion-icon name="chevron-forward-outline" slot="end"></ion-icon> -->
+          </ion-button>
+          <ion-button (click)="handleSubmitChat()" aria-label="Submit chat" [color]="chatLoading() ? 'danger' : 'primary'">
+            @if (chatLoading()) {
+              <ion-icon slot="icon-only" name="stop" aria-hidden="true"></ion-icon>
+            } @else {
+              <ion-icon slot="icon-only" name="arrow-up-outline" aria-hidden="true"></ion-icon>
+            }
+          </ion-button>  
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+     
     </ion-card-content>
   </ion-card>
 
