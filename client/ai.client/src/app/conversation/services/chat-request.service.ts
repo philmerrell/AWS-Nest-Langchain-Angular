@@ -38,6 +38,9 @@ export class ChatRequestService {
       this.chatLoading.set(true);
       this.requestId = uuidv4();
       const currentConversation = this.conversationService.getCurrentConversation();
+      if (currentConversation().conversationId === 'pending') {
+        this.conversationService.addConversation(currentConversation());
+      }
       const userMessage = this.createUserMessage(userInput, currentConversation());
       this.handleNewUserMessage(userMessage, currentConversation);
       
@@ -168,7 +171,6 @@ export class ChatRequestService {
       switch(msg.event) {
         case 'delta':
           if ('content' in message) {
-            // Handle content delta (string)
             this.handleAssistantResponse(message.content);
           } 
           break;

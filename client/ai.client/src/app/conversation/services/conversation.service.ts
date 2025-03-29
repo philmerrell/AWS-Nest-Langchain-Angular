@@ -46,7 +46,6 @@ export class ConversationService {
       this.setCurrentConversation(newConversation);
       this.addConversation(newConversation);
     }
-    this.router.navigate(['']);
   }
 
   addConversation(conversation: Conversation) {
@@ -72,7 +71,7 @@ export class ConversationService {
       // If the deleted conversation was the current one, create a new conversation
       const currentConversation = this.currentConversation();
       if (currentConversation.conversationId === conversationId) {
-        this.createNewConversation();
+        this.router.navigate(['/'])
       }
       
       return Promise.resolve();
@@ -105,7 +104,9 @@ export class ConversationService {
 
   updatePendingConversationId(conversationId: string) {
     window.history.pushState(null, '', `c/${conversationId}`);
-    // this.router.navigate([`c/${conversationId}`])
+    // this.router.navigate([`c/${conversationId}`], {})
+    // this.navCtrl.navigateForward([`c/${conversationId}`], { animated: false });
+
     this._conversationsResource.update(conversations => {
       return conversations?.map(conversation => 
         conversation.conversationId === 'pending' 

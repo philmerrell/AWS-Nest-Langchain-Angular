@@ -26,9 +26,11 @@ export class MessageMapService {
                 ...map,
                 [conversationId]: newSignal
             }));
-            this.getMessagesByConversationId(conversationId).then(fetchedMessages => {
-                newSignal.set(fetchedMessages);
-            });
+            if(conversationId !== 'pending') {
+                this.getMessagesByConversationId(conversationId).then(fetchedMessages => {
+                    newSignal.set(fetchedMessages);
+                });
+            }
             return newSignal;
         }
     }

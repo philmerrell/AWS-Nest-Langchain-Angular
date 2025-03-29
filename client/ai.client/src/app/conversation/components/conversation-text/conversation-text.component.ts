@@ -1,19 +1,19 @@
-import { Component, effect, input, OnInit, Signal } from '@angular/core';
-import { IonGrid, IonRow, IonCol, IonContent, IonButton } from "@ionic/angular/standalone";
+import { Component, effect, input, OnInit } from '@angular/core';
+import { IonRow, IonCol, IonContent, IonButton, IonIcon } from "@ionic/angular/standalone";
 import { MarkdownComponent } from 'ngx-markdown';
 import { addIcons } from 'ionicons';
 import { documentOutline, downloadOutline, imageOutline, listOutline, readerOutline, chevronDownOutline } from 'ionicons/icons';
 import { UserMessageComponent } from './user-message/user-message.component';
 import { fadeInOut } from 'src/app/shared/animations/fadeInOut';
 import { slide } from 'src/app/shared/animations/slide';
-import { Conversation, Message } from '../../services/conversation.model';
+import { Message } from '../../services/conversation.model';
 
 @Component({
   selector: 'app-conversation-text',
   templateUrl: './conversation-text.component.html',
   styleUrls: ['./conversation-text.component.scss'],
   animations: [fadeInOut, slide],
-  imports: [IonButton,  UserMessageComponent, IonRow, IonCol, MarkdownComponent],
+  imports: [IonIcon, IonButton,  UserMessageComponent, IonRow, IonCol, MarkdownComponent],
   standalone: true,
 })
 export class ConversationTextComponent  implements OnInit {

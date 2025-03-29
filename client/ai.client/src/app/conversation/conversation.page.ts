@@ -1,15 +1,12 @@
-import { Component, OnInit, signal, Signal, WritableSignal  } from '@angular/core';
+import { Component, effect, OnInit, signal, Signal } from '@angular/core';
 import { ChatInputComponent } from './components/chat-input/chat-input.component';
 import { addIcons } from 'ionicons';
-import { chevronForwardOutline } from 'ionicons/icons';
+import { ellipsisHorizontal } from 'ionicons/icons';
 import { IonHeader, IonToolbar, IonButtons, IonTitle, IonContent, IonFooter, IonMenuButton, IonButton, IonIcon, ModalController, IonAvatar, IonPopover, IonItem, PopoverController } from "@ionic/angular/standalone";
 import { ConversationTextComponent } from './components/conversation-text/conversation-text.component';
 import { Conversation, Message, Model } from './services/conversation.model';
 import { ChatRequestService } from './services/chat-request.service';
 import { ConversationService } from './services/conversation.service';
-import { ModelService } from './services/model.service';
-import { CurrencyPipe, JsonPipe } from '@angular/common';
-import { ModelSettingsComponent } from './components/model-settings/model-settings.component';
 import { ActivatedRoute } from '@angular/router';
 import { MessageMapService } from './services/message-map.service';
 import { AuthService } from '../auth/auth.service';
@@ -37,7 +34,12 @@ export class ConversationPage implements OnInit {
     private messageMapService: MessageMapService,
     private popoverController: PopoverController,
     private route: ActivatedRoute) {
-    addIcons({});
+      addIcons({ellipsisHorizontal});
+
+      effect(() => {
+        const conversation = this.conversationService.getCurrentConversation()
+        this.messages = this.messageMapService.getMessagesForConversation(conversation().conversationId);
+      }) 
   }
 
   ngOnInit() {
@@ -46,9 +48,8 @@ export class ConversationPage implements OnInit {
       if (conversationId) {
         const conversation = await this.conversationService.loadConversationById(conversationId);
         this.conversationService.setCurrentConversation(conversation);
-        this.messages = this.messageMapService.getMessagesForConversation(conversationId);
+        
       } else {
-        this.messages = this.messageMapService.getMessagesForConversation('pending')
         this.conversationService.setCurrentConversation({ conversationId: 'pending', name: 'New Chat'})
       }
     });
