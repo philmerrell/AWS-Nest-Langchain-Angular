@@ -22,7 +22,7 @@ export class AdvancedSettingsComponent  implements OnInit {
     subHeader: 'Select instructions',
   };
   models: Model[] = [];
-  selectedModel: Signal<Model> = this.modelService.getSelectedModel();
+  selectedModel: Signal<Model | null> = this.modelService.getSelectedModel();
   selectedTemperature: Signal<number> = this.modelService.getSelectedTemperature();
   selectedCustomInstructions: Signal<CustomInstruction> = this.customInstructionService.getSelectedCustomInstruction();
 
@@ -47,7 +47,7 @@ export class AdvancedSettingsComponent  implements OnInit {
   }
 
   getModels() {
-    this.models = this.modelService.getModels();
+    // this.models = this.modelService.getModels();
   }
 
   handleModelChange(event: any) {

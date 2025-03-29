@@ -1,3 +1,4 @@
+// client/ai.client/src/app/conversation/services/model.service.ts
 import { Injectable, resource, signal, Signal, WritableSignal } from '@angular/core';
 import { Model } from './conversation.model';
 import { environment } from 'src/environments/environment';
@@ -9,8 +10,7 @@ import { lastValueFrom } from 'rxjs';
   providedIn: 'root'
 })
 export class ModelService {
-  defaultModel = 'anthropic.claude-3-5-sonnet-20240620-v1:0';
-  selectedModel: WritableSignal<Model> = signal(this.getModels()[0]);
+  selectedModel: WritableSignal<Model | null> = signal(null);
   selectedTemperature: WritableSignal<number> = signal(0.5);
   private _modelsResource = resource({
     loader: () => this.loadModels()
@@ -21,24 +21,22 @@ export class ModelService {
   }
   constructor(private http: HttpClient) { }
 
-  getModels(): Model[] {
-    return [
-        { modelId: 'anthropic.claude-3-5-sonnet-20240620-v1:0', name: 'Claude 3.5 Sonnet' } as Model,
-        // { modelId: 'amazon.nova-pro-v1:0', name: 'AWS Nova Pro' },
-    ];
-  }
-
   addModel(model: Model) {
     const response = this.http.post(`${environment.chatApiUrl}/models`, model);
     return lastValueFrom(response);
   }
 
-  private loadModels(): Promise<Model[]> {
-    const response = this.http.get<Model[]>(`${environment.chatApiUrl}/models`)
-    return lastValueFrom(response);
+  private async loadModels(): Promise<Model[]> {
+    const response = this.http.get<Model[]>(`${environment.chatApiUrl}/models`);
+    const models = await lastValueFrom(response);
+    const defaultModel = models.find(model => model.isDefault);
+    if (defaultModel) {
+      this.setSelectedModel(defaultModel);
+    } 
+    return models;
   }
 
-  getSelectedModel(): Signal<Model> {
+  getSelectedModel(): Signal<Model | null> {
     return this.selectedModel;
   }
 
@@ -54,4 +52,8 @@ export class ModelService {
     this.selectedTemperature.set(temperature);
   }
   
+  async setDefaultModel(modelId: string) {
+    const response = this.http.put(`${environment.chatApiUrl}/models/${modelId}/default`, {});
+    return lastValueFrom(response);
+  }
 }

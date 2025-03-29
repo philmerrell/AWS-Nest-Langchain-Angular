@@ -17,7 +17,7 @@ import { ConversationTextComponent } from '../conversation/components/conversati
   imports: [IonLabel, IonItem, 
     ConversationTextComponent, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, 
     IonBackButton, IonCard, IonCardHeader, IonCardTitle, 
-    IonCardContent, IonSkeletonText, MarkdownComponent, DatePipe
+    IonCardContent, DatePipe
   ],
 })
 export class SharedConversationPage implements OnInit {

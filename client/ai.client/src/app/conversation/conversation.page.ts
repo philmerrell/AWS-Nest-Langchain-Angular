@@ -26,7 +26,7 @@ export class ConversationPage implements OnInit {
   currentUser: Signal<any> = this.authService.getCurrentUser();
   currentConversation: Signal<Conversation> = this.conversationService.getCurrentConversation();
   chatLoading: Signal<boolean> = this.chatRequestService.getChatLoading();
-  selectedModel: Signal<Model> = this.modelService.getSelectedModel();
+  selectedModel: Signal<Model | null> = this.modelService.getSelectedModel();
   messages: Signal<Message[]> = signal([]);
   isModalOpen = false;
   monthToDateCost = { cost: 0 };

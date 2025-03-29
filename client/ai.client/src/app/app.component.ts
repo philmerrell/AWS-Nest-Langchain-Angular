@@ -3,20 +3,20 @@ import { IonApp, IonSplitPane, IonMenu, IonContent, IonRouterOutlet, IonItem, Io
 import { addIcons } from 'ionicons';
 import { SideNavComponent } from './core/side-nav/side-nav.component';
 import { ConversationService } from './conversation/services/conversation.service';
-import { createOutline } from 'ionicons/icons';
+import { addCircle, createOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [IonText, IonIcon, IonButton, IonLabel, IonImg, IonItem, IonApp, IonSplitPane, IonMenu, IonContent, IonRouterOutlet, SideNavComponent, IonThumbnail],
+  imports: [IonText, IonIcon, IonLabel, IonImg, IonItem, IonApp, IonSplitPane, IonMenu, IonContent, IonRouterOutlet, SideNavComponent, IonThumbnail],
 })
 export class AppComponent {
   
   
   constructor(private conversationService: ConversationService) {
-    addIcons({createOutline})
+    addIcons({addCircle})
   }
 
   newChat() {

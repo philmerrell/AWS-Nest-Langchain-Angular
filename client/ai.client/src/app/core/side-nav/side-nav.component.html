@@ -1,7 +1,7 @@
 <!-- client/ai.client/src/app/core/side-nav/side-nav.component.html -->
-<ion-list>
+<!-- <ion-list> -->
   <ion-item-divider sticky>
-    Conversations
+    Recent
   </ion-item-divider>
 
   @if(conversations.status() === status.Loading) {
@@ -32,13 +32,15 @@
     </ion-item>
   } @empty {
     @if(conversations.status() === status.Resolved) {
-    <ion-item lines="none">
-      <ion-icon slot="start" name="chatbox-outline" color="secondary"></ion-icon>
-      <ion-label>
-        <h1>There's nothing here...</h1>
-        <p><ion-text color="medium">Let's get started by creating a new conversation.</ion-text></p>
-      </ion-label>
-    </ion-item>
+      <ion-card>
+        <ion-item lines="none">
+          <ion-icon slot="start" name="chatbox-outline" color="secondary"></ion-icon>
+          <ion-label>
+            <h1>No Coversations Yet.</h1>
+            <p><ion-text color="medium">But if you had them, this is where they'd be.</ion-text></p>
+          </ion-label>
+        </ion-item>
+      </ion-card>
     }
   }
-</ion-list>
+<!-- </ion-list> -->

@@ -19,7 +19,7 @@ import { DatePipe, CurrencyPipe } from '@angular/common';
     CommonModule, FormsModule, DatePipe, CurrencyPipe,
     IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonBackButton, IonList,
     IonItem, IonLabel, IonBadge, IonSegment, IonSegmentButton, IonCard, IonCardHeader,
-    IonCardTitle, IonCardContent, IonSkeletonText, IonDatetime, IonButton, IonIcon,
+    IonCardTitle, IonSkeletonText, IonDatetime, IonButton, IonIcon,
     IonInfiniteScroll, IonInfiniteScrollContent
   ]
 })

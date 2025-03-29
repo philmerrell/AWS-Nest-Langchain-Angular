@@ -46,6 +46,13 @@
                   <h2>{{model.name}}</h2>
                   <p>{{model.modelId}}</p>
                 </ion-label>
+                @if(model.isDefault) {
+                  <ion-badge slot="end" color="success">Default</ion-badge>
+                } @else {
+                  <ion-button slot="end" (click)="setDefaultModel(model)" fill="clear">
+                    Set Default
+                  </ion-button>
+                }
               </ion-item>
             } @empty {
               @if(models.status() === status.Resolved) {

@@ -69,6 +69,7 @@ export class ConversationService {
 
   async getConversationById(emplId: string, conversationId: string): Promise<any> {
     const conversationKey = `${emplId}#${conversationId}`;
+    console.log(conversationKey);
     const params = {
       TableName: this.configService.get('CONVERSATIONS_TABLE_NAME'),
       IndexName: 'ConversationByKeyIndex',

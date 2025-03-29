@@ -21,7 +21,7 @@ export class ChatRequestService {
   private requestId = '';
   private responseContent = '';
   private reasoningContent = '';
-  private selectedModel: Signal<Model> = this.modelService.getSelectedModel();
+  private selectedModel: Signal<Model | null> = this.modelService.getSelectedModel();
 
   constructor(private authService: AuthService,
     private conversationService: ConversationService,
@@ -46,7 +46,7 @@ export class ChatRequestService {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.authService.getToken()}`
         },
-        body: JSON.stringify({ ...userMessage, modelId: model.modelId, requestId: this.requestId}),
+        body: JSON.stringify({ ...userMessage, modelId: model!.modelId, requestId: this.requestId}),
         signal: signal,
         async onopen(response) {
           if (response.ok && response.headers.get('content-type') === EventStreamContentType) {

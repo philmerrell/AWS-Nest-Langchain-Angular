@@ -1,10 +1,8 @@
-// client/ai.client/src/app/core/side-nav/side-nav.component.ts
 import { Component, OnInit, ResourceStatus } from '@angular/core';
 import { ConversationService } from 'src/app/conversation/services/conversation.service';
 import { 
   IonItem, IonLabel, IonSpinner, IonList, IonItemDivider, 
-  IonIcon, IonText, IonButtons, IonButton, PopoverController 
-} from "@ionic/angular/standalone";
+  IonIcon, IonText, IonButtons, IonButton, PopoverController, IonCard } from "@ionic/angular/standalone";
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { chatboxOutline, createOutline, ellipsisHorizontal } from 'ionicons/icons';
@@ -15,9 +13,9 @@ import { Conversation } from 'src/app/conversation/services/conversation.model';
   selector: 'app-side-nav',
   templateUrl: './side-nav.component.html',
   styleUrls: ['./side-nav.component.scss'],
-  imports: [
-    IonItemDivider, IonList, IonSpinner, IonLabel, IonItem, 
-    IonIcon, IonText, IonButtons, IonButton,
+  imports: [IonCard, 
+    IonItemDivider, IonSpinner, IonLabel, IonItem, 
+    IonIcon, IonText, IonButton,
   ],
   standalone: true
 })

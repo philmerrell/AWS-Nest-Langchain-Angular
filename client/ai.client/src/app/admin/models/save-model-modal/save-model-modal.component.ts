@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ModalController, IonHeader, IonToolbar, IonContent, IonButton, IonItem, IonInput, IonCheckbox, IonTextarea, IonFooter, IonGrid, IonRow, IonCol, IonLabel, IonButtons, IonCard } from "@ionic/angular/standalone";
+import { ModalController, IonHeader, IonToolbar, IonContent, IonButton, IonItem, IonInput, IonCheckbox, IonTextarea, IonFooter, IonGrid, IonRow, IonCol, IonLabel, IonButtons, IonCard, IonTitle } from "@ionic/angular/standalone";
+import { Model } from 'src/app/conversation/services/conversation.model';
 import { ModelService } from 'src/app/conversation/services/model.service';
 import { validateAllFormFields } from 'src/app/shared/form-utils';
 
@@ -9,9 +10,11 @@ import { validateAllFormFields } from 'src/app/shared/form-utils';
   templateUrl: './save-model-modal.component.html',
   styleUrls: ['./save-model-modal.component.scss'],
   standalone: true,
-  imports: [IonCard, IonButtons, IonCol, IonRow, IonGrid, IonFooter, IonTextarea, IonCheckbox, IonInput, IonItem, IonButton, IonContent, IonToolbar, IonHeader, ReactiveFormsModule, IonLabel ]
+  imports: [IonTitle, IonCard, IonButtons, IonCol, IonRow, IonGrid, IonFooter, IonTextarea, IonCheckbox, IonInput, IonItem, IonButton, IonContent, IonToolbar, IonHeader, ReactiveFormsModule, IonLabel ]
 })
 export class SaveModelModalComponent  implements OnInit {
+  @Input() model?: Model;
+
   form: FormGroup = this.fb.group({
     modelId: ['', Validators.required],
     enabled: [true, Validators.required],
@@ -34,7 +37,10 @@ export class SaveModelModalComponent  implements OnInit {
     { name: 'Developers', value: 'DotNetDevelopers' }
   ];
 
-  constructor(private fb: FormBuilder, private modelService: ModelService, private modalController: ModalController) { }
+  constructor(
+    private fb: FormBuilder,
+    private modelService: ModelService,
+    private modalController: ModalController) { }
 
   ngOnInit() {
 

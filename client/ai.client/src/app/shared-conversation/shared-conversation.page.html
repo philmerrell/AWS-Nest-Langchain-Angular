@@ -49,31 +49,8 @@
           </ion-label>
         </ion-item>
         
-
       <app-conversation-text [messages]="messages" [scroller]="scroller"></app-conversation-text>    
 
-      
-      <!-- Conversation messages -->
-      <!-- @for(message of messages; track message.SK) {
-        @if(message.role === 'user') {
-          <div class="message user-message">
-            <div class="message-content">{{ message.content }}</div>
-          </div>
-        } @else if(message.role === 'assistant') {
-          <div class="message assistant-message">
-            <div class="message-content">
-              <markdown [data]="message.content"></markdown>
-              
-              @if(message.reasoning) {
-                <div class="reasoning-container">
-                  <h4>AI Reasoning</h4>
-                  {{ message.reasoning }}
-                </div>
-              }
-            </div>
-          </div>
-        }
-      } -->
     }
   </div>
 </ion-content>

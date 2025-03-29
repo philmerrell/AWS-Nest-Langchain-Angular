@@ -31,7 +31,7 @@
           <h2>{{ model.name }}</h2>
           <!-- <p>{{ model.description }}</p> -->
         </ion-label>
-        @if(model.modelId === selectedModel().modelId) {
+        @if(model.modelId === selectedModel()?.modelId) {
           <ion-icon slot="end" name="checkmark-circle" color="success"></ion-icon>
         }
       </ion-item>

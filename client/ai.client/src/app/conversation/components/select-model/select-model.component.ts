@@ -18,7 +18,7 @@ export class SelectModelComponent  implements OnInit {
   @Input() showAccessError: boolean = false;
   status = ResourceStatus;
   models = this.modelService.models;
-  selectedModel: Signal<Model> = this.modelService.getSelectedModel();
+  selectedModel: Signal<Model | null> = this.modelService.getSelectedModel();
 
   constructor(
     private modalController: ModalController,

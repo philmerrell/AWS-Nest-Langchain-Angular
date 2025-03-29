@@ -1,20 +1,28 @@
 <ion-app>
   <ion-split-pane contentId="main-content">
     <ion-menu contentId="main-content" type="overlay">
-      <!-- <ion-item lines="none" color="light">
+      <ion-item lines="none" color="light">
         <ion-thumbnail>
           <ion-img src="/assets/logo-light.png"></ion-img>
         </ion-thumbnail>
         <ion-label>
           <ion-text style="font-size: 1.5em; font-weight: 900; margin-left: 10px;">boisestate.ai</ion-text>
         </ion-label>
-      </ion-item> -->
-      <div class="ion-padding button-container">
+      </ion-item>
+      <ion-item (click)="newChat()" color="light" button>
+        <ion-icon name="add-circle" slot="start" color="secondary"></ion-icon>
+        <ion-label>
+          <ion-text color="secondary">
+            <h2 style="font-weight: 900;">New  Chat</h2>
+          </ion-text>
+        </ion-label>
+      </ion-item>
+      <!-- <div class="ion-padding button-container">
         <ion-button (click)="newChat()" expand="block" shape="round">
           <ion-icon slot="start" name="create-outline"></ion-icon>
           New Chat
         </ion-button>
-      </div>
+      </div> -->
       <ion-content color="light">
         <app-side-nav></app-side-nav>
       </ion-content>
