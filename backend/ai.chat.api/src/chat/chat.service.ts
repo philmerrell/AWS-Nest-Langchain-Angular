@@ -166,15 +166,14 @@ export class ChatService implements OnModuleInit {
           }
         }
     
-        // Only track usage if not aborted (optional, depending on your requirements)
-        if (!streamContext.aborted) {
-          await this.costService.trackUsage({
+        
+        await this.costService.trackUsage({
             user,
             modelId: model.model,
             inputTokens,
             outputTokens,
-          });
-        }
+        });
+        
         
         return { 
           role: 'assistant', 
