@@ -39,13 +39,13 @@ export interface SharedMessage {
   providedIn: 'root',
 })
 export class ConversationSharingService {
-  private _sharedConversationsResource = resource({
-    loader: () => this.loadSharedConversations(),
-  });
+  // private _sharedConversationsResource = resource({
+  //   loader: () => this.loadSharedConversations(),
+  // });
 
-  get sharedConversations() {
-    return this._sharedConversationsResource.asReadonly();
-  }
+  // get sharedConversations() {
+  //   return this._sharedConversationsResource.asReadonly();
+  // }
 
   constructor(private http: HttpClient) {}
 
@@ -70,12 +70,12 @@ export class ConversationSharingService {
     return response.link;
   }
 
-  private async loadSharedConversations(): Promise<SharedConversation[]> {
-    const url = `${environment.chatApiUrl}/conversations/shared`;
-    return lastValueFrom(this.http.get<SharedConversation[]>(url));
-  }
+  // private async loadSharedConversations(): Promise<SharedConversation[]> {
+  //   const url = `${environment.chatApiUrl}/conversations/shared`;
+  //   return lastValueFrom(this.http.get<SharedConversation[]>(url));
+  // }
 
-  refreshSharedConversations() {
-    this._sharedConversationsResource.reload();
-  }
+  // refreshSharedConversations() {
+  //   this._sharedConversationsResource.reload();
+  // }
 }

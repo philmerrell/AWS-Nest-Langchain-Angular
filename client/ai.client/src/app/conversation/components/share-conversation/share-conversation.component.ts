@@ -24,7 +24,12 @@ import { Clipboard } from '@capacitor/clipboard';
 export class ShareConversationComponent implements OnInit {
   @Input() conversation!: Conversation;
   
-  shareForm: FormGroup;
+  shareForm: FormGroup = this.fb.group({
+    emails: [''],
+    isPublic: [false],
+    expiresAt: [''],
+    hasExpiration: [false]
+  });
   showDatePicker = false;
   shareableLink = '';
   isLoading = false;
@@ -35,14 +40,7 @@ export class ShareConversationComponent implements OnInit {
     private modalController: ModalController,
     private toastController: ToastController
   ) {
-    addIcons({ shareOutline, copyOutline, closeOutline });
-    
-    this.shareForm = this.fb.group({
-      emails: [''],
-      isPublic: [false],
-      expiresAt: [''],
-      hasExpiration: [false]
-    });
+      addIcons({ shareOutline, copyOutline, closeOutline });
   }
 
   ngOnInit() {}
@@ -76,7 +74,7 @@ export class ShareConversationComponent implements OnInit {
       );
       
       // Update shared conversations list
-      this.sharingService.refreshSharedConversations();
+      // this.sharingService.refreshSharedConversations();
       
       // Show success message
       const toast = await this.toastController.create({
