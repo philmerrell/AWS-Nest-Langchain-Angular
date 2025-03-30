@@ -3,9 +3,13 @@ import { AppModule } from './app.module';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/http-exception.filter';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(helmet());
+
   app.enableCors();
   app.useGlobalPipes(new ZodValidationPipe());
 

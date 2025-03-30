@@ -33,6 +33,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.0.7",
     "axios": "^1.8.3",
+    "helmet": "^8.1.0",
     "jwks-rsa": "^3.2.0",
     "langchain": "^0.3.19",
     "nestjs-zod": "^4.3.1",
