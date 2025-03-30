@@ -116,7 +116,7 @@ export class ChatService implements OnModuleInit {
             ? [{ ...this.getSystemMessage(user) }, userMessage]
             : [
                 { ...this.getSystemMessage(user) },
-                ...await this.getPreviousMessages(chatRequestDto.conversationId!, user.email, userMessage)
+                ...await this.getPreviousMessages(chatRequestDto.conversationId!, user.emplId, userMessage)
             ];
         
         if (isNewConversation) {
@@ -127,8 +127,8 @@ export class ChatService implements OnModuleInit {
         return { conversationId, messages, isNewConversation };
     }
 
-    private async getPreviousMessages(conversationId: string, userEmail: string, userMessage: Message): Promise<Message[]> {
-        const previousMessages = await this.messageService.getMessages(conversationId, userEmail);
+    private async getPreviousMessages(conversationId: string, emplId: string, userMessage: Message): Promise<Message[]> {
+        const previousMessages = await this.messageService.getMessages(conversationId, emplId);
         return [...previousMessages, userMessage];
     }
 
@@ -140,6 +140,7 @@ export class ChatService implements OnModuleInit {
         streamContext: { aborted: boolean },
         requestId: string
       ): Promise<Message> {
+        console.log(messages);
         const stream = await model.stream(messages);
         let inputTokens = 0, outputTokens = 0, content = '', reasoningResponse = '';
         
