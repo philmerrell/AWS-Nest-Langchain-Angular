@@ -1,21 +1,23 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import { BoiseStateAIStackProps } from '../bin/BoiseStateAIStackProps';
+import { AiTableStackProps } from '../bin/AiTableStackProps';
 
-export class AiChatInfrastructureStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: BoiseStateAIStackProps) {
+export class AiChatTableStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: AiTableStackProps) {
     super(scope, id, props);
 
+    const removalPolicy = props?.environment.toLowerCase().includes('prod') ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY
+
     const tags = {
-      Project: 'BoiseState.ai',
+      Project: 'AiChat',
       Environment: `${props?.environment}`,
       Owner: ''
     };
 
     // Conversations Table
-    const conversationsTable = new dynamodb.Table(this, 'BoiseState.ai.Conversations.DynamoDB', {
-      tableName: `${props?.environment}-BoiseState.ai.Conversations`,
+    const conversationsTable = new dynamodb.Table(this, `${props?.institutionName}.ai.Conversations.DynamoDB`, {
+      tableName: `${props?.environment}.${props?.institutionName}.ai.Conversations`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // userId
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -27,18 +29,20 @@ export class AiChatInfrastructureStack extends cdk.Stack {
     });
 
     // Messages Table
-    const messagesTable = new dynamodb.Table(this, 'BoiseState.ai.Messages.DynamoDB', {
-      tableName: `${props?.environment}-BoiseState.ai.Messages`,
+    const messagesTable = new dynamodb.Table(this, `${props?.institutionName}.ai.Messages.DynamoDB`, {
+      tableName: `${props?.environment}.${props?.institutionName}.ai.Messages`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // userId#conversationId
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy
     });
 
     // Shared Conversations Table
-    const sharedConversationsTable = new dynamodb.Table(this, 'BoiseState.ai.SharedConversations.DynamoDB', {
-      tableName: `${props?.environment}-BoiseState.ai.SharedConversations`,
+    const sharedConversationsTable = new dynamodb.Table(this, `${props?.institutionName}.ai.SharedConversations.DynamoDB`, {
+      tableName: `${props?.environment}.${props?.institutionName}.ai.SharedConversations`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // sharedConversationId
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy
     });
 
     sharedConversationsTable.addGlobalSecondaryIndex({
@@ -48,29 +52,32 @@ export class AiChatInfrastructureStack extends cdk.Stack {
     });
 
     // Shared Messages Table
-    const sharedMessagesTable = new dynamodb.Table(this, 'BoiseState.ai.SharedMessages.DynamoDB', {
-      tableName: `${props?.environment}-BoiseState.ai.SharedMessages`,
+    const sharedMessagesTable = new dynamodb.Table(this, `${props?.institutionName}.ai.SharedMessages.DynamoDB`, {
+      tableName: `${props?.environment}.${props?.institutionName}.ai.SharedMessages`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // sharedConversationId
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy
     });
 
     // Model Pricing Table
-    const modelPricingTable = new dynamodb.Table(this, 'BoiseState.ai.ModelPricing.DynamoDB', {
-      tableName: `${props?.environment}-BoiseState.ai.ModelPricing`,
+    const modelPricingTable = new dynamodb.Table(this, `${props?.institutionName}.ai.ModelPricing.DynamoDB`, {
+      tableName: `${props?.environment}.${props?.institutionName}.ai.ModelPricing`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy
     });
 
     // Models Table - used for UI model selection
-    const modelsTable = new dynamodb.Table(this, 'BoiseState.ai.Models.DynamoDB', {
-      tableName: `${props?.environment}-BoiseState.ai.Models`,
+    const modelsTable = new dynamodb.Table(this, `${props?.institutionName}.ai.Models.DynamoDB`, {
+      tableName: `${props?.environment}.${props?.institutionName}.ai.Models`,
       partitionKey: {
         name: 'PK', // modelId
         type: dynamodb.AttributeType.STRING,
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.RETAIN, // Change to DESTROY for dev environments
+      removalPolicy
     });
 
     modelsTable.addGlobalSecondaryIndex({
@@ -80,19 +87,21 @@ export class AiChatInfrastructureStack extends cdk.Stack {
     });
 
     // User Model Usage Table
-    const userModelUsageTable = new dynamodb.Table(this, 'BoiseState.ai.UserModelUsage.DynamoDB', {
-      tableName: `${props?.environment}-BoiseState.ai.UserModelUsage`,
+    const userModelUsageTable = new dynamodb.Table(this, `${props?.institutionName}.ai.UserModelUsage.DynamoDB`, {
+      tableName: `${props?.environment}.${props?.institutionName}.ai.UserModelUsage`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy
     });
 
     // Admin Usage Aggregates Table
-    const adminUsageAggregatesTable = new dynamodb.Table(this, 'BoiseState.ai.AdminUsageAggregates', {
-      tableName: `${props?.environment}-BoiseState.ai.AdminUsageAggregates`,
+    const adminUsageAggregatesTable = new dynamodb.Table(this, `${props?.institutionName}.ai.AdminUsageAggregates`, {
+      tableName: `${props?.environment}.${props?.institutionName}.ai.AdminUsageAggregates`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy
     });
 
     // Optional GSI for user lookup by ID in admin aggregates if needed
