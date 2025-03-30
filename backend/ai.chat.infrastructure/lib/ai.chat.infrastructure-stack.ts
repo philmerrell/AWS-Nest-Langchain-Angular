@@ -8,10 +8,9 @@ export class AiChatInfrastructureStack extends cdk.Stack {
     super(scope, id, props);
 
     const tags = {
-      Project: 'Dev-BoiseState.ai',
+      Project: 'BoiseState.ai',
       Environment: `${props?.environment}`,
-      Owner: 'WebTeam',
-      Purpose: 'ConversationStorage'
+      Owner: ''
     };
 
     // Conversations Table
@@ -117,6 +116,22 @@ export class AiChatInfrastructureStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, 'SharedMessagesTableName', {
       value: sharedMessagesTable.tableName,
+    });
+
+    new cdk.CfnOutput(this, 'ModelPricingTableName', {
+      value: modelPricingTable.tableName,
+    });
+
+    new cdk.CfnOutput(this, 'ModelsTableName', {
+      value: modelsTable.tableName,
+    });
+
+    new cdk.CfnOutput(this, 'UserModelUsageTableName', {
+      value: userModelUsageTable.tableName,
+    });
+
+    new cdk.CfnOutput(this, 'AdminUsageAggregatesTableName', {
+      value: adminUsageAggregatesTable.tableName,
     });
 
 
