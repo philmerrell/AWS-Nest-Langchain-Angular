@@ -13,7 +13,7 @@ new AiChatTableStack(app, 'AiChatTableStack', {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,
   },
-  environment: process.env.ENVIRONMENT || 'dev',
+  environmentName: (process.env.ENVIRONMENT as 'Dev' | 'Test' | 'Prod'),
   institutionName: process.env.INSTITUTION_NAME || 'BoiseState'
   
 });

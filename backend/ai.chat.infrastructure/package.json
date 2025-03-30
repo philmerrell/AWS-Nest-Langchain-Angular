@@ -2,7 +2,7 @@
   "name": "ai.chat.infrastructure",
   "version": "0.1.0",
   "bin": {
-    "ai.chat.infrastructure": "bin/ai.chat.infrastructure.js"
+    "ai.chat.tables": "bin/ai.chat.tables.js"
   },
   "scripts": {
     "build": "tsc",

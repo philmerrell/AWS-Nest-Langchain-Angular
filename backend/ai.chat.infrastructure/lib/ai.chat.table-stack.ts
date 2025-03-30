@@ -1,23 +1,30 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import { AiTableStackProps } from '../bin/AiTableStackProps';
+import { AiTableStackProps } from '../bin/ai.chat.table.props';
 
 export class AiChatTableStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: AiTableStackProps) {
     super(scope, id, props);
 
-    const removalPolicy = props?.environment.toLowerCase().includes('prod') ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY
+    if (!['Dev', 'Test', 'Prod'].includes(props?.environmentName || '')) {
+      throw new Error("The environmentName property must be one of 'Dev', 'Test', or 'Prod'.");
+    }
+
+    if (!/^[a-zA-Z]+$/.test(props?.institutionName || '')) {
+      throw new Error('The environmentName property must contain only letters (a-z, A-Z) with no spaces.');
+    }
+    const removalPolicy = props?.environmentName.toLowerCase().includes('prod') ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY
 
     const tags = {
       Project: 'AiChat',
-      Environment: `${props?.environment}`,
+      Environment: `${props?.environmentName}`,
       Owner: ''
     };
 
     // Conversations Table
     const conversationsTable = new dynamodb.Table(this, `${props?.institutionName}.ai.Conversations.DynamoDB`, {
-      tableName: `${props?.environment}.${props?.institutionName}.ai.Conversations`,
+      tableName: `${props?.environmentName}.${props?.institutionName}.ai.Conversations`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // userId
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -30,7 +37,7 @@ export class AiChatTableStack extends cdk.Stack {
 
     // Messages Table
     const messagesTable = new dynamodb.Table(this, `${props?.institutionName}.ai.Messages.DynamoDB`, {
-      tableName: `${props?.environment}.${props?.institutionName}.ai.Messages`,
+      tableName: `${props?.environmentName}.${props?.institutionName}.ai.Messages`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // userId#conversationId
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -39,7 +46,7 @@ export class AiChatTableStack extends cdk.Stack {
 
     // Shared Conversations Table
     const sharedConversationsTable = new dynamodb.Table(this, `${props?.institutionName}.ai.SharedConversations.DynamoDB`, {
-      tableName: `${props?.environment}.${props?.institutionName}.ai.SharedConversations`,
+      tableName: `${props?.environmentName}.${props?.institutionName}.ai.SharedConversations`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // sharedConversationId
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy
@@ -53,7 +60,7 @@ export class AiChatTableStack extends cdk.Stack {
 
     // Shared Messages Table
     const sharedMessagesTable = new dynamodb.Table(this, `${props?.institutionName}.ai.SharedMessages.DynamoDB`, {
-      tableName: `${props?.environment}.${props?.institutionName}.ai.SharedMessages`,
+      tableName: `${props?.environmentName}.${props?.institutionName}.ai.SharedMessages`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, // sharedConversationId
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING }, // timestamp
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -62,7 +69,7 @@ export class AiChatTableStack extends cdk.Stack {
 
     // Model Pricing Table
     const modelPricingTable = new dynamodb.Table(this, `${props?.institutionName}.ai.ModelPricing.DynamoDB`, {
-      tableName: `${props?.environment}.${props?.institutionName}.ai.ModelPricing`,
+      tableName: `${props?.environmentName}.${props?.institutionName}.ai.ModelPricing`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -71,7 +78,7 @@ export class AiChatTableStack extends cdk.Stack {
 
     // Models Table - used for UI model selection
     const modelsTable = new dynamodb.Table(this, `${props?.institutionName}.ai.Models.DynamoDB`, {
-      tableName: `${props?.environment}.${props?.institutionName}.ai.Models`,
+      tableName: `${props?.environmentName}.${props?.institutionName}.ai.Models`,
       partitionKey: {
         name: 'PK', // modelId
         type: dynamodb.AttributeType.STRING,
@@ -88,7 +95,7 @@ export class AiChatTableStack extends cdk.Stack {
 
     // User Model Usage Table
     const userModelUsageTable = new dynamodb.Table(this, `${props?.institutionName}.ai.UserModelUsage.DynamoDB`, {
-      tableName: `${props?.environment}.${props?.institutionName}.ai.UserModelUsage`,
+      tableName: `${props?.environmentName}.${props?.institutionName}.ai.UserModelUsage`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -97,7 +104,7 @@ export class AiChatTableStack extends cdk.Stack {
 
     // Admin Usage Aggregates Table
     const adminUsageAggregatesTable = new dynamodb.Table(this, `${props?.institutionName}.ai.AdminUsageAggregates`, {
-      tableName: `${props?.environment}.${props?.institutionName}.ai.AdminUsageAggregates`,
+      tableName: `${props?.environmentName}.${props?.institutionName}.ai.AdminUsageAggregates`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
