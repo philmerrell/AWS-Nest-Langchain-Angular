@@ -1,13 +1,13 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>callback</ion-title>
+    <ion-title>Completing Sign In</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">callback</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <div class="callback-container">
+    <h2>Finalizing your authentication</h2>
+    <p>{{ statusMessage }}</p>
+    <ion-progress-bar type="indeterminate"></ion-progress-bar>
+  </div>
 </ion-content>

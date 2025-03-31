@@ -2,42 +2,46 @@
     Recent
   </ion-item-divider>
 
-  @if(conversations.status() === status.Loading) {
-   <ion-item lines="none" color="light">
-     <ion-label>Loading Conversations</ion-label>
-     <ion-spinner></ion-spinner>
-   </ion-item>
-  }
-  
-  @for(conversation of conversations.value(); track conversation.conversationId) {
-    <ion-item (click)="setConversation(conversation)"
-      lines="none"
-      [color]="currentConversation().conversationId === conversation.conversationId ? 'medium' : 'light'" 
-      button 
-      [detail]="false">
-      <ion-label>
-        {{ conversation.name }}
-      </ion-label>
-      
-      <!-- Ellipsis button for conversation actions -->
-      @if(conversation.conversationId !== 'pending') {
+  @if(userIsLoggedIn) {
+
+    @if(conversations.status() === status.Loading) {
+     <ion-item lines="none" color="light">
+       <ion-label>Loading Conversations</ion-label>
+       <ion-spinner></ion-spinner>
+     </ion-item>
+    }
+    
+    @for(conversation of conversations.value(); track conversation.conversationId) {
+      <ion-item (click)="setConversation(conversation)"
+        lines="none"
+        [color]="currentConversation().conversationId === conversation.conversationId ? 'medium' : 'light'" 
+        button 
+        [detail]="false">
+        <ion-label>
+          {{ conversation.name }}
+        </ion-label>
         
-          <ion-button (click)="presentActionPopover($event, conversation)" slot="end" size="small" fill="clear">
-            <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
-          </ion-button>
-        
+        <!-- Ellipsis button for conversation actions -->
+        @if(conversation.conversationId !== 'pending') {
+          
+            <ion-button (click)="presentActionPopover($event, conversation)" slot="end" size="small" fill="clear">
+              <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
+            </ion-button>
+          
+        }
+      </ion-item>
+    } @empty {
+      @if(conversations.status() === status.Resolved) {
+        <ion-card>
+          <ion-item lines="none">
+            <ion-icon slot="start" name="chatbox-outline" color="secondary"></ion-icon>
+            <ion-label>
+              <h1>No Coversations Yet.</h1>
+              <p><ion-text color="medium">But if you had them, this is where they'd be.</ion-text></p>
+            </ion-label>
+          </ion-item>
+        </ion-card>
       }
-    </ion-item>
-  } @empty {
-    @if(conversations.status() === status.Resolved) {
-      <ion-card>
-        <ion-item lines="none">
-          <ion-icon slot="start" name="chatbox-outline" color="secondary"></ion-icon>
-          <ion-label>
-            <h1>No Coversations Yet.</h1>
-            <p><ion-text color="medium">But if you had them, this is where they'd be.</ion-text></p>
-          </ion-label>
-        </ion-item>
-      </ion-card>
     }
   }
+

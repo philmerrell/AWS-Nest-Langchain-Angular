@@ -34,11 +34,20 @@ export class EntraIDStrategy extends PassportStrategy(Strategy, 'EntraID') {
   }
 
   validate(payload: any): User {
-    console.log(payload);
-    // TODO: release Emplid claim and add
-    // Here's where we can modify user object
-    return { email: 'philmerrell@boisestate.edu', emplId: '123456789', name: 'Phil Merrell', roles: ['DotNetDevelopers'] };
+    // console.log('JWT Payload:', payload); // For debugging
+
+    const email = payload.email || payload.preferred_username;
+    const name = payload.name || `${payload.given_name || ''} ${payload.family_name || ''}`.trim();
+    const emplId = payload['http://schemas.boisestate.edu/claims/employeenumber'];
     const roles = payload.roles || [];
-    return { email: payload.email, name: payload.name, emplId: payload.emplId, roles };
+    
+    const user = { 
+      email: email.toLowerCase(), 
+      name, 
+      emplId, 
+      roles
+    };
+
+    return user;
   }
 }

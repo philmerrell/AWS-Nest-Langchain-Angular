@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { AuthService } from './auth.service';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
     
-    this.router.navigate(['/login']);
+    window.open(environment.loginUrl, '_SELF')
     return false;
   }
 }

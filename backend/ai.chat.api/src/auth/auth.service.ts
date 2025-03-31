@@ -14,8 +14,7 @@ export class AuthService {
 
     const params = new URLSearchParams();
     params.append('client_id', this.configService.get('ENTRA_CLIENT_ID') || '');
-    // Example if you have API-specific scopes
-    params.append('scope', 'openid profile email api://e388e26f-b9bf-45da-beb4-b6caa48c4cdd/Read offline_access');
+    params.append('scope', `openid profile email api://${this.configService.get('ENTRA_CLIENT_ID')}/Read offline_access`);
     params.append('code', code);
     params.append('grant_type', 'authorization_code');
     params.append('redirect_uri', this.configService.get('REDIRECT_URI') || '');

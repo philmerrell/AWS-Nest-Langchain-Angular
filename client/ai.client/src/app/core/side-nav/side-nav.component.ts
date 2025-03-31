@@ -1,4 +1,4 @@
-import { Component, OnInit, ResourceStatus } from '@angular/core';
+import { Component, OnInit, ResourceRef, ResourceStatus } from '@angular/core';
 import { ConversationService } from 'src/app/conversation/services/conversation.service';
 import { 
   IonItem, IonLabel, IonSpinner, IonList, IonItemDivider, 
@@ -8,6 +8,7 @@ import { addIcons } from 'ionicons';
 import { chatboxOutline, createOutline, ellipsisHorizontal } from 'ionicons/icons';
 import { ConversationActionsComponent } from '../conversation-actions/conversation-actions.component';
 import { Conversation } from 'src/app/conversation/services/conversation.model';
+import { AuthService } from 'src/app/auth/auth.service';
 
 @Component({
   selector: 'app-side-nav',
@@ -21,18 +22,26 @@ import { Conversation } from 'src/app/conversation/services/conversation.model';
 })
 export class SideNavComponent implements OnInit {
   status = ResourceStatus;
-  conversations = this.conversationService.conversationsResource;
+  conversations!: ResourceRef<Conversation[] | undefined>;
   currentConversation = this.conversationService.getCurrentConversation();
+  userIsLoggedIn = this.authService.isLoggedIn();
 
   constructor(
+    private authService: AuthService,
     private conversationService: ConversationService, 
     private router: Router,
     private popoverController: PopoverController
   ) {
     addIcons({chatboxOutline, createOutline, ellipsisHorizontal});
+    console.log(this.userIsLoggedIn)
+    if(this.userIsLoggedIn) {
+      this.conversations = this.conversationService.conversationsResource
+    }
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    
+  }
 
   newChat() {
     this.conversationService.createNewConversation();
