@@ -3,14 +3,14 @@ import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from '@nestjs
 import { ModelWithPricingDto } from './model.dto';
 import { ModelService } from './model.service';
 import { Role, Roles } from 'src/auth/guards/roles/roles.decorator';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { EntraAuthGuard } from 'src/auth/guards/entra-auth.guard';
 
 @Controller('models')
 export class ModelsController {
   constructor(private modelService: ModelService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(EntraAuthGuard)
   async getModels(@Req() req: any) {
     const user = req.user;
     const models = await this.modelService.getModelsWithPricing(user.roles);
@@ -18,19 +18,19 @@ export class ModelsController {
   }
 
   @Get('default')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(EntraAuthGuard)
   async getDefaultModel() {
     return this.modelService.getDefaultModel();
   }
 
   @Get(':modelId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(EntraAuthGuard)
   async getModel(@Param('modelId') modelId: string) {
     return this.modelService.getModelWithPricing(modelId);
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(EntraAuthGuard)
   @Roles(Role.DotNetDevelopers)
   async createModel(@Body() modelDto: ModelWithPricingDto, @Req() req: any) {
     const user = req.user;
@@ -38,7 +38,7 @@ export class ModelsController {
   }
 
   @Put(':modelId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(EntraAuthGuard)
   @Roles(Role.DotNetDevelopers)
   async updateModel(
     @Param('modelId') modelId: string,
@@ -55,7 +55,7 @@ export class ModelsController {
   }
 
   @Put(':modelId/default')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(EntraAuthGuard)
   @Roles(Role.DotNetDevelopers)
   async setDefaultModel(@Param('modelId') modelId: string) {
     return this.modelService.setDefaultModel(modelId);

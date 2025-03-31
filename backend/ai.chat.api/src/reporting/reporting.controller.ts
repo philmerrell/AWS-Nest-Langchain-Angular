@@ -7,9 +7,9 @@ import {
   DateParamDto,
   PaginationQueryDto,
 } from './reporting.dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles/roles.guard';
 import { Role, Roles } from 'src/auth/guards/roles/roles.decorator';
+import { EntraAuthGuard } from 'src/auth/guards/entra-auth.guard';
 
 @Controller('reporting')
 export class ReportingController {
@@ -18,7 +18,7 @@ export class ReportingController {
   // USER ENDPOINTS
   
   @Get('users/monthly/:yearMonth')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(EntraAuthGuard)
   async getUserMonthlyCost(
     @Param() params: YearMonthParamDto,
     @Req() req: any
@@ -28,7 +28,7 @@ export class ReportingController {
   }
 
   @Get('users/yearly/:year')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(EntraAuthGuard)
   async getUserYearlyCost(
     @Param() params: YearParamDto,
     @Req() req: any
@@ -38,7 +38,7 @@ export class ReportingController {
   }
 
   @Get('users/daily-breakdown/:date')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(EntraAuthGuard)
   async getUserDailyBreakdown(
     @Param() params: DateParamDto,
     @Req() req: any
@@ -50,7 +50,7 @@ export class ReportingController {
   // ADMIN ENDPOINTS
 
   @Get('admin/top-users/yearly/:year')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(EntraAuthGuard, RolesGuard)
   @Roles(Role.DotNetDevelopers)
   async getTopUsersByYear(
     @Param() params: YearParamDto,
@@ -62,7 +62,7 @@ export class ReportingController {
  
 
   @Get('admin/top-users/:date')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(EntraAuthGuard, RolesGuard)
   @Roles(Role.DotNetDevelopers)
   async getTopUsers(
     @Param() params: DateParamDto,
@@ -73,7 +73,7 @@ export class ReportingController {
   }
   
   @Get('admin/monthly-summary/:yearMonth')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(EntraAuthGuard, RolesGuard)
   @Roles(Role.DotNetDevelopers)
   async getAdminMonthlySummary(
     @Param() params: YearMonthParamDto,
@@ -82,7 +82,7 @@ export class ReportingController {
   }
 
   @Get('admin/top-users/monthly/:yearMonth')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(EntraAuthGuard, RolesGuard)
   @Roles(Role.DotNetDevelopers)
   async getTopUsersByMonth(
     @Param() params: YearMonthParamDto,

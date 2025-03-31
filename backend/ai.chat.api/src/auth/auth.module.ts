@@ -13,23 +13,13 @@ import { RolesGuard } from './guards/roles/roles.guard';
 
 @Module({
   imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET'),
-        signOptions: { expiresIn: '1d' },
-      }),
-    }),
+    PassportModule.register({ defaultStrategy: 'EntraID' }),
   ],
   controllers: [AuthController],
   providers: [
     AuthService,
-    EntraIDStrategy,
-    GoogleStrategy,
-    JwtStrategy,
+    EntraIDStrategy
   ],
-  exports: [PassportModule, JwtModule],
+  exports: [PassportModule],
 })
 export class AuthModule {}

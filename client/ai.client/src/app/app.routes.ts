@@ -44,5 +44,9 @@ export const routes: Routes = [
   {
     path: 'shared-conversation',
     loadComponent: () => import('./shared-conversation/shared-conversation.page').then( m => m.SharedConversationPage)
+  },
+  {
+    path: 'auth/callback',
+    loadComponent: () => import('./auth/callback/callback.page').then( m => m.CallbackPage)
   }
 ];

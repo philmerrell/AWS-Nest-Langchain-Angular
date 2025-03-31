@@ -1,16 +1,12 @@
-// src/auth/auth.service.ts
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
-import { User } from './strategies/entra.strategy';
 
 @Injectable()
 export class AuthService {
   
   constructor(
-    private configService: ConfigService,
-    private jwtService: JwtService
+    private configService: ConfigService
   ) {}
 
   async exchangeCodeForTokens(code: string) {
@@ -18,7 +14,8 @@ export class AuthService {
 
     const params = new URLSearchParams();
     params.append('client_id', this.configService.get('ENTRA_CLIENT_ID') || '');
-    params.append('scope', 'openid');
+    // Example if you have API-specific scopes
+    params.append('scope', 'openid profile email api://e388e26f-b9bf-45da-beb4-b6caa48c4cdd/Read offline_access');
     params.append('code', code);
     params.append('grant_type', 'authorization_code');
     params.append('redirect_uri', this.configService.get('REDIRECT_URI') || '');
@@ -33,18 +30,4 @@ export class AuthService {
     return response.data;
   }
 
-  async generateJwtToken(user: User): Promise<string> {
-    const payload = {
-      email: user.email,
-      name: user.name,
-      emplId: user.emplId,
-      picture: user.picture,
-      roles: user.roles
-    };
-    
-    return this.jwtService.sign(payload, {
-      expiresIn: '1d',
-      secret: this.configService.get('JWT_SECRET'),
-    });
-  }
 }

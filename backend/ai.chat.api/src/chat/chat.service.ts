@@ -89,7 +89,7 @@ export class ChatService implements OnModuleInit {
             model: 'amazon.nova-micro-v1:0',
             region: this.configService.get<string>('BEDROCK_AWS_REGION'),
         });
-        const response = await model.invoke([['system', 'Respond with only a title name and nothing else. Do not put the title in quotes'], ['user', `Look at the following prompt: ${userInput} \n\nYour task: As an AI proficient in summarization, create a short concise title for the given prompt. Ensure the title is under 30 characters.`]]);
+        const response = await model.invoke([['system', 'Respond with only a title name and nothing else. Do not use quotes in your response.'], ['user', `Look at the following prompt: ${userInput} \n\nYour task: As an AI proficient in summarization, create a short concise title for the given prompt. Ensure the title is under 30 characters.`]]);
         const inputTokens = response.usage_metadata?.input_tokens || 0;
         const outputTokens = response.usage_metadata?.output_tokens || 0;
         await this.costService.trackUsage({
@@ -140,7 +140,6 @@ export class ChatService implements OnModuleInit {
         streamContext: { aborted: boolean },
         requestId: string
       ): Promise<Message> {
-        console.log(messages);
         const stream = await model.stream(messages);
         let inputTokens = 0, outputTokens = 0, content = '', reasoningResponse = '';
         

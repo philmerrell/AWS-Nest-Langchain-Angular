@@ -1,11 +1,10 @@
 import { Controller, Req, Get, UseGuards, Param, Post, Body, Delete, Patch } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { ConversationService } from './conversation.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ConversationSharingService } from './conversation-sharing.service';
 import { GetShareableLinkDto, ShareConversationDto } from './share-conversation.dto';
 import { MessageService } from 'src/messages/message.service';
 import { RenameConversationDto } from './rename-conversation.dto';
+import { EntraAuthGuard } from 'src/auth/guards/entra-auth.guard';
 
 @Controller('conversations')
 export class ConversationsController {
@@ -16,7 +15,7 @@ export class ConversationsController {
         private conversationSharingService: ConversationSharingService) { }
 
     @Get()
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(EntraAuthGuard)
     async getConversations(@Req() req: any) {
         const user = req.user;
         const conversations = await this.conversationService.getConversations(user.emplId);
@@ -24,7 +23,7 @@ export class ConversationsController {
     }
 
     @Get(':conversationId')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(EntraAuthGuard)
     async getConversationById(@Req() req: any) {
         const user = req.user;
         const conversationId = req.params.conversationId
@@ -32,10 +31,9 @@ export class ConversationsController {
         return conversation;
     }
 
-    // In backend/ai.chat.api/src/conversations/conversations.controller.ts
 
     @Patch(':conversationId/name')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(EntraAuthGuard)
     async updateConversationName(
         @Param('conversationId') conversationId: string,
         @Body() renameDto: RenameConversationDto,
@@ -47,7 +45,7 @@ export class ConversationsController {
     }
 
     @Delete(':conversationId')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(EntraAuthGuard)
     async deleteConversation(@Param('conversationId') conversationId: string, @Req() req: any) {
         const user = req.user;
         
@@ -61,14 +59,14 @@ export class ConversationsController {
     }
 
     @Post('share')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(EntraAuthGuard)
     async shareConversation(@Body() shareDto: ShareConversationDto, @Req() req: any) {
         const user = req.user;
         return this.conversationSharingService.shareConversation(shareDto, user);
     }
 
     @Get('shared')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(EntraAuthGuard)
     async getSharedConversations(@Req() req: any) {
         const user = req.user;
         return this.conversationSharingService.getSharedConversationsForUser(user);
@@ -85,7 +83,7 @@ export class ConversationsController {
     }
 
     @Post('shared/:sharedConversationId/link')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(EntraAuthGuard)
     async getShareableLink(@Param() params: GetShareableLinkDto) {
         return { 
           link: await this.conversationSharingService.generateShareableLink(params.sharedConversationId) 
