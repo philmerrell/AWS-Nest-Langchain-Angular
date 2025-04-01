@@ -248,30 +248,37 @@
     }
   
     ion-split-pane {
-      ion-menu {
-        --background: #000;
-        --color: #fff;
+      // ion-menu {
+      //   --background: #000;
+      //   --color: #fff;
   
-        ion-content {
-          --background: #000;
-          --color: #fff;
+      //   ion-content {
+      //     --background: #000;
+      //     --color: #fff;
   
-          ion-list-header {
-            --background: #000;
-            --color: #fff;
-          }
+      //     ion-list-header {
+      //       --background: #000;
+      //       --color: #fff;
+      //     }
   
-          ion-list {
-            ion-item {
-              --background: #000;
-            }
-          }
-        }
-      }
+      //     ion-list {
+      //       ion-item {
+      //         --background: #000;
+      //       }
+      //     }
+      //   }
+      // }
     }
   
     ion-content {
-      --background: #080a0a;
+      --background: #323232;
+    }
+
+    ion-header[collapse="condense"] {
+      ion-toolbar {
+
+        --background: #323232;
+      }
     }
   }
   
