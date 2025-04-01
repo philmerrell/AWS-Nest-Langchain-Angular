@@ -13,20 +13,24 @@ interface TokenResponse {
   "id_token": string;
 }
 
+export interface User {
+  email: string;
+  name: string;
+  emplId: string;
+  roles: string[];
+  picture?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  currentUser = signal<any>(null);
+  currentUser = signal<User | null>(null);
   private tokenKey = 'access_token';
-
-  constructor(private http: HttpClient) {
-    // Check for token on init
-    const token = localStorage.getItem(this.tokenKey);
-    if (token) {
-      this.loadUserFromToken(token);
-    }
-  }
+  private refreshTokenKey = 'refresh_token';
+  private tokenExpiryKey = 'token_expiry';
+  
+  constructor(private http: HttpClient) {}
 
   async exchangeCodeForTokens(code: string) {
     // Post the code to the auth/token endpoint
@@ -37,42 +41,112 @@ export class AuthService {
       throw new Error('Invalid token response');
     }
 
-    // Store tokens in local storage
-    localStorage.setItem('access_token', response.access_token);
+    // Store tokens in local storage with expiry
+    this.setToken(response.access_token, response.expires_in);
     
     // Store refresh token if available
     if (response.refresh_token) {
-      localStorage.setItem('refresh_token', response.refresh_token);
+      localStorage.setItem(this.refreshTokenKey, response.refresh_token);
     }
     
-    // Store ID token if available
-    if (response.id_token) {
-      localStorage.setItem('id_token', response.id_token);
-    }
+    // Load user from token
+    this.loadUserFromToken(response.access_token);
+    
+    return response;
   }
 
   getCurrentUser() {
-    return this.currentUser
+    return this.currentUser;
   }
 
-  loadUserFromToken(token: string): void {
+  loadUserFromToken(token: string): boolean {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      this.currentUser.set(payload);
-      console.log(this.currentUser())
+      
+      // Check token expiry
+      const expiryTime = payload.exp * 1000; // Convert to milliseconds
+      if (expiryTime < Date.now()) {
+        this.logout();
+        return false;
+      }
+      
+      // Extract user information
+      const user: User = {
+        email: payload.email || payload.preferred_username || '',
+        name: payload.name || '',
+        emplId: payload.oid || payload.sub || '',
+        roles: payload.roles || [],
+        picture: payload.picture || ''
+      };
+      
+      this.currentUser.set(user);
+      return true;
     } catch (e) {
       console.error('Invalid token', e);
       this.logout();
+      return false;
     }
   }
 
-  setToken(token: string): void {
+  setToken(token: string, expiresIn: number = 3600): void {
     localStorage.setItem(this.tokenKey, token);
-    this.loadUserFromToken(token);
+    
+    // Set token expiry time
+    const expiryTime = Date.now() + (expiresIn * 1000);
+    localStorage.setItem(this.tokenExpiryKey, expiryTime.toString());
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    // Check if token exists and is not expired
+    const token = localStorage.getItem(this.tokenKey);
+    const expiryTime = localStorage.getItem(this.tokenExpiryKey);
+    
+    if (!token || !expiryTime) {
+      return null;
+    }
+    
+    // If token is expired, try to refresh
+    if (parseInt(expiryTime) < Date.now()) {
+      this.refreshToken();
+      return null; // Return null for now, the refresh process will set a new token if successful
+    }
+    
+    return token;
+  }
+
+  async refreshToken(): Promise<boolean> {
+    const refreshToken = localStorage.getItem(this.refreshTokenKey);
+    
+    if (!refreshToken) {
+      this.logout();
+      return false;
+    }
+    
+    try {
+      // Call refresh token endpoint
+      const response = await lastValueFrom(
+        this.http.post<TokenResponse>(`${environment.chatApiUrl}/auth/refresh`, { 
+          refresh_token: refreshToken 
+        })
+      );
+      
+      if (response && response.access_token) {
+        this.setToken(response.access_token, response.expires_in);
+        
+        if (response.refresh_token) {
+          localStorage.setItem(this.refreshTokenKey, response.refresh_token);
+        }
+        
+        this.loadUserFromToken(response.access_token);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Failed to refresh token', error);
+      this.logout();
+      return false;
+    }
   }
 
   isLoggedIn(): boolean {
@@ -81,5 +155,8 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.refreshTokenKey);
+    localStorage.removeItem(this.tokenExpiryKey);
+    this.currentUser.set(null);
   }
 }

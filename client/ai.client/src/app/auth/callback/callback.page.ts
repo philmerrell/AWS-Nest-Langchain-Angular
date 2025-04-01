@@ -31,7 +31,7 @@ export class CallbackPage implements OnInit {
       // Get code from URL query parameters
       const queryParams = this.route.snapshot.queryParams;
       const code = queryParams['code'];
-
+  
       if (!code) {
         this.statusMessage = 'Authentication error: No authorization code found';
         setTimeout(() => {
@@ -39,18 +39,21 @@ export class CallbackPage implements OnInit {
         }, 2000);
         return;
       }
-
+  
       await this.authService.exchangeCodeForTokens(code);
-
       this.statusMessage = 'Authentication successful';
-
-      this.router.navigate(['/']);
+  
+      // Check if there's a return URL
+      const returnUrl = sessionStorage.getItem('returnUrl') || '/';
+      sessionStorage.removeItem('returnUrl');
+      
+      this.router.navigate([returnUrl]);
     } catch (error) {
       console.error('Error processing auth callback', error);
       this.statusMessage = 'An error occurred during authentication';
       
       setTimeout(() => {
-        this.router.navigate(['/login']);
+        window.open(environment.loginUrl);
       }, 2000);
     }
   }

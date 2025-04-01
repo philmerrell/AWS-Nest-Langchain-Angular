@@ -44,7 +44,6 @@ export class UserMenuComponent  implements OnInit {
   }
 
   hasAdminRole(): boolean {
-    return true;
     const userRoles = this.user()?.roles || [];
     return userRoles.includes('DotNetDevelopers');
   }

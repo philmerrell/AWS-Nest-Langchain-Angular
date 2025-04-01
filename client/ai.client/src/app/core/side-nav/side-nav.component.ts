@@ -24,19 +24,15 @@ export class SideNavComponent implements OnInit {
   status = ResourceStatus;
   conversations!: ResourceRef<Conversation[] | undefined>;
   currentConversation = this.conversationService.getCurrentConversation();
-  userIsLoggedIn = this.authService.isLoggedIn();
 
   constructor(
-    private authService: AuthService,
     private conversationService: ConversationService, 
     private router: Router,
     private popoverController: PopoverController
   ) {
     addIcons({chatboxOutline, createOutline, ellipsisHorizontal});
-    console.log(this.userIsLoggedIn)
-    if(this.userIsLoggedIn) {
       this.conversations = this.conversationService.conversationsResource
-    }
+  
   }
 
   ngOnInit() {

@@ -18,7 +18,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
     
-    window.open(environment.loginUrl, '_SELF')
+    window.location.href = environment.loginUrl;
     return false;
   }
 }

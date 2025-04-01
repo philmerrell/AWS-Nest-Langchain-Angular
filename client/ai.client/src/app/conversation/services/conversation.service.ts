@@ -2,8 +2,9 @@ import { Injectable, resource, signal, WritableSignal } from '@angular/core';
 import { Conversation } from './conversation.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { lastValueFrom, map, tap } from 'rxjs';
+import { firstValueFrom, lastValueFrom, map, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { AuthService } from 'src/app/auth/auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,14 @@ export class ConversationService {
   private currentConversation: WritableSignal<Conversation> = signal({conversationId: 'pending', name: ''} as Conversation);
 
   private _conversationsResource = resource({
-    loader: () => this.loadConversations()
+    request: () => ({isAuthenticated: this.authService.isLoggedIn(), user: this.authService.currentUser()}), 
+    loader: ({request}) => {
+      if(request.isAuthenticated === false) {
+        return Promise.resolve([]);
+      } else {
+        return this.loadConversations();
+      }
+    }
   })
 
   get conversationsResource() {
@@ -20,6 +28,7 @@ export class ConversationService {
   }
   
   constructor(
+    private authService: AuthService,
     private http: HttpClient,
     private router: Router
   ) {}
