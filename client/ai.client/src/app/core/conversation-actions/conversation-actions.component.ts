@@ -2,7 +2,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { IonItem, IonIcon, IonList, ModalController, PopoverController, AlertController, ToastController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { shareOutline, trashOutline, downloadOutline, pencilOutline } from 'ionicons/icons';
+import { shareOutline, trashOutline, downloadOutline, pencilOutline, starOutline, star } from 'ionicons/icons';
 import { Conversation } from 'src/app/conversation/services/conversation.model';
 import { ShareConversationComponent } from 'src/app/conversation/components/share-conversation/share-conversation.component';
 import { ConversationService } from 'src/app/conversation/services/conversation.service';
@@ -11,6 +11,10 @@ import { ConversationService } from 'src/app/conversation/services/conversation.
   selector: 'app-conversation-actions',
   template: `
     <ion-list>
+      <ion-item button (click)="toggleStar()">
+        <ion-icon [name]="conversation.isStarred ? 'star' : 'star-outline'" slot="start" color="warning"></ion-icon>
+        {{ conversation.isStarred ? 'Unstar' : 'Star' }}
+      </ion-item>
       <ion-item button (click)="shareConversation()">
         <ion-icon name="share-outline" slot="start" color="primary"></ion-icon>
         Share
@@ -51,7 +55,9 @@ export class ConversationActionsComponent implements OnInit {
       shareOutline,
       trashOutline,
       downloadOutline,
-      pencilOutline
+      pencilOutline,
+      starOutline,
+      star
     });
   }
 
@@ -180,6 +186,40 @@ export class ConversationActionsComponent implements OnInit {
     });
     
     await alert.present();
+  }
+
+  async toggleStar() {
+    this.popoverController.dismiss();
+    
+    try {
+      // The isStarred property is still boolean in the frontend
+      const newStarredState = !this.conversation.isStarred;
+      
+      // The conversation service will handle converting boolean to 0/1 for the backend
+      await this.conversationService.toggleStar(this.conversation.conversationId, newStarredState);
+      
+      // Show success message
+      const toast = await this.toastController.create({
+        message: newStarredState 
+          ? 'Conversation moved to starred'
+          : 'Conversation removed from starred',
+        duration: 2000,
+        color: 'success',
+        position: 'bottom'
+      });
+      toast.present();
+    } catch (error) {
+      console.error('Error toggling star status:', error);
+      
+      // Show error message
+      const toast = await this.toastController.create({
+        message: 'Failed to update starred status',
+        duration: 2000,
+        color: 'danger',
+        position: 'bottom'
+      });
+      toast.present();
+    }
   }
   
   async exportConversation() {

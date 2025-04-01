@@ -152,10 +152,7 @@ export class ConversationService {
     return this._conversationsResource;
   }
 
-  
-
   loadConversations() {
-    const newConversation = { conversationId: 'pending', name: 'New Chat'}
     const request = this.http.get<{ lastEvaluatedKey: String, items: Conversation[] }>(`${environment.chatApiUrl}/conversations`)
       .pipe(map(response => { 
         return [
@@ -173,6 +170,36 @@ export class ConversationService {
 
   setConversations(conversations: Conversation[]) {
     this._conversationsResource.set(conversations);
+  }
+
+  async toggleStar(conversationId: string, isStarred: boolean): Promise<void> {
+    try {
+      // Update server
+      await lastValueFrom(
+        this.http.patch(`${environment.chatApiUrl}/conversations/${conversationId}/star`, { isStarred })
+      );
+      
+      // Update local state
+      this._conversationsResource.update(conversations => {
+        return conversations?.map(conversation => 
+          conversation.conversationId === conversationId 
+            ? { ...conversation, isStarred } 
+            : conversation
+        );
+      });
+      
+      // If it's the current conversation, update that too
+      const currentConversation = this.currentConversation();
+      if (currentConversation && currentConversation.conversationId === conversationId) {
+        this.currentConversation.update(conversation => ({
+          ...conversation,
+          isStarred
+        }));
+      }
+    } catch (error) {
+      console.error('Error starring conversation:', error);
+      throw error;
+    }
   }
 
 }

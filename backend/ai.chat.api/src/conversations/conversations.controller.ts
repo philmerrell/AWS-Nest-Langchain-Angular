@@ -5,6 +5,7 @@ import { GetShareableLinkDto, ShareConversationDto } from './share-conversation.
 import { MessageService } from 'src/messages/message.service';
 import { RenameConversationDto } from './rename-conversation.dto';
 import { EntraAuthGuard } from 'src/auth/guards/entra-auth.guard';
+import { StarConversationDto } from './star-conversation.dto';
 
 @Controller('conversations')
 export class ConversationsController {
@@ -48,13 +49,13 @@ export class ConversationsController {
     @UseGuards(EntraAuthGuard)
     async deleteConversation(@Param('conversationId') conversationId: string, @Req() req: any) {
         const user = req.user;
-        
+
         // First delete all messages
         await this.messageService.deleteConversationMessages(conversationId, user.emplId);
-        
+
         // Then delete the conversation itself
         await this.conversationService.deleteConversation(user.emplId, conversationId);
-        
+
         return { success: true, message: 'Conversation and messages deleted successfully' };
     }
 
@@ -63,6 +64,18 @@ export class ConversationsController {
     async shareConversation(@Body() shareDto: ShareConversationDto, @Req() req: any) {
         const user = req.user;
         return this.conversationSharingService.shareConversation(shareDto, user);
+    }
+
+    @Patch(':conversationId/star')
+    @UseGuards(EntraAuthGuard)
+    async starConversation(
+        @Param('conversationId') conversationId: string,
+        @Body() starDto: StarConversationDto,
+        @Req() req: any
+    ) {
+        const user = req.user;
+        await this.conversationService.toggleStar(user.emplId, conversationId, starDto.isStarred);
+        return { success: true };
     }
 
     @Get('shared')
@@ -85,8 +98,8 @@ export class ConversationsController {
     @Post('shared/:sharedConversationId/link')
     @UseGuards(EntraAuthGuard)
     async getShareableLink(@Param() params: GetShareableLinkDto) {
-        return { 
-          link: await this.conversationSharingService.generateShareableLink(params.sharedConversationId) 
+        return {
+            link: await this.conversationSharingService.generateShareableLink(params.sharedConversationId)
         };
     }
 

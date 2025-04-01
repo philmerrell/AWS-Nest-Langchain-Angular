@@ -35,6 +35,13 @@ export class AiChatTableStack extends cdk.Stack {
       partitionKey: { name: 'conversationKey', type: dynamodb.AttributeType.STRING },
     });
 
+    conversationsTable.addGlobalSecondaryIndex({
+      indexName: 'StarredConversationsIndex',
+      partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING }, 
+      sortKey: { name: 'isStarred', type: dynamodb.AttributeType.NUMBER }, // We'll use 1 for starred, 0 or not present for non-starred
+      projectionType: dynamodb.ProjectionType.ALL
+    });
+
     // Messages Table
     const messagesTable = new dynamodb.Table(this, `${props?.institutionName}.ai.Messages.DynamoDB`, {
       tableName: `${props?.environmentName}.${props?.institutionName}.ai.Messages`,

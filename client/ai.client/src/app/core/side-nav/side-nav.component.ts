@@ -14,7 +14,7 @@ import { AuthService } from 'src/app/auth/auth.service';
   selector: 'app-side-nav',
   templateUrl: './side-nav.component.html',
   styleUrls: ['./side-nav.component.scss'],
-  imports: [IonCard, 
+  imports: [IonCard, IonList, 
     IonItemDivider, IonSpinner, IonLabel, IonItem, 
     IonIcon, IonText, IonButton,
   ],
@@ -35,8 +35,21 @@ export class SideNavComponent implements OnInit {
   
   }
 
-  ngOnInit() {
-    
+  ngOnInit() {}
+
+  getStarredConversations(): Conversation[] {
+    const allConversations = this.conversations.value() || [];
+    return allConversations.filter(conversation => 
+      conversation.isStarred && conversation.conversationId !== 'pending'
+    );
+  }
+  
+  // Helper method to get non-starred conversations
+  getNonStarredConversations(): Conversation[] {
+    const allConversations = this.conversations.value() || [];
+    return allConversations.filter(conversation => 
+      !conversation.isStarred
+    );
   }
 
   newChat() {

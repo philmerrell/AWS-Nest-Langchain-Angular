@@ -2,6 +2,7 @@ export interface Conversation {
     conversationId: string;
     name: string;
     createdAt?: string;
+    isStarred?: boolean;
 }
 
 export interface Message {
