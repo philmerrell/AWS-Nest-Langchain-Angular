@@ -32,6 +32,34 @@ export class ConversationSharingService {
     this.sharedMessagesTableName = this.configService.get<string>('SHARED_MESSAGES_TABLE_NAME')!;
   }
 
+  async importSharedConversationToUser(sharedConversationId: string, user: User): Promise<{conversationId: string}> {
+    // 1. Get the shared conversation
+    const sharedConv = await this.getSharedConversation(sharedConversationId);
+    
+    // 2. Get the messages
+    const messages = await this.getSharedConversationMessages(sharedConversationId);
+    
+    // 3. Create a new conversation for the current user
+    const newConversationId = uuidv4();
+    const conversationName = `${sharedConv.title} (imported)`;
+    
+    // 4. Create the conversation
+    await this.conversationService.createConversation(newConversationId, user);
+    await this.conversationService.updateConversationName(user.emplId, newConversationId, conversationName);
+    
+    // 5. Add the messages to the conversation
+    const formattedMessages = messages.map(msg => ({
+      id: uuidv4(),
+      role: msg.role,
+      content: msg.content,
+      reasoning: msg.reasoning
+    }));
+    
+    await this.messageService.addToConversation(formattedMessages, newConversationId, user.emplId);
+    
+    return { conversationId: newConversationId };
+  }
+
   async shareConversation(dto: ShareConversationDto, user: User): Promise<{ sharedConversationId: string }> {
     try {
       // Verify conversation exists and belongs to user

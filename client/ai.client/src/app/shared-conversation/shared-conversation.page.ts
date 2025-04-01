@@ -1,20 +1,23 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, 
   IonButtons, IonBackButton, IonCard, IonCardHeader,
-  IonCardTitle, IonCardContent, IonSkeletonText, IonItem, IonLabel } from '@ionic/angular/standalone';
+  IonCardTitle, IonCardContent, IonSkeletonText, IonItem, IonLabel, IonFooter, IonButton, IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { MarkdownComponent } from 'ngx-markdown';
 import { ConversationSharingService, SharedConversation, SharedMessage } from '../conversation/services/conversation-sharing.service';
 import { DatePipe } from '@angular/common';
 import { ConversationTextComponent } from '../conversation/components/conversation-text/conversation-text.component';
+import { addIcons } from 'ionicons';
+import { addCircleOutline } from 'ionicons/icons';
+import { ConversationService } from '../conversation/services/conversation.service';
 
 @Component({
   selector: 'app-shared-conversation',
   templateUrl: './shared-conversation.page.html',
   styleUrls: ['./shared-conversation.page.scss'],
   standalone: true,
-  imports: [IonLabel, IonItem, 
+  imports: [IonSpinner, IonIcon, IonButton, IonFooter, IonLabel, IonItem, 
     ConversationTextComponent, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, 
     IonBackButton, IonCard, IonCardHeader, IonCardTitle, 
     IonCardContent, DatePipe
@@ -25,12 +28,17 @@ export class SharedConversationPage implements OnInit {
   conversation: SharedConversation | null = null;
   messages: SharedMessage[] = [];
   isLoading = true;
+  isAddingConversation = false;
   error = '';
 
   constructor(
     private route: ActivatedRoute,
+    private conversationService: ConversationService,
+    private router: Router,
     private sharingService: ConversationSharingService
-  ) {}
+  ) {
+    addIcons({addCircleOutline})
+  }
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -40,6 +48,14 @@ export class SharedConversationPage implements OnInit {
         this.loadSharedConversation();
       }
     });
+  }
+
+  async addToMyConversations() {
+    this.isAddingConversation = true;
+    const reponse = await this.sharingService.importSharedConversation(this.sharedConversationId);
+    this.conversationService.conversationsResource.reload();
+    this.isAddingConversation = false;
+    this.router.navigate(['c', reponse])
   }
 
   async loadSharedConversation() {

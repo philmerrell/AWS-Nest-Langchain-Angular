@@ -54,3 +54,18 @@
     }
   </div>
 </ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <div style="width: 250px; margin: 0 auto;">
+      <ion-button (click)="addToMyConversations()" color="secondary" [disabled]="isAddingConversation">
+        @if(!isAddingConversation) {
+          <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        } @else {
+          <ion-spinner slot="start" name="crescent"></ion-spinner>
+        }
+        Add to My Conversations
+      </ion-button>
+    </div>
+    
+  </ion-toolbar>
+</ion-footer>

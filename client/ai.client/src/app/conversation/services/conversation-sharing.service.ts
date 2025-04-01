@@ -70,6 +70,12 @@ export class ConversationSharingService {
     return response.link;
   }
 
+  async importSharedConversation(sharedConversationId: string): Promise<string> {
+    const url = `${environment.chatApiUrl}/conversations/shared/${sharedConversationId}/import`;
+    const response = await lastValueFrom(this.http.post<{conversationId: string}>(url, {}));
+    return response.conversationId;
+  }
+
   // private async loadSharedConversations(): Promise<SharedConversation[]> {
   //   const url = `${environment.chatApiUrl}/conversations/shared`;
   //   return lastValueFrom(this.http.get<SharedConversation[]>(url));

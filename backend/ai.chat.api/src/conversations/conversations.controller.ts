@@ -103,6 +103,16 @@ export class ConversationsController {
         };
     }
 
+    @Post('shared/:sharedConversationId/import')
+    @UseGuards(EntraAuthGuard)
+    async importSharedConversation(
+    @Param('sharedConversationId') sharedConversationId: string,
+    @Req() req: any
+    ) {
+    const user = req.user;
+    return this.conversationSharingService.importSharedConversationToUser(sharedConversationId, user);
+    }
+
 
 
 }

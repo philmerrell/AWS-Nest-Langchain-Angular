@@ -46,7 +46,6 @@ export class CallbackPage implements OnInit {
       // Check if there's a return URL
       const returnUrl = sessionStorage.getItem('returnUrl') || '/';
       sessionStorage.removeItem('returnUrl');
-      console.log(returnUrl);
       this.router.navigate([returnUrl]);
     } catch (error) {
       console.error('Error processing auth callback', error);
