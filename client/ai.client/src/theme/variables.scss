@@ -106,15 +106,6 @@
     --ion-color-background-tint: #f5f6f9;
   }
   
-  .ion-color-canvas {
-    --ion-color-base: var(--ion-color-canvas);
-    --ion-color-base-rgb: var(--ion-color-canvas-rgb);
-    --ion-color-contrast: var(--ion-color-canvas-contrast);
-    --ion-color-contrast-rgb: var(--ion-color-canvas-contrast-rgb);
-    --ion-color-shade: var(--ion-color-canvas-shade);
-    --ion-color-tint: var(--ion-color-canvas-tint);
-  }
-  
   .ion-color-background {
     --ion-color-base: var(--ion-color-background);
     --ion-color-base-rgb: var(--ion-color-background-rgb);
@@ -124,26 +115,23 @@
     --ion-color-tint: var(--ion-color-background-tint);
   }
   
-  .ion-color-emergency {
-    --ion-color-base: var(--ion-color-emergency);
-    --ion-color-base-rgb: var(--ion-color-emergency-rgb);
-    --ion-color-contrast: var(--ion-color-emergency-contrast);
-    --ion-color-contrast-rgb: var(--ion-color-emergency-contrast-rgb);
-    --ion-color-shade: var(--ion-color-emergency-shade);
-    --ion-color-tint: var(--ion-color-emergency-tint);
-  }
   
   // SIDENAV LIGHT THEME --------------------
-  
+
   .active-item {
-    --background: var(--ion-color-primary-shade);
-    border-left: 4px solid var(--ion-color-secondary);
-    color: #fff;
+    --background: var(--ion-color-light-shade);
+    // border-left: 4px solid var(--ion-color-secondary);
+    // padding-left: -4px;
   }
   
-  ion-split-pane {
-    
-  }
+  
+    ion-menu {
+      ion-content {
+
+        --background: var(--ion-color-light);
+      }
+    }
+ 
   
   //@media (prefers-color-scheme: dark) {
   /*
@@ -243,31 +231,15 @@
     // DARK THEME SIDENAV COLORS -------------------
   
     .active-item {
-      --background: var(--ion-color-light-shade);
-      border-left: 4px solid var(--ion-color-secondary);
+      --background: var(--ion-color-step-200);
+      // border-left: 4px solid var(--ion-color-secondary);
+      // padding-left: -4px;
     }
   
     ion-split-pane {
-      // ion-menu {
-      //   --background: #000;
-      //   --color: #fff;
-  
-      //   ion-content {
-      //     --background: #000;
-      //     --color: #fff;
-  
-      //     ion-list-header {
-      //       --background: #000;
-      //       --color: #fff;
-      //     }
-  
-      //     ion-list {
-      //       ion-item {
-      //         --background: #000;
-      //       }
-      //     }
-      //   }
-      // }
+      ion-menu {
+        background: var(--ion-color-light);
+      }
     }
   
     ion-content {

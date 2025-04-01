@@ -7,6 +7,8 @@ import { addCircle } from 'ionicons/icons';
 import { Router } from '@angular/router';
 import { ConversationService } from './conversation/services/conversation.service';
 import { AuthService } from './auth/auth.service';
+import { ThemeService } from './core/theme.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -17,10 +19,13 @@ import { AuthService } from './auth/auth.service';
 })
 export class AppComponent implements OnInit {
   currentUser = this.authService.currentUser;
+  logo$: Observable<string> = this.themeService.logo$;
+  
   constructor(
     private authService: AuthService,
-    private router: Router, 
     private conversationService: ConversationService,
+    private router: Router,
+    private themeService: ThemeService,
     @Optional() @Inject('INIT_APP') private initService: any[]
   ) {
     addIcons({addCircle});

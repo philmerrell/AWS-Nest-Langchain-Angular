@@ -10,7 +10,8 @@
       @for(conversation of getStarredConversations(); track conversation.conversationId) {
         <ion-item (click)="setConversation(conversation)"
           lines="none"
-          [color]="currentConversation().conversationId === conversation.conversationId ? 'medium' : 'light'" 
+          [color]="currentConversation().conversationId === conversation.conversationId ? '' : 'light'"
+          [class.active-item]="currentConversation().conversationId === conversation.conversationId"
           button 
           [detail]="false">
           
@@ -42,7 +43,8 @@
   @for(conversation of getNonStarredConversations(); track conversation.conversationId) {
     <ion-item (click)="setConversation(conversation)"
       lines="none"
-      [color]="currentConversation().conversationId === conversation.conversationId ? 'medium' : 'light'" 
+      [color]="currentConversation().conversationId === conversation.conversationId ? '' : 'light'"
+      [class.active-item]="currentConversation().conversationId === conversation.conversationId"
       button 
       [detail]="false">
       
