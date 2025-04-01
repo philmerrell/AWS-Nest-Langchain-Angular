@@ -11,8 +11,8 @@
 
     <ion-buttons slot="end">
       <ion-button (click)="presentPopover($event)" shape="round" color="primary" size="small">
-        <ion-avatar slot="icon-only" style="border: 2px solid var(--ion-color-primary); height: 40px; width: 40px;">
-          <!-- <img [src]="currentUser().picture" alt="User Avatar"> -->
+        <ion-avatar slot="icon-only" style="height: 35px; width: 35px;">
+          <div style="background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); height: 100%; padding-top: 8px; font-size: 20px; border-radius: 50%;">{{ currentUser().name[0] }}</div>
         </ion-avatar>        
       </ion-button>
     </ion-buttons>

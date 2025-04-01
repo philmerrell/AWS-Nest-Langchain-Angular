@@ -18,7 +18,6 @@ export interface User {
   name: string;
   emplId: string;
   roles: string[];
-  picture?: string;
 }
 
 @Injectable({
@@ -75,8 +74,7 @@ export class AuthService {
         email: payload.email || payload.preferred_username || '',
         name: payload.name || '',
         emplId: payload.oid || payload.sub || '',
-        roles: payload.roles || [],
-        picture: payload.picture || ''
+        roles: payload.roles || []
       };
       
       this.currentUser.set(user);

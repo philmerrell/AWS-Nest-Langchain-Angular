@@ -2,9 +2,9 @@ import { Component, effect, OnInit, signal, Signal } from '@angular/core';
 import { ChatInputComponent } from './components/chat-input/chat-input.component';
 import { addIcons } from 'ionicons';
 import { ellipsisHorizontal } from 'ionicons/icons';
-import { IonHeader, IonToolbar, IonButtons, IonTitle, IonContent, IonFooter, IonMenuButton, IonButton, IonIcon, ModalController, IonAvatar, IonPopover, IonItem, PopoverController, IonBackButton } from "@ionic/angular/standalone";
+import { IonHeader, IonToolbar, IonButtons, IonTitle, IonContent, IonFooter, IonMenuButton, IonButton, IonAvatar, PopoverController } from "@ionic/angular/standalone";
 import { ConversationTextComponent } from './components/conversation-text/conversation-text.component';
-import { Conversation, Message, Model } from './services/conversation.model';
+import { Conversation, Message } from './services/conversation.model';
 import { ChatRequestService } from './services/chat-request.service';
 import { ConversationService } from './services/conversation.service';
 import { ActivatedRoute } from '@angular/router';
@@ -17,7 +17,7 @@ import { UserMenuComponent } from '../core/user-menu/user-menu.component';
   templateUrl: './conversation.page.html',
   styleUrls: ['./conversation.page.scss'],
   standalone: true,
-  imports: [IonBackButton,  IonAvatar, IonButton, IonFooter, IonContent, IonTitle, IonButtons, IonToolbar, IonHeader, ChatInputComponent, IonMenuButton, ConversationTextComponent]
+  imports: [IonAvatar, IonButton, IonFooter, IonContent, IonTitle, IonButtons, IonToolbar, IonHeader, ChatInputComponent, IonMenuButton, ConversationTextComponent]
 })
 export class ConversationPage implements OnInit {
   currentUser: Signal<any> = this.authService.getCurrentUser();

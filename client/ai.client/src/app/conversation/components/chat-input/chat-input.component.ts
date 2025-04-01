@@ -1,6 +1,6 @@
 import { Component, OnInit, Signal } from '@angular/core';
 import { addIcons } from 'ionicons';
-import { IonIcon, IonTextarea, IonButton, IonCardContent, IonCard, IonGrid, IonRow, IonCol, ModalController } from "@ionic/angular/standalone";
+import { IonIcon, IonTextarea, IonButton, IonGrid, IonRow, IonCol, ModalController } from "@ionic/angular/standalone";
 import { FormsModule } from '@angular/forms';
 import { arrowUpOutline, stop, close } from 'ionicons/icons';
 import { ChatRequestService } from '../../services/chat-request.service';
@@ -13,7 +13,7 @@ import { ModelSettingsComponent } from '../model-settings/model-settings.compone
   templateUrl: './chat-input.component.html',
   styleUrls: ['./chat-input.component.scss'],
   standalone: true,
-  imports: [IonCol, IonRow, IonGrid, IonCard, IonCardContent, IonButton, IonTextarea, IonButton, IonCard, IonTextarea, FormsModule, IonIcon]
+  imports: [IonCol, IonRow, IonGrid, IonButton, IonTextarea, IonButton, IonTextarea, FormsModule, IonIcon]
 })
 export class ChatInputComponent  implements OnInit {
   chatLoading: Signal<boolean> = this.chatRequestService.getChatLoading();

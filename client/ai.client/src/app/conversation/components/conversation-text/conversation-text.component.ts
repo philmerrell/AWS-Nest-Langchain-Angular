@@ -1,5 +1,5 @@
 import { Component, effect, input, OnInit } from '@angular/core';
-import { IonRow, IonCol, IonContent, IonButton, IonIcon } from "@ionic/angular/standalone";
+import { IonRow, IonCol, IonContent, IonButton } from "@ionic/angular/standalone";
 import { MarkdownComponent } from 'ngx-markdown';
 import { addIcons } from 'ionicons';
 import { documentOutline, downloadOutline, imageOutline, listOutline, readerOutline, chevronDownOutline } from 'ionicons/icons';
@@ -13,7 +13,7 @@ import { Message } from '../../services/conversation.model';
   templateUrl: './conversation-text.component.html',
   styleUrls: ['./conversation-text.component.scss'],
   animations: [fadeInOut, slide],
-  imports: [IonIcon, IonButton,  UserMessageComponent, IonRow, IonCol, MarkdownComponent],
+  imports: [IonButton,  UserMessageComponent, IonRow, IonCol, MarkdownComponent],
   standalone: true,
 })
 export class ConversationTextComponent  implements OnInit {
