@@ -51,7 +51,7 @@ const config: webpack.Configuration = {
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
       'process.env.IS_LAMBDA': JSON.stringify(true),
     }),
-    // Use CopyWebpackPlugin properly
+    // Fixed CopyWebpackPlugin usage
     new CopyWebpackPlugin({
       patterns: [
         { from: '.env', to: '.', noErrorOnMissing: true },

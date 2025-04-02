@@ -44,6 +44,7 @@ const config: webpack.Configuration = {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
     }),
+    // Fixed CopyWebpackPlugin usage
     new CopyWebpackPlugin({
       patterns: [
         { from: '.env', to: '.', noErrorOnMissing: true },
