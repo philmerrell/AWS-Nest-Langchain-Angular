@@ -19,7 +19,13 @@ import { ConversationSharingService } from './conversations/conversation-sharing
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule],
-  controllers: [ChatController, ConversationsController, MessagesController, ModelsController, ReportingController],
+  controllers: [
+    ChatController,
+    ConversationsController,
+    MessagesController,
+    ModelsController,
+    ReportingController
+  ],
   providers: [
     AppService,
     ChatService,

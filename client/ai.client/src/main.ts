@@ -24,7 +24,7 @@ bootstrapApplication(AppComponent, {
       swipeBackEnabled: false
     }),
     provideAnimations(),
-    provideRouter(routes, withPreloading(PreloadAllModules)),
+    provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideMarkdown({
       mermaidOptions: {

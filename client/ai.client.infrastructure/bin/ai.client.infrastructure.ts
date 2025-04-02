@@ -1,20 +1,18 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { AiClientInfrastructureStack } from '../lib/ai.client.infrastructure-stack';
+import { AiClientStack } from '../lib/ai.client.infrastructure-stack';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const app = new cdk.App();
-new AiClientInfrastructureStack(app, 'AiClientInfrastructureStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
+new AiClientStack(app, 'AiClientInfrastructureStack', {
+    env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
-
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
+     // Domain information
+    domainName: process.env.DOMAIN_NAME || '',
+    subDomainName: process.env.SUB_DOMAIN_NAME || '',
+    sslCertificateArn: process.env.SSL_CERT_ARN || '',
+    environmentName: (process.env.ENVIRONMENT_NAME as 'Dev' | 'Test' | 'Prod'),
 
   /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 });
