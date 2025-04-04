@@ -33,4 +33,9 @@ export class ChatController {
     const user = req.user;
     return { message: 'Hello, Developer.', user };
   }
+
+  @Get('health')
+  health() {
+    return { message: 'I am healthy! ' };
+  }
 }
