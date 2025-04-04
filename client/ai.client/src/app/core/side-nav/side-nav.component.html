@@ -4,7 +4,7 @@
   @if(getStarredConversations().length > 0) {
     <ion-list>
       <ion-item-divider color="light" sticky>
-        Starred
+        <ion-text>Starred</ion-text>
       </ion-item-divider>
     
       @for(conversation of getStarredConversations(); track conversation.conversationId) {
@@ -30,7 +30,7 @@
   <ion-list>
   <!-- Recent conversations section -->
   <ion-item-divider color="light" sticky>
-    Recent
+    <ion-text>Recent</ion-text>
   </ion-item-divider>
   
   @if(conversations.status() === status.Loading) {

@@ -16,7 +16,7 @@ import { AuthService } from 'src/app/auth/auth.service';
   styleUrls: ['./side-nav.component.scss'],
   imports: [IonCard, IonList, 
     IonItemDivider, IonSpinner, IonLabel, IonItem, 
-    IonIcon, IonText, IonButton,
+    IonIcon, IonText, IonButton
   ],
   standalone: true
 })

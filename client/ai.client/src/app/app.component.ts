@@ -15,12 +15,12 @@ import { Observable } from 'rxjs';
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [IonText, IonIcon, IonLabel, IonImg, IonItem, IonApp, IonSplitPane, IonMenu, IonContent, IonRouterOutlet, SideNavComponent, IonThumbnail],
+  imports: [IonButton, IonText, IonIcon, IonLabel, IonImg, IonItem, IonApp, IonSplitPane, IonMenu, IonContent, IonRouterOutlet, SideNavComponent, IonThumbnail],
 })
 export class AppComponent implements OnInit {
   currentUser = this.authService.currentUser;
   logo$: Observable<string> = this.themeService.logo$;
-  
+
   constructor(
     private authService: AuthService,
     private conversationService: ConversationService,

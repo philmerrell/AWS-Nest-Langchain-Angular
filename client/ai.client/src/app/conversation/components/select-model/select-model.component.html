@@ -7,44 +7,46 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <ion-list>
-
-    @if(models.status() === status.Loading) {
-      @for(loading of [1,2,3,4,5]; track loading) {
-        <ion-item>
+  <ion-card>
+    <ion-list>
+  
+      @if(models.status() === status.Loading) {
+        @for(loading of [1,2,3,4,5]; track loading) {
+          <ion-item>
+            <ion-label>
+              <ion-skeleton-text animated></ion-skeleton-text>
+              <p><ion-skeleton-text style="width: 60%"></ion-skeleton-text></p>
+            </ion-label>
+          </ion-item>
+        }
+       }
+      
+      <!-- <ion-item (click)="navigateToAdvancedSettings()" button>
+        <ion-icon slot="start" color="secondary" name="settings-outline"></ion-icon>
+        Advanced Settings
+      </ion-item> -->
+      <ion-item-divider sticky>Models</ion-item-divider>
+      @for(model of models.value(); track model.modelId) {
+        <ion-item (click)="selectModel(model)" button detail="false">
           <ion-label>
-            <ion-skeleton-text animated></ion-skeleton-text>
-            <p><ion-skeleton-text style="width: 60%"></ion-skeleton-text></p>
+            <h2>{{ model.name }}</h2>
+            <!-- <p>{{ model.description }}</p> -->
+          </ion-label>
+          @if(model.modelId === selectedModel()?.modelId) {
+            <ion-icon slot="end" name="checkmark-circle" color="success"></ion-icon>
+          }
+        </ion-item>
+      } @empty {
+        @if(models.status() === status.Resolved) {
+        <ion-item lines="none">
+          <ion-label>
+            <h1>No models are set up...</h1>
+            <p><ion-text color="medium">An Admin will need to add models.</ion-text></p>
           </ion-label>
         </ion-item>
-      }
-     }
-    
-    <!-- <ion-item (click)="navigateToAdvancedSettings()" button>
-      <ion-icon slot="start" color="secondary" name="settings-outline"></ion-icon>
-      Advanced Settings
-    </ion-item> -->
-    <ion-item-divider sticky>Models</ion-item-divider>
-    @for(model of models.value(); track model.modelId) {
-      <ion-item (click)="selectModel(model)" button detail="false">
-        <ion-label>
-          <h2>{{ model.name }}</h2>
-          <!-- <p>{{ model.description }}</p> -->
-        </ion-label>
-        @if(model.modelId === selectedModel()?.modelId) {
-          <ion-icon slot="end" name="checkmark-circle" color="success"></ion-icon>
         }
-      </ion-item>
-    } @empty {
-      @if(models.status() === status.Resolved) {
-      <ion-item lines="none">
-        <ion-label>
-          <h1>No models are set up...</h1>
-          <p><ion-text color="medium">An Admin will need to add models.</ion-text></p>
-        </ion-label>
-      </ion-item>
       }
-    }
-  </ion-list>
+    </ion-list>
+  </ion-card>
 
 </ion-content>
