@@ -1,0 +1,33 @@
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-chat-api
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - CONVERSATIONS_TABLE_NAME=Dev.BoiseState.ai.Conversations
+      - MESSAGES_TABLE_NAME=Dev.BoiseState.ai.Messages
+      - SHARED_CONVERSATIONS_TABLE_NAME=Dev.BoiseState.ai.SharedConversations
+      - SHARED_MESSAGES_TABLE_NAME=Dev.BoiseState.ai.SharedMessages
+      - MODEL_PRICING_TABLE_NAME=Dev.BoiseState.ai.ModelPricing
+      - MODELS_TABLE_NAME=Dev.BoiseState.ai.Models
+      - USER_USAGE_TABLE_NAME=Dev.BoiseState.ai.UserModelUsage
+      - ADMIN_AGGREGATES_TABLE_NAME=Dev.BoiseState.ai.AdminUsageAggregates
+      - BEDROCK_AWS_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+      - ENTRA_TENANT_ID=${ENTRA_TENANT_ID}
+      - ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
+      - ENTRA_CLIENT_SECRET=${ENTRA_CLIENT_SECRET}
+      - REDIRECT_URI=${REDIRECT_URI}
+      - FRONTEND_URL=${FRONTEND_URL}
+    command: npm run start:dev
+    restart: unless-stopped
