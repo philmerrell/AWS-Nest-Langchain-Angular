@@ -8,6 +8,7 @@ import * as route53Targets from 'aws-cdk-lib/aws-route53-targets';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
+import { S3BucketOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
 
 export interface AiClientStackProps extends cdk.StackProps {
   domainName: string;
@@ -71,7 +72,7 @@ export class AiClientStack extends cdk.Stack {
     // Create CloudFront distribution
     this.distribution = new cloudfront.Distribution(this, 'Distribution', {
       defaultBehavior: {
-        origin: new origins.S3StaticWebsiteOrigin(this.websiteBucket),
+        origin: S3BucketOrigin.withOriginAccessControl(this.websiteBucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
