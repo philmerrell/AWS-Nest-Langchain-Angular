@@ -1,10 +1,12 @@
 import * as path from 'path';
 import * as webpack from 'webpack';
 import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
-import CopyWebpackPlugin from 'copy-webpack-plugin';
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 import nodeExternals from 'webpack-node-externals';
+import Dotenv from 'dotenv-webpack';
 
 const isProduction = process.env.NODE_ENV === 'production';
+const envFile = process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env';
 
 const config: webpack.Configuration = {
   mode: isProduction ? 'production' : 'development',
@@ -44,10 +46,13 @@ const config: webpack.Configuration = {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
     }),
-    // Fixed CopyWebpackPlugin usage
+    new Dotenv({
+      path: envFile, // Use the environment-specific file
+      systemvars: true, // Load all system variables as well
+    }),
     new CopyWebpackPlugin({
       patterns: [
-        { from: '.env', to: '.', noErrorOnMissing: true },
+        { from: envFile, to: '.env', noErrorOnMissing: true }, // Copy the env file as .env
         { from: 'package.json', to: '.' },
       ],
     }),

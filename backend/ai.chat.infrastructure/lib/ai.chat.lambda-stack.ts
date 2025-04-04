@@ -81,26 +81,19 @@ export class AiChatLambdaStack extends cdk.Stack {
     const lambdaFunction = new lambda.Function(this, 'AiChatLambdaFunction', {
       functionName: `${props.environmentName}-${props.institutionName}-ai-chat-api`,
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'lambda.js', // index.js is the output of webpack
-      code: lambda.Code.fromAsset('../ai.chat.api/dist/src'), // Point to your webpack output directory
+      handler: 'index.handler', 
+      code: lambda.Code.fromAsset('../ai.chat.api/dist'), // Point to your webpack output directory
       memorySize: 1024,
-      timeout: cdk.Duration.seconds(30),
+      timeout: cdk.Duration.minutes(5),
       environment,
       role: lambdaRole,
-      // Configure X-Ray for tracing if needed
-      tracing: lambda.Tracing.ACTIVE,
+      tracing: lambda.Tracing.ACTIVE
     });
 
     // Create Lambda URL
     const functionUrl = lambdaFunction.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE, // Use AWS_IAM for production
-      cors: {
-        allowCredentials: true,
-        allowedOrigins: ['*'], // Restrict to specific origins in production
-        allowedMethods: [lambda.HttpMethod.ALL],
-        allowedHeaders: ['*'],
-        maxAge: cdk.Duration.days(1),
-      },
+      invokeMode: lambda.InvokeMode.RESPONSE_STREAM
     });
 
     // Create CloudWatch Logs for Lambda function with appropriate retention
