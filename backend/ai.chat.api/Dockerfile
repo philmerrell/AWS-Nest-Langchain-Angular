@@ -12,10 +12,10 @@ RUN npm install
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN npm run webpack:build
 
 # Expose port
 EXPOSE 3000
 
 # Command to run the application
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "start:prod"]

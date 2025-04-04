@@ -2,8 +2,8 @@ import * as path from 'path';
 import * as webpack from 'webpack';
 import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-import nodeExternals from 'webpack-node-externals';
-import Dotenv from 'dotenv-webpack';
+const nodeExternals = require('webpack-node-externals');
+const Dotenv = require('dotenv-webpack');
 
 const isProduction = process.env.NODE_ENV === 'production';
 const envFile = process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env';
@@ -11,10 +11,10 @@ const envFile = process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env';
 const config: webpack.Configuration = {
   mode: isProduction ? 'production' : 'development',
   entry: {
-    main: './src/main.ts',
+    main: './src/main.ts',  // Specify the exact file, not just the directory
   },
   target: 'node',
-  externals: [nodeExternals()], // Exclude node_modules
+  externals: [nodeExternals()], // Exclude node_modules from bundling
   module: {
     rules: [
       {
