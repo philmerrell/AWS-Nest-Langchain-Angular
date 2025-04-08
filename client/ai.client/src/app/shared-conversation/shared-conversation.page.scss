@@ -1,4 +1,11 @@
 /* client/ai.client/src/app/shared-conversation/shared-conversation.page.scss */
+.share-info {
+  --background: #323232;
+  p {
+    color: #ccc;
+  }
+}
+
 .message {
     margin: 12px;
     padding: 12px;

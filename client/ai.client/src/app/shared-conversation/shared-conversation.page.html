@@ -14,7 +14,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content #scroller class="ion-padding">
+<ion-content #scroller class="ion-padding" [fullscreen]="true">
 
   <div class="container">
       
@@ -37,9 +37,10 @@
       <ion-header collapse="condense">
         <ion-toolbar>
           <ion-title size="large">{{ conversation?.title }}</ion-title>
+          <ion-button (click)="addToMyConversations()" slot="end" fill="clear">Save</ion-button>
         </ion-toolbar>
       </ion-header>
-        <ion-item lines="none">
+        <ion-item lines="none" class="share-info">
           <ion-label>
             <h2>Shared by: {{ conversation?.ownerName }}</h2>
             <p>Date: {{ conversation?.createdAt | date }}</p>
@@ -54,7 +55,7 @@
     }
   </div>
 </ion-content>
-<ion-footer>
+<ion-footer class="ion-no-border">
   <ion-toolbar>
     <div style="width: 250px; margin: 0 auto;">
       <ion-button (click)="addToMyConversations()" color="secondary" [disabled]="isAddingConversation">
