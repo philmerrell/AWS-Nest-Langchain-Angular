@@ -38,7 +38,16 @@ export const routes: Routes = [
     loadComponent: () => import('./shared-conversation/shared-conversation.page').then( m => m.SharedConversationPage)
   },
   {
+    path: 'shared-conversations',
+    loadComponent: () => import('./my-shared-conversations/my-shared-conversations.page').then( m => m.MySharedConversationsPage),
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'auth/callback',
     loadComponent: () => import('./auth/callback/callback.page').then( m => m.CallbackPage)
+  },
+  {
+    path: 'my-shared-conversations',
+    loadComponent: () => import('./my-shared-conversations/my-shared-conversations.page').then( m => m.MySharedConversationsPage)
   }
 ];

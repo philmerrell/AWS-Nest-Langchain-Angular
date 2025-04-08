@@ -1,0 +1,21 @@
+ion-item {
+    p {
+      display: flex;
+      align-items: center;
+      margin-top: 4px;
+      
+      ion-icon {
+        margin-right: 6px;
+        font-size: 16px;
+      }
+    }
+  }
+  
+  ion-badge {
+    font-weight: normal;
+    padding: 4px 8px;
+  }
+  
+  .expired-conversation {
+    opacity: 0.6;
+  }

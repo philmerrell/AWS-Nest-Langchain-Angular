@@ -1,75 +1,139 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Share Conversation</ion-title>
+    <ion-title>{{ mode === 'create' ? 'Share Conversation' : 'Edit Sharing Settings' }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()" color="secondary">
-        Cancel
+        Dismiss
       </ion-button>
+      @if(mode === 'edit') {
+        <ion-button (click)="confirmDelete()" color="danger" [disabled]="isDeletionLoading">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      }
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form [formGroup]="shareForm">
-    @if(!shareableLink) {
-
-      <ion-list>
-        <ion-item>
-          <ion-label position="stacked">Email addresses (separate with commas)</ion-label>
-          <ion-input type="text" formControlName="emails" placeholder="user@example.com, another@example.com"></ion-input>
-        </ion-item>
+  <!-- Loading state -->
+  @if(isLoading) {
+    <div class="ion-text-center ion-padding">
+      <ion-spinner></ion-spinner>
+      <p>Loading...</p>
+    </div>
+  }
   
-        <ion-item>
-          <ion-label>Make publicly accessible</ion-label>
-          <ion-checkbox slot="end" formControlName="isPublic"></ion-checkbox>
-        </ion-item>
+  <!-- Error state -->
+  @if(error && !isLoading) {
+    <ion-card color="danger">
+      <ion-card-content>
+        <p>{{ error }}</p>
+      </ion-card-content>
+    </ion-card>
+  }
   
-        <ion-item>
-          <ion-label>Set expiration date</ion-label>
-          <ion-checkbox slot="end" formControlName="hasExpiration" (ionChange)="toggleExpiration($event)"></ion-checkbox>
-        </ion-item>
-  
-        @if(shareForm.get('hasExpiration')?.value) {
+  <!-- Share/Edit form -->
+  @if(!isLoading && !error) {
+    <form [formGroup]="shareForm">
+      @if(!shareableLink) {
+        <ion-list>
           <ion-item>
-            <ion-label position="stacked">Expires on</ion-label>
-            <ion-datetime 
-              presentation="date" 
-              formControlName="expiresAt"
-              [min]="">
-            </ion-datetime>
+            <ion-label position="stacked">Email addresses (separate with commas)</ion-label>
+            <ion-input type="text" formControlName="emails" placeholder="user@example.com, another@example.com"></ion-input>
           </ion-item>
-        }
-      </ion-list>
-    }
+    
+          <ion-item>
+            <ion-label>Make publicly accessible</ion-label>
+            <ion-checkbox slot="end" formControlName="isPublic"></ion-checkbox>
+          </ion-item>
+    
+          <ion-item>
+            <ion-label>Set expiration date</ion-label>
+            <ion-checkbox slot="end" formControlName="hasExpiration" (ionChange)="toggleExpiration($event)"></ion-checkbox>
+          </ion-item>
+    
+          @if(shareForm.get('hasExpiration')?.value) {
+            <ion-item>
+              <ion-label position="stacked">Expires on</ion-label>
+              <ion-datetime 
+                presentation="date" 
+                formControlName="expiresAt"
+                [min]="getDefaultExpiryDate()">
+              </ion-datetime>
+            </ion-item>
+          }
+        </ion-list>
+      }
 
-    @if(shareableLink) {
-      <ion-card>
-        <ion-card-header>
-          <ion-card-title>Share this link</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <p class="share-link">{{ shareableLink }}</p>
-          <ion-button expand="block" (click)="copyLink()">
-            <ion-icon name="copy-outline" slot="start"></ion-icon>
-            Copy Link
-          </ion-button>
-        </ion-card-content>
-      </ion-card>
-    }
-  </form>
+      @if(shareableLink) {
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Share this link</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p class="share-link">{{ shareableLink }}</p>
+            <ion-button expand="block" (click)="copyLink()">
+              <ion-icon name="copy-outline" slot="start"></ion-icon>
+              Copy Link
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+        
+        @if(mode === 'edit') {
+          <ion-list>
+            <ion-item>
+              <ion-label position="stacked">Email addresses (separate with commas)</ion-label>
+              <ion-input type="text" formControlName="emails" placeholder="user@example.com, another@example.com"></ion-input>
+            </ion-item>
+      
+            <ion-item>
+              <ion-label>Make publicly accessible</ion-label>
+              <ion-checkbox slot="end" formControlName="isPublic"></ion-checkbox>
+            </ion-item>
+      
+            <ion-item>
+              <ion-label>Set expiration date</ion-label>
+              <ion-checkbox slot="end" formControlName="hasExpiration" (ionChange)="toggleExpiration($event)"></ion-checkbox>
+            </ion-item>
+      
+            @if(shareForm.get('hasExpiration')?.value) {
+              <ion-item>
+                <ion-label position="stacked">Expires on</ion-label>
+                <ion-datetime 
+                  presentation="date" 
+                  formControlName="expiresAt"
+                  [min]="getDefaultExpiryDate()">
+                </ion-datetime>
+              </ion-item>
+            }
+          </ion-list>
+        }
+      }
+    </form>
+  }
 </ion-content>
 
-@if(!shareableLink) {
-  <ion-footer>
-    <ion-toolbar>
+<ion-footer>
+  <ion-toolbar>
+    @if(!shareableLink) {
       <ion-button expand="block" (click)="shareConversation()" [disabled]="isLoading">
         <ion-icon name="share-outline" slot="start"></ion-icon>
         @if(isLoading) {
-          Sharing...
+          <ion-spinner name="dots"></ion-spinner>
+          {{ mode === 'create' ? 'Sharing...' : 'Updating...' }}
         } @else {
-          Share Conversation
+          {{ mode === 'create' ? 'Share Conversation' : 'Update Sharing Settings' }}
         }
       </ion-button>
-    </ion-toolbar>
-  </ion-footer>
-}
+    } @else if(mode === 'edit') {
+      <ion-button expand="block" (click)="shareConversation()" [disabled]="isLoading">
+        @if(isLoading) {
+          <ion-spinner name="dots"></ion-spinner>
+          Updating...
+        } @else {
+          Update Sharing Settings
+        }
+      </ion-button>
+    }
+  </ion-toolbar>
+</ion-footer>

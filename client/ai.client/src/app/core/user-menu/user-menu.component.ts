@@ -9,6 +9,7 @@ import {
   lockClosedOutline, 
   logOutOutline, 
   settingsOutline, 
+  shareOutline, 
   statsChartOutline 
 } from 'ionicons/icons';
 import { AuthService } from 'src/app/auth/auth.service';
@@ -36,6 +37,7 @@ export class UserMenuComponent  implements OnInit {
     private themeService: ThemeService
   ) {
     addIcons({
+      shareOutline,
       statsChartOutline, 
       lockClosedOutline, 
       barChartOutline, 

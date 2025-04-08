@@ -14,6 +14,12 @@
       <h2>My Usage</h2>
     </ion-label>
   </ion-item>
+  <ion-item button (click)="dismiss()" routerLink="/shared-conversations" lines="none">
+    <ion-icon slot="start" name="share-outline" color="tertiary"></ion-icon>
+    <ion-label>
+      <h2>My Shared</h2>
+    </ion-label>
+  </ion-item>
   <ion-item lines="none">
     <ion-select (ionChange)="handleThemeChange($event)" [value]="theme$ | async" interface="popover" label="Theme" placeholder="Select a theme">
       <ion-select-option value="Auto">System</ion-select-option>

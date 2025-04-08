@@ -1,0 +1,102 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Shared Conversations</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Shared Conversations</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Loading state -->
+  @if(isLoading) {
+    <div class="ion-text-center ion-padding">
+      <ion-spinner></ion-spinner>
+      <p>Loading shared conversations...</p>
+    </div>
+  }
+
+  <!-- Error state -->
+  @if(!isLoading && error) {
+    <ion-card color="danger">
+      <ion-card-header>
+        <ion-card-title>Error</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ error }}</p>
+        <ion-button expand="block" (click)="loadSharedConversations()">
+          Try Again
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  }
+
+  <!-- Empty state -->
+  @if(!isLoading && !error && sharedConversations.length === 0) {
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>No Shared Conversations</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>You haven't shared any conversations yet.</p>
+        <p>When you share a conversation, it will appear here.</p>
+      </ion-card-content>
+    </ion-card>
+  }
+
+  <!-- Shared conversations list -->
+  @if(!isLoading && !error && sharedConversations.length > 0) {
+    <ion-list>
+      <ion-item-divider>
+        <ion-label>Conversations You've Shared</ion-label>
+      </ion-item-divider>
+
+      @for(conversation of sharedConversations; track conversation.PK) {
+        <ion-item (click)="openSharedConversation(conversation)" button detail="true">
+          <ion-label>
+            <h2>{{ conversation.title }}</h2>
+            <p>
+              <ion-icon name="calendar-outline"></ion-icon>
+            </p>
+            <p>
+              @if(conversation.isPublic) {
+                <ion-icon name="globe-outline"></ion-icon>
+                Public
+              } @else {
+                <ion-icon name="people-outline"></ion-icon>
+                Shared with {{ getShareStatus(conversation) }}
+              }
+            </p>
+            @if(conversation.expiresAt) {
+              <p>{{ getExpiryStatus(conversation) }}</p>
+            }
+          </ion-label>
+
+          @if(isExpired(conversation)) {
+            <ion-badge slot="end" color="medium">Expired</ion-badge>
+          } @else if(conversation.isPublic) {
+            <ion-badge slot="end" color="success">Public</ion-badge>
+          } @else {
+            <ion-badge slot="end" color="primary">Shared</ion-badge>
+          }
+          
+          <!-- Action buttons -->
+          <ion-buttons slot="end">
+            <ion-button (click)="editSharedConversation($event, conversation)" fill="clear">
+              <ion-icon slot="icon-only" name="pencil-outline" color="primary"></ion-icon>
+            </ion-button>
+            <ion-button (click)="deleteSharedConversation($event, conversation)" fill="clear">
+              <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      }
+    </ion-list>
+  }
+</ion-content>

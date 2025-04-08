@@ -1,12 +1,17 @@
 // client/ai.client/src/app/conversation/services/conversation-sharing.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, resource, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { resource } from '@angular/core';
 
 export interface ShareConversationOptions {
   conversationId: string;
+  shareWithEmails?: string[];
+  isPublic?: boolean;
+  expiresAt?: string;
+}
+
+export interface UpdateSharedConversationOptions {
   shareWithEmails?: string[];
   isPublic?: boolean;
   expiresAt?: string;
@@ -40,7 +45,7 @@ export interface SharedMessage {
 })
 export class ConversationSharingService {
   // private _sharedConversationsResource = resource({
-  //   loader: () => this.loadSharedConversations(),
+  //   loader: () => this.getSharedConversationsForUser(),
   // });
 
   // get sharedConversations() {
@@ -76,10 +81,23 @@ export class ConversationSharingService {
     return response.conversationId;
   }
 
-  // private async loadSharedConversations(): Promise<SharedConversation[]> {
-  //   const url = `${environment.chatApiUrl}/conversations/shared`;
-  //   return lastValueFrom(this.http.get<SharedConversation[]>(url));
-  // }
+  async getSharedConversationsForUser(): Promise<SharedConversation[]> {
+    const url = `${environment.chatApiUrl}/conversations/shared/my`;
+    return lastValueFrom(this.http.get<SharedConversation[]>(url));
+  }
+
+  async updateSharedConversation(
+    sharedConversationId: string, 
+    options: UpdateSharedConversationOptions
+  ): Promise<SharedConversation> {
+    const url = `${environment.chatApiUrl}/conversations/shared/${sharedConversationId}`;
+    return lastValueFrom(this.http.patch<SharedConversation>(url, options));
+  }
+
+  async deleteSharedConversation(sharedConversationId: string): Promise<void> {
+    const url = `${environment.chatApiUrl}/conversations/shared/${sharedConversationId}`;
+    await lastValueFrom(this.http.delete(url));
+  }
 
   // refreshSharedConversations() {
   //   this._sharedConversationsResource.reload();
