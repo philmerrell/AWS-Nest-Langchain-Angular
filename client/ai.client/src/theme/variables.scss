@@ -229,6 +229,13 @@
     --ion-color-background-tint: #131313;
   
     // DARK THEME SIDENAV COLORS -------------------
+
+    .share-info {
+      --background: #323232;
+      p {
+        color: #ccc;
+      }
+    }
   
     .active-item {
       --background: var(--ion-color-step-200);
