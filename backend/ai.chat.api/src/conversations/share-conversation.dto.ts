@@ -11,6 +11,15 @@ const ShareConversationSchema = z.object({
 
 export class ShareConversationDto extends createZodDto(ShareConversationSchema) {}
 
+// For updating an existing shared conversation
+const UpdateSharedConversationSchema = z.object({
+  shareWithEmails: z.array(z.string().email()).optional(),
+  isPublic: z.boolean().optional(),
+  expiresAt: z.string().datetime().nullable().optional(),
+});
+
+export class UpdateSharedConversationDto extends createZodDto(UpdateSharedConversationSchema) {}
+
 // For generating a shareable link
 const GetShareableLinkSchema = z.object({
   sharedConversationId: z.string().uuid(),
