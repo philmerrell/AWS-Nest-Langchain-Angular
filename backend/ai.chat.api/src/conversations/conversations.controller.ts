@@ -1,11 +1,11 @@
 import { Controller, Req, Get, UseGuards, Param, Post, Body, Delete, Patch } from '@nestjs/common';
 import { ConversationService } from './conversation.service';
-import { ConversationSharingService } from './conversation-sharing.service';
-import { GetShareableLinkDto, ShareConversationDto } from './share-conversation.dto';
 import { MessageService } from 'src/messages/message.service';
 import { RenameConversationDto } from './rename-conversation.dto';
 import { EntraAuthGuard } from 'src/auth/guards/entra-auth.guard';
 import { StarConversationDto } from './star-conversation.dto';
+import { ConversationSharingService } from './conversation-sharing.service';
+import { GetShareableLinkDto, ShareConversationDto, UpdateSharedConversationDto } from './share-conversation.dto';
 
 @Controller('conversations')
 export class ConversationsController {
@@ -78,7 +78,7 @@ export class ConversationsController {
         return { success: true };
     }
 
-    @Get('shared')
+    @Get('shared/my')
     @UseGuards(EntraAuthGuard)
     async getSharedConversations(@Req() req: any) {
         const user = req.user;
@@ -103,14 +103,36 @@ export class ConversationsController {
         };
     }
 
+    @Patch('shared/:sharedConversationId')
+    @UseGuards(EntraAuthGuard)
+    async updateSharedConversation(
+        @Param('sharedConversationId') sharedConversationId: string,
+        @Body() updateDto: UpdateSharedConversationDto,
+        @Req() req: any
+    ) {
+        const user = req.user;
+        return this.conversationSharingService.updateSharedConversation(sharedConversationId, updateDto, user);
+    }
+
+    @Delete('shared/:sharedConversationId')
+    @UseGuards(EntraAuthGuard)
+    async deleteSharedConversation(
+        @Param('sharedConversationId') sharedConversationId: string,
+        @Req() req: any
+    ) {
+        const user = req.user;
+        await this.conversationSharingService.deleteSharedConversation(sharedConversationId, user);
+        return { success: true };
+    }
+
     @Post('shared/:sharedConversationId/import')
     @UseGuards(EntraAuthGuard)
     async importSharedConversation(
-    @Param('sharedConversationId') sharedConversationId: string,
-    @Req() req: any
+        @Param('sharedConversationId') sharedConversationId: string,
+        @Req() req: any
     ) {
-    const user = req.user;
-    return this.conversationSharingService.importSharedConversationToUser(sharedConversationId, user);
+        const user = req.user;
+        return this.conversationSharingService.importSharedConversationToUser(sharedConversationId, user);
     }
 
 

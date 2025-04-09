@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
 import { ChatController } from './chat/chat.controller';
 import { ChatService } from './chat/chat.service';
 import { ConfigModule } from '@nestjs/config';
@@ -16,10 +15,13 @@ import { ReportingController } from './reporting/reporting.controller';
 import { ReportingService } from './reporting/reporting.service';
 import { UsageLimitService } from './chat/usage-limit.service';
 import { ConversationSharingService } from './conversations/conversation-sharing.service';
+import { McpService } from './mcp/mcp.service';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule],
   controllers: [
+    AppController,
     ChatController,
     ConversationsController,
     MessagesController,
@@ -27,7 +29,6 @@ import { ConversationSharingService } from './conversations/conversation-sharing
     ReportingController
   ],
   providers: [
-    AppService,
     ChatService,
     CostService,
     ConversationService,
@@ -36,7 +37,8 @@ import { ConversationSharingService } from './conversations/conversation-sharing
     ModelService,
     ModelPricingService,
     ReportingService,
-    UsageLimitService
+    UsageLimitService,
+    McpService
   ],
 })
 export class AppModule {}
