@@ -7,13 +7,16 @@ import {
   PutCommand, 
   QueryCommand, 
   GetCommand,
-  BatchWriteCommand
+  BatchWriteCommand,
+  DeleteCommand,
+  UpdateCommand
 } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
-import { ShareConversationDto } from './share-conversation.dto';
+import { ShareConversationDto } from '../conversations/share-conversation.dto';
 import { MessageService } from '../messages/message.service';
-import { ConversationService } from './conversation.service';
+import { ConversationService } from '../conversations/conversation.service';
 import { User } from 'src/auth/strategies/entra.strategy';
+
 
 @Injectable()
 export class ConversationSharingService {
@@ -101,6 +104,7 @@ export class ConversationSharingService {
             Item: {
               PK: sharedConversationId,
               SK: `${message.createdAt || new Date().toISOString()}#${index}`,
+              id: uuidv4(),
               content: message.content,
               role: message.role,
               reasoning: message.reasoning,
@@ -142,7 +146,18 @@ export class ConversationSharingService {
         throw new Error('Shared conversation has expired');
       }
       
-      return result.Item;
+      return {
+        conversationId: result.Item.PK,
+        createdAt: result.Item.createdAt,
+        isPublic: result.Item.isPublic,
+        originalConversationId: result.Item.originalConversationId,
+        ownerEmail: result.Item.ownerEmail,
+        ownerId: result.Item.ownerId,
+        ownerName: result.Item.ownerName,
+        shareWithEmails: result.Item.shareWithEmails,
+        title: result.Item.title,
+        updatedAt: result.Item.updatedAt,
+      };
     } catch (error) {
       console.error('Error getting shared conversation:', error);
       throw error;
@@ -162,7 +177,7 @@ export class ConversationSharingService {
         ScanIndexForward: true, // Sort by timestamp (oldest first)
       }));
       
-      return result.Items || [];
+      return (result.Items || []).map(({ PK, SK, ...otherAttributes }) => otherAttributes);
     } catch (error) {
       console.error('Error getting shared messages:', error);
       throw error;
@@ -179,28 +194,11 @@ export class ConversationSharingService {
         ExpressionAttributeValues: { ':ownerId': user.emplId },
       }));
       
-      // Get all conversations shared with this user's email
-      const sharedWithResult = await this.docClient.send(new QueryCommand({
-        TableName: this.sharedConversationsTableName,
-        FilterExpression: 'contains(shareWithEmails, :email)',
-        ExpressionAttributeValues: { ':email': user.email },
-      }));
-      
       // Combine results (removing duplicates)
       const ownedItems = ownedResult.Items || [];
-      const sharedWithItems = sharedWithResult.Items || [];
+
       
-      // Use Map to ensure uniqueness by PK
-      const combinedMap = new Map();
-      
-      [...ownedItems, ...sharedWithItems].forEach(item => {
-        combinedMap.set(item.PK, {
-          ...item,
-          isOwner: item.ownerId === user.emplId,
-        });
-      });
-      
-      return Array.from(combinedMap.values());
+      return ownedItems;
     } catch (error) {
       console.error('Error getting shared conversations:', error);
       throw error;
@@ -214,5 +212,123 @@ export class ConversationSharingService {
     // Generate a shareable link using the frontend URL
     const frontendUrl = this.configService.get('FRONTEND_URL');
     return `${frontendUrl}/shared/${sharedConversationId}`;
+  }
+
+  async updateSharedConversation(
+    sharedConversationId: string, 
+    updateDto: any, 
+    user: User
+  ): Promise<any> {
+    try {
+      // First, get the shared conversation to verify ownership
+      const sharedConversation = await this.getSharedConversation(sharedConversationId);
+      
+      // Verify the user is the owner
+      if (sharedConversation.ownerId !== user.emplId) {
+        throw new Error('You do not have permission to update this shared conversation');
+      }
+      
+      // Prepare update expression parts
+      const updateExpressions: string[] = [];
+      const expressionAttributeNames: Record<string, string> = {};
+      const expressionAttributeValues: Record<string, any> = {
+        ':updatedAt': new Date().toISOString(),
+      };
+      
+      // Add shareWithEmails if provided
+      if (updateDto.shareWithEmails !== undefined) {
+        updateExpressions.push('shareWithEmails = :shareWithEmails');
+        expressionAttributeValues[':shareWithEmails'] = updateDto.shareWithEmails;
+      }
+      
+      // Add isPublic if provided
+      if (updateDto.isPublic !== undefined) {
+        updateExpressions.push('isPublic = :isPublic');
+        expressionAttributeValues[':isPublic'] = updateDto.isPublic;
+      }
+      
+      // Handle expiresAt - can be set or removed
+      if (updateDto.expiresAt !== undefined) {
+        if (updateDto.expiresAt === null) {
+          // Remove the expiresAt attribute
+          updateExpressions.push('REMOVE expiresAt');
+        } else {
+          // Update the expiresAt attribute
+          updateExpressions.push('expiresAt = :expiresAt');
+          expressionAttributeValues[':expiresAt'] = updateDto.expiresAt;
+        }
+      }
+      
+      // Always update the updatedAt timestamp
+      updateExpressions.push('updatedAt = :updatedAt');
+      
+      // Construct the full update expression
+      const updateExpression = `SET ${updateExpressions.join(', ')}`;
+      
+      // Update the shared conversation
+      const result = await this.docClient.send(new UpdateCommand({
+        TableName: this.sharedConversationsTableName,
+        Key: { PK: sharedConversationId },
+        UpdateExpression: updateExpression,
+        ExpressionAttributeValues: expressionAttributeValues,
+        ReturnValues: 'ALL_NEW',
+      }));
+      
+      return result.Attributes;
+    } catch (error) {
+      console.error('Error updating shared conversation:', error);
+      throw error;
+    }
+  }
+  
+  async deleteSharedConversation(sharedConversationId: string, user: User): Promise<void> {
+    try {
+      // First, get the shared conversation to verify ownership
+      const sharedConversation = await this.getSharedConversation(sharedConversationId);
+      
+      // Verify the user is the owner
+      if (sharedConversation.ownerId !== user.emplId) {
+        throw new Error('You do not have permission to delete this shared conversation');
+      }
+      
+      // Delete shared messages first
+      const messagesResult = await this.docClient.send(new QueryCommand({
+        TableName: this.sharedMessagesTableName,
+        KeyConditionExpression: 'PK = :pk',
+        ExpressionAttributeValues: { ':pk': sharedConversationId },
+      }));
+      
+      if (messagesResult.Items && messagesResult.Items.length > 0) {
+        // Process in batches because DynamoDB has a limit of 25 operations per batch
+        const batchSize = 25;
+        for (let i = 0; i < messagesResult.Items.length; i += batchSize) {
+          const batch = messagesResult.Items.slice(i, i + batchSize);
+          
+          const deleteRequests = batch.map(item => ({
+            DeleteRequest: {
+              Key: { 
+                PK: item.PK,
+                SK: item.SK
+              }
+            }
+          }));
+          
+          await this.docClient.send(new BatchWriteCommand({
+            RequestItems: {
+              [this.sharedMessagesTableName]: deleteRequests
+            }
+          }));
+        }
+      }
+      
+      // Delete the shared conversation record
+      await this.docClient.send(new DeleteCommand({
+        TableName: this.sharedConversationsTableName,
+        Key: { PK: sharedConversationId }
+      }));
+    } catch (error) {
+      console.error('Error deleting shared conversation:', error);
+      throw error;
+    }
   }
 }
