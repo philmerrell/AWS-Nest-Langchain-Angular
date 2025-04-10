@@ -1,0 +1,65 @@
+pool:
+  name: 'shared-services-docker'
+stages:
+- stage: Build
+  jobs:  
+  - job: docker_build
+    steps:
+    - task: AWSShellScript@1
+      displayName: 'Login to ECR'
+      inputs:
+        regionName: 'us-west-2'
+        scriptType: 'inline'
+        inlineScript: |
+            CREDENTIALS=$(aws sts assume-role --role-arn arn:aws:iam::897729136999:role/BuildServerRole --role-session-name BuildServerSession)
+
+            # Extract the credentials from the JSON response
+            AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS | jq -r '.Credentials.AccessKeyId')
+            AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.SecretAccessKey')
+            AWS_SESSION_TOKEN=$(echo $CREDENTIALS | jq -r '.Credentials.SessionToken')
+            
+            # Export the credentials as environment variables
+            export AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY
+            export AWS_SESSION_TOKEN
+            aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 897729136999.dkr.ecr.us-west-2.amazonaws.com
+    - task: AWSShellScript@1
+      displayName: 'Build Docker Image'
+      inputs:
+        regionName: 'us-west-2'
+        scriptType: 'inline'
+        inlineScript: |
+            docker buildx build -f "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/Dockerfile" --force-rm -t boisestate.ai --label "com.microsoft.created-by=azure-devops" --label "com.microsoft.visual-studio.project-name=boisestate.ai" .
+    - task: AWSShellScript@1 
+      displayName: Push Docker Image
+      inputs:
+        regionName: 'us-west-2'
+        scriptType: 'inline'
+        inlineScript: |
+            # Replace with your repository name
+            REPO_NAME="boisestate.ai"
+
+            # Check if the repository exists
+            REPO_EXISTS=$(aws ecr describe-repositories --repository-names $REPO_NAME 2>&1)
+
+            # If the repository does not exist, create it
+            if echo "$REPO_EXISTS" | grep -q "RepositoryNotFoundException"; then
+              aws ecr create-repository --repository-name $REPO_NAME
+              echo "Repository $REPO_NAME created successfully."
+            else
+              echo "Repository $REPO_NAME already exists."
+            fi
+            docker tag $REPO_NAME:latest 897729136999.dkr.ecr.us-west-2.amazonaws.com/$REPO_NAME:latest
+
+            docker push 897729136999.dkr.ecr.us-west-2.amazonaws.com/$REPO_NAME:latest
+trigger:
+  batch: true
+  paths:
+    include:
+    - backend/ai.chat.api/Dockerfile
+    - backend/ai.chat.api/docker-build.yaml
+    exclude:
+    - README.md 
+  branches:
+    include:
+    - main
