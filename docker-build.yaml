@@ -49,9 +49,12 @@ stages:
           echo "USER_USAGE_TABLE_NAME=$(USER_USAGE_TABLE_NAME)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
           echo "FRONTEND_URL=$(FRONTEND_URL)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
 
-          # print the contents of the .env file to the console
-            echo "Contents of .env file:"
-            cat "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          # print the dir contents of $(System.DefaultWorkingDirectory)/backend/ai.chat.api/
+            echo "Contents of $(System.DefaultWorkingDirectory)/backend/ai.chat.api/:"
+            ls -la "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/"
+          
+          echo "Contents of .env file:"
+          cat "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
     - task: AWSShellScript@1
       displayName: 'Build Docker Image'
       inputs:
