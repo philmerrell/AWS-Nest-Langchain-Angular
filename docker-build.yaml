@@ -29,7 +29,8 @@ stages:
         regionName: 'us-west-2'
         scriptType: 'inline'
         inlineScript: |
-            docker buildx build -f "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/Dockerfile" --force-rm -t boisestate.ai --label "com.microsoft.created-by=azure-devops" --label "com.microsoft.visual-studio.project-name=boisestate.ai" .
+          cd "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/"
+          docker buildx build -f "Dockerfile" --force-rm -t boisestate.ai --label "com.microsoft.created-by=azure-devops" --label "com.microsoft.visual-studio.project-name=boisestate.ai" .
     - task: AWSShellScript@1 
       displayName: Push Docker Image
       inputs:
