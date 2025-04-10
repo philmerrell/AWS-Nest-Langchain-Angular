@@ -12,7 +12,7 @@ RUN npm install
 COPY . .
 
 # Build the application
-RUN npm run webpack:build
+RUN npm run webpack:build:prod
 
 # Expose port
 EXPOSE 3000
