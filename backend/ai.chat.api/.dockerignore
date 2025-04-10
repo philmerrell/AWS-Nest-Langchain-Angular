@@ -6,7 +6,6 @@ dist
 .vscode
 .idea
 *.md
-*.env
 !.env.example
 docker-compose*
 Dockerfile*
