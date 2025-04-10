@@ -1,5 +1,7 @@
 pool:
   name: 'shared-services-docker'
+variables:
+  - group: boisestate.ai
 stages:
 - stage: Build
   jobs:  
@@ -23,6 +25,33 @@ stages:
             export AWS_SECRET_ACCESS_KEY
             export AWS_SESSION_TOKEN
             aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 897729136999.dkr.ecr.us-west-2.amazonaws.com
+    # create a file called .env at $(System.DefaultWorkingDirectory)/backend/ai.chat.api/ and load it with variables
+    - task: AWSShellScript@1
+      displayName: 'Create .env file'
+      inputs:
+        regionName: 'us-west-2'
+        scriptType: 'inline'
+        inlineScript: |
+          echo "BEDROCK_AWS_REGION=$(BEDROCK_AWS_REGION)" > "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "AWS_REGION=$(AWS_REGION)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "ALLOWED_ORIGINS=$(ALLOWED_ORIGINS)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "ENTRA_CLIENT_ID=$(ENTRA_CLIENT_ID)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "ENTRA_TENANT_ID=$(ENTRA_TENANT_ID)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "ENTRA_CLIENT_SECRET=$(ENTRA_CLIENT_SECRET)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "REDIRECT_URI=$(REDIRECT_URI)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "ADMIN_AGGREGATES_TABLE_NAME=$(ADMIN_AGGREGATES_TABLE_NAME)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "CONVERSATIONS_TABLE_NAME=$(CONVERSATIONS_TABLE_NAME)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "MESSAGES_TABLE_NAME=$(MESSAGES_TABLE_NAME)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "MODEL_PRICING_TABLE_NAME=$(MODEL_PRICING_TABLE_NAME)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "MODELS_TABLE_NAME=$(MODELS_TABLE_NAME)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "SHARED_CONVERSATIONS_TABLE_NAME=$(SHARED_CONVERSATIONS_TABLE_NAME)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "SHARED_MESSAGES_TABLE_NAME=$(SHARED_MESSAGES_TABLE_NAME)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "USER_USAGE_TABLE_NAME=$(USER_USAGE_TABLE_NAME)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+          echo "FRONTEND_URL=$(FRONTEND_URL)" >> "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
+
+          # print the contents of the .env file to the console
+            echo "Contents of .env file:"
+            cat "$(System.DefaultWorkingDirectory)/backend/ai.chat.api/.env"
     - task: AWSShellScript@1
       displayName: 'Build Docker Image'
       inputs:
