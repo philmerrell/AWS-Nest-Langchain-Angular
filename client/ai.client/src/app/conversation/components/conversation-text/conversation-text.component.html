@@ -1,4 +1,4 @@
-<!-- client/ai.client/src/app/conversation/components/conversation-text/conversation-text.component.html -->
+<!-- conversation-text.component.html -->
 @for(message of messages(); track message.id; let i = $index;) {
   @if(message.role === 'user') {
     <ion-row [id]="message.id">
@@ -10,22 +10,39 @@
     <ion-row class="assistant-response-row">
       <ion-col size="12">
         <div class="assistant-message" [@fadeInOut]>
-          @if(message.reasoning) {
+          <!-- Show reasoning toggle button if reasoning is available -->
+          @if(hasReasoning(message)) {
             <ion-button size="small" (click)="toggleReasoning()" fill="clear">
+              <ion-icon slot="start" name="reader-outline"></ion-icon>
               {{ showReasoning ? 'Hide Reasoning' : 'Show Reasoning' }}
             </ion-button>
           }
           
           <!-- Show reasoning if available and user has toggled it -->
-          @if(message.reasoning && showReasoning) {
+          @if(hasReasoning(message) && showReasoning) {
             <div class="reasoning-container">
-              <h4>AI Reasoning</h4>
-              {{ message.reasoning }}
+              <h4>AI Reasoning Process</h4>
+              <div class="reasoning-content">{{ message.reasoning }}</div>
             </div>
+          }
+          
+          <!-- Show tool status if a tool is being used -->
+          @if(isToolActive(message)) {
+            <app-tool-status 
+              [toolName]="message.toolStatus?.name || ''" 
+              [toolInput]="message.toolStatus?.input">
+            </app-tool-status>
           }
           
           <!-- Render assistant's text content -->
           <markdown clipboard mermaid [data]="getTextContent(message.content)"></markdown>
+          
+          <!-- Render tool use blocks if available -->
+          @for(toolUseBlock of getToolUseBlocks(message.content); track toolUseBlock.toolUse.toolUseId) {
+            <div class="tool-use-block">
+              <ion-badge color="tertiary">Using Tool: {{ toolUseBlock.toolUse.name }}</ion-badge>
+            </div>
+          }
           
           <!-- Render tool results if available -->
           @if(message.toolResults && message.toolResults.length > 0) {
@@ -38,18 +55,15 @@
     </ion-row>
   }
   
-  @if(loading()) {
+  @if(loading() && isLastMessage(i)) {
     <ion-row class="metadata-row">
       <ion-col>
-        <!-- Only display loading indicator if it's the last or second to last message -->
-        @if(i === messages()!.length || i === messages()!.length - 1) {
-          <ion-chip [@fadeInOut]>
-            <ion-avatar>
-              <div class="pulsating-circle"></div>
-            </ion-avatar>
-            <ion-label>Loading...</ion-label>
-          </ion-chip>
-        }
+        <ion-chip [@fadeInOut]>
+          <ion-avatar>
+            <div class="pulsating-circle"></div>
+          </ion-avatar>
+          <ion-label>AI is thinking...</ion-label>
+        </ion-chip>
       </ion-col>
     </ion-row>
   }

@@ -3,7 +3,7 @@
     <ion-title>{{ mode === 'create' ? 'Share Conversation' : 'Edit Sharing Settings' }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()" color="secondary">
-        Dismiss
+        Cancel
       </ion-button>
       @if(mode === 'edit') {
         <ion-button (click)="confirmDelete()" color="danger" [disabled]="isDeletionLoading">
@@ -38,18 +38,15 @@
       @if(!shareableLink) {
         <ion-list>
           <ion-item>
-            <ion-label position="stacked">Email addresses (separate with commas)</ion-label>
-            <ion-input type="text" formControlName="emails" placeholder="user@example.com, another@example.com"></ion-input>
+            <ion-input type="text" formControlName="emails" placeholder="user@example.com, another@example.com" labelPlacement="stacked" label="Email addresses (separate with commas)"></ion-input>
           </ion-item>
     
           <ion-item>
-            <ion-label>Make publicly accessible</ion-label>
-            <ion-checkbox slot="end" formControlName="isPublic"></ion-checkbox>
+            <ion-checkbox formControlName="isPublic" justify="space-between">Make publicly accessible</ion-checkbox>
           </ion-item>
     
           <ion-item>
-            <ion-label>Set expiration date</ion-label>
-            <ion-checkbox slot="end" formControlName="hasExpiration" (ionChange)="toggleExpiration($event)"></ion-checkbox>
+            <ion-checkbox formControlName="hasExpiration" justify="space-between" (ionChange)="toggleExpiration($event)">Set expiration date</ion-checkbox>
           </ion-item>
     
           @if(shareForm.get('hasExpiration')?.value) {
@@ -66,7 +63,6 @@
       }
 
       @if(shareableLink) {
-        <ion-card>
           <ion-card-header>
             <ion-card-title>Share this link</ion-card-title>
           </ion-card-header>
@@ -77,7 +73,6 @@
               Copy Link
             </ion-button>
           </ion-card-content>
-        </ion-card>
         
         @if(mode === 'edit') {
           <ion-list>
@@ -87,13 +82,11 @@
             </ion-item>
       
             <ion-item>
-              <ion-label>Make publicly accessible</ion-label>
-              <ion-checkbox slot="end" formControlName="isPublic"></ion-checkbox>
+              <ion-checkbox slot="end" formControlName="isPublic">Make publicly accessible</ion-checkbox>
             </ion-item>
       
             <ion-item>
-              <ion-label>Set expiration date</ion-label>
-              <ion-checkbox slot="end" formControlName="hasExpiration" (ionChange)="toggleExpiration($event)"></ion-checkbox>
+              <ion-checkbox slot="end" formControlName="hasExpiration" (ionChange)="toggleExpiration($event)">Set expiration date</ion-checkbox>
             </ion-item>
       
             @if(shareForm.get('hasExpiration')?.value) {

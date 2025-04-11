@@ -49,7 +49,7 @@ export class ChatRequestService {
       const model = this.selectedModel();
     
       // First add error handling for the HTTP request
-      fetchEventSource(`${environment.chatApiUrl}/chat/bedrock`, {
+      fetchEventSource(`${environment.chatApiUrl}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -208,21 +208,20 @@ export class ChatRequestService {
       }
     }
 
-    private async parseMessage(msg: EventSourceMessage) {
+    private parseMessage(msg: EventSourceMessage) {
       try {
         const message = JSON.parse(msg.data);
         switch(msg.event) {
           case 'delta':
             if ('content' in message) {
               // Handle text content delta
-              if (message.content && typeof message.content === 'string') {
-                const textBlock: ContentBlock = { text: message.content };
-                this.handleAssistantResponse(textBlock);
-              } else if (message.content && typeof message.content === 'object') {
-                // Handle structured content block
-                this.handleAssistantResponse(message.content);
-              }
-            } 
+              const textBlock: ContentBlock = { text: message.content };
+              this.handleAssistantResponse(textBlock);
+            }
+            break;
+          case 'reasoning':
+            this.handleReasoningContent(message.reasoning);
+            this.updateAssistantResponseWithReasoning();
             break;
           case 'tool_use':
             // Handle tool use events
@@ -235,19 +234,24 @@ export class ChatRequestService {
             };
             this.handleAssistantResponse(toolUseBlock);
             break;
-          case 'tool_result':
+          case 'tool':
+            // Handle when a tool is being called
+            this.handleToolRequest(message.toolName, message.toolInput);
+            break;
+          case 'toolResult':
             // Handle tool result events
             const toolResult: ToolResult = {
-              toolUseId: message.toolUseId,
-              name: message.name,
-              input: message.input,
+              toolUseId: uuidv4(), // Generate ID if not provided
+              name: message.toolName,
+              input: message.toolInput,
               result: message.result,
               status: message.status || 'success'
             };
             this.handleToolResult(toolResult);
             break;
-          case 'reasoning':
-            this.handleReasoningContent(message.reasoning);
+          case 'fullReasoning':
+            // When we get the complete reasoning
+            this.reasoningContent = message.reasoning;
             this.updateAssistantResponseWithReasoning();
             break;
           case 'metadata':
@@ -264,13 +268,7 @@ export class ChatRequestService {
             break;
           case 'error':
             const errorMessage = message.error || 'An error occurred';
-            const toast = await this.toastController.create({
-              message: errorMessage,
-              color: 'danger',
-              duration: 3000,
-              buttons: ['Ok']
-            });
-            toast.present();
+            this.showErrorToast(errorMessage);
             
             // If it's a model access error, redirect to model selection
             if (errorMessage.includes('do not have access to the selected model')) {
@@ -280,12 +278,45 @@ export class ChatRequestService {
           default:
             if (message === '[DONE]') {
               this.chatLoading.set(false);
-              console.log('Unparsed Message: ',msg);
             }
         }
       } catch (error) {
         console.error('Error parsing response:', error);
       }
+    }
+    
+    // Add new method to handle tool requests
+    private handleToolRequest(toolName: string, input: any) {
+      const currentConversation = this.conversationService.getCurrentConversation();
+      
+      const existingMessages = this.messageMapService.getMessagesForConversation(currentConversation().conversationId);
+      const assistantMessage = existingMessages().find(m => 
+        m.role === 'assistant' && m.id === this.requestId
+      );
+      
+      if (assistantMessage) {
+        // Update the message to show the tool is being used
+        this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
+          ...assistantMessage,
+          // Add a special metadata property to track tool status
+          toolStatus: {
+            inProgress: true,
+            name: toolName,
+            input: input
+          }
+        });
+      }
+    }
+    
+    // Update showErrorToast method
+    private async showErrorToast(errorMessage: string) {
+      const toast = await this.toastController.create({
+        message: errorMessage,
+        color: 'danger',
+        duration: 3000,
+        buttons: ['Ok']
+      });
+      toast.present();
     }
 
   private async openModelSelectionModal() {

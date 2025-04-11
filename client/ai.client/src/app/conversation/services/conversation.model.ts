@@ -22,8 +22,8 @@ export interface TextContentBlock {
     status: 'success' | 'error';
   }
   
-  // Updated Message interface
-  export interface Message {
+ // Extend the Message interface in conversation.model.ts
+export interface Message {
     id?: string;
     content: ContentBlock[];
     createdAt?: string;
@@ -34,6 +34,11 @@ export interface TextContentBlock {
       outputTokens: number;
     };
     toolResults?: ToolResult[];
+    toolStatus?: {
+      inProgress: boolean;
+      name: string;
+      input: any;
+    };
   }
   
   export interface Conversation {

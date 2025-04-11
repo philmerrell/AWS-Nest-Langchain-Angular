@@ -32,7 +32,7 @@ interface BedrockToolUseContent {
 interface BedrockToolResultContent {
   toolResult: {
     toolUseId: string;
-    content: Array<{text: string}>;
+    content: Array<{ text: string }>;
     status: 'success' | 'error';
   };
 }
@@ -81,14 +81,6 @@ export class BedrockChatService implements OnModuleInit {
   private mcpTools: any[] = [];
   private activeStreams = new Map<string, { aborted: boolean }>();
 
-  private defaultModelParams: {
-    anthropic_version: string;
-    max_tokens: number;
-    temperature: number;
-    top_p: number;
-    top_k: number;
-  };
-
   constructor(
     private configService: ConfigService,
     private readonly conversationService: ConversationService,
@@ -107,25 +99,6 @@ export class BedrockChatService implements OnModuleInit {
 
     // Clean up any stale streams on initialization
     this.activeStreams.clear();
-  }
-
-  convertMcpToolsToBedrockTools(mcpTools: Tool[]) {
-    const bedrockTools = mcpTools.map(tool => {
-      return {
-        "toolSpec": {
-          "name": tool.name,
-          "description": tool.description,
-          "inputSchema": {
-            "json": {
-              "type": "object",
-              "properties": tool.inputSchema.properties,
-              "required": tool.inputSchema.required
-            }
-          }
-        }
-      }
-    });
-    return bedrockTools;
   }
 
   async streamChat(chatRequestDto: ChatRequestDto, res: Response, user: User): Promise<void> {
@@ -149,28 +122,28 @@ export class BedrockChatService implements OnModuleInit {
       const { conversationId, messages, isNewConversation } = await this.initializeConversation(chatRequestDto, user, res);
 
       const params = this.getConverseCommandParams(chatRequestDto, user, messages);
-      
+
       // Process the chat stream and get the complete assistant response for database saving
       const assistantResponse = await this.processChatStream(params, res, user, streamContext, requestId, chatRequestDto);
-         
+
       // Only save results if not aborted
       if (!streamContext.aborted) {
         const messagesToSave = this.getMessagesToSave(assistantResponse, messages, isNewConversation);
         this.messageService.addToConversation(messagesToSave, conversationId, user.emplId);
-        
-        if(isNewConversation) {
+
+        if (isNewConversation) {
           const conversationName = await this.generateConversationName(chatRequestDto.content, user);
-          res.write(`event: metadata\ndata: ${JSON.stringify({ conversationId, conversationName})}\n\n`);
+          res.write(`event: metadata\ndata: ${JSON.stringify({ conversationId, conversationName })}\n\n`);
           await this.conversationService.updateConversationName(user.emplId, conversationId, conversationName);
         }
-        
+
         res.write(`data: [DONE]`);
       } else {
         console.log('Stream context was aborted, skipping message save');
       }
-      
+
       res.end();
-      
+
     } catch (error) {
       console.error('Error streaming chat response:', error);
 
@@ -187,6 +160,15 @@ export class BedrockChatService implements OnModuleInit {
         this.activeStreams.delete(chatRequestDto.requestId);
       }
     }
+  }
+
+  cancelStream(requestId: string): boolean {
+    if (this.activeStreams.has(requestId)) {
+      const context = this.activeStreams.get(requestId)!;
+      context.aborted = true;
+      return true;
+    }
+    return false;
   }
 
   private async processChatStream(params, res, user, streamContext, requestId, chatRequestDto: ChatRequestDto): Promise<ChatMessage> {
@@ -213,7 +195,7 @@ export class BedrockChatService implements OnModuleInit {
         console.log('Stream aborted, breaking loop');
         break; // Exit the loop if request was aborted
       }
-      
+
       // Process the chunk depending on its type
       if (item.contentBlockStart) {
         if (item.contentBlockStart.start?.toolUse) {
@@ -238,14 +220,14 @@ export class BedrockChatService implements OnModuleInit {
           // Collect tool use input (append to existing)
           if (item.contentBlockDelta.delta.toolUse.input) {
             toolUseInput += item.contentBlockDelta.delta.toolUse.input;
-            console.log(`Tool input update: ${item.contentBlockDelta.delta.toolUse.input}`);
+            // console.log(`Tool input update: ${item.contentBlockDelta.delta.toolUse.input}`);
           }
         }
       } else if (item.messageStop) {
         if (item.messageStop.stopReason === 'tool_use' && toolName && toolUseInput) {
-          console.log(`Tool use completed. Full input: ${toolUseInput}`);
+          // console.log(`Tool use completed. Full input: ${toolUseInput}`);
           waitingForContinuation = true;
-          
+
           // Add the tool use to content blocks
           let parsedInput;
           try {
@@ -254,7 +236,7 @@ export class BedrockChatService implements OnModuleInit {
             console.error('Error parsing tool input JSON:', parseError);
             parsedInput = {}; // Empty object as fallback
           }
-          
+
           contentBlocks.push({
             toolUse: {
               toolUseId: toolUseId,
@@ -262,17 +244,17 @@ export class BedrockChatService implements OnModuleInit {
               input: parsedInput
             }
           });
-          
+
           // Notify client that a tool is being used
-          res.write(`event: tool\ndata: ${JSON.stringify({ 
+          res.write(`event: tool\ndata: ${JSON.stringify({
             toolName: toolName,
-            toolInput: toolUseInput 
+            toolInput: toolUseInput
           })}\n\n`);
-          
+
           try {
             // Call the MCP tool
             const toolResult = await this.mcpService.callTool(toolName, parsedInput);
-            
+
             // Format tool result as plain text
             let toolResultText = '';
             if (Array.isArray(toolResult.content)) {
@@ -281,7 +263,7 @@ export class BedrockChatService implements OnModuleInit {
                 .filter(text => text)
                 .join('\n');
             }
-            
+
             // Store the tool result for later saving
             toolResults.push({
               toolUseId: toolUseId,
@@ -290,24 +272,24 @@ export class BedrockChatService implements OnModuleInit {
               result: toolResultText,
               status: 'success'
             });
-            
+
             // Notify client of the tool result
-            res.write(`event: toolResult\ndata: ${JSON.stringify({ 
+            res.write(`event: toolResult\ndata: ${JSON.stringify({
               toolName: toolName,
-              result: toolResultText 
+              result: toolResultText
             })}\n\n`);
-            
+
             // Continue with the conversation...
             const continuationResponse = await this.continueWithToolResult(
-              res, 
-              params.modelId, 
-              user, 
+              res,
+              params.modelId,
+              user,
               streamContext,
               {
                 messages: [
                   {
                     role: 'user',
-                    content: [{ text: chatRequestDto.content }], 
+                    content: [{ text: chatRequestDto.content }],
                   } as BedrockMessage,
                   ...params.messages,
                   {
@@ -338,7 +320,7 @@ export class BedrockChatService implements OnModuleInit {
                 ]
               }
             );
-            
+
             // Update complete message with continuation response if available
             if (continuationResponse && continuationResponse.content) {
               if (typeof continuationResponse.content === 'string') {
@@ -351,22 +333,22 @@ export class BedrockChatService implements OnModuleInit {
                 }
               }
             }
-            
+
             // Update reasoning with continuation response reasoning if available
             if (continuationResponse && continuationResponse.reasoning) {
               reasoningResponse += '\n' + continuationResponse.reasoning;
             }
-            
+
             // Ensure we don't mark this as aborted
             waitingForContinuation = false;
             streamContext.aborted = false;
-            
+
           } catch (error) {
             console.error('Error handling tool result:', error);
-            
+
             // Define error message
             const errorText = `Error: ${error.message || 'Unknown error'}`;
-            
+
             // Store the failed tool result
             toolResults.push({
               toolUseId: toolUseId,
@@ -375,23 +357,23 @@ export class BedrockChatService implements OnModuleInit {
               result: errorText,
               status: 'error'
             });
-            
+
             // Send error to client
-            res.write(`event: error\ndata: ${JSON.stringify({ 
+            res.write(`event: error\ndata: ${JSON.stringify({
               error: 'Error executing tool: ' + (error.message || 'Unknown error')
             })}\n\n`);
-            
+
             // Continue the conversation with the error result
             const continuationResponse = await this.continueWithToolResult(
-              res, 
-              params.modelId, 
+              res,
+              params.modelId,
               user,
               streamContext,
               {
                 messages: [
                   {
                     role: 'user',
-                    content: [{ text: chatRequestDto.content }], 
+                    content: [{ text: chatRequestDto.content }],
                   } as BedrockMessage,
                   ...params.messages,
                   {
@@ -422,7 +404,7 @@ export class BedrockChatService implements OnModuleInit {
                 ]
               }
             );
-            
+
             // Update complete message with continuation response
             if (continuationResponse && continuationResponse.content) {
               if (typeof continuationResponse.content === 'string') {
@@ -435,12 +417,12 @@ export class BedrockChatService implements OnModuleInit {
                 }
               }
             }
-            
+
             // Update reasoning with continuation response reasoning
             if (continuationResponse && continuationResponse.reasoning) {
               reasoningResponse += '\n' + continuationResponse.reasoning;
             }
-            
+
             // Ensure we don't mark this as aborted
             waitingForContinuation = false;
             streamContext.aborted = false;
@@ -450,13 +432,13 @@ export class BedrockChatService implements OnModuleInit {
           // Normal message end (not a tool use)
           // If there's reasoning content, send an event with the complete reasoning
           if (reasoningResponse) {
-            res.write(`event: fullReasoning\ndata: ${JSON.stringify({ 
-              reasoning: reasoningResponse 
+            res.write(`event: fullReasoning\ndata: ${JSON.stringify({
+              reasoning: reasoningResponse
             })}\n\n`);
           }
-          
+
           // Send a completion event
-          res.write(`event: complete\ndata: ${JSON.stringify({ 
+          res.write(`event: complete\ndata: ${JSON.stringify({
             content: completeMessage,
             ...(reasoningResponse ? { reasoning: reasoningResponse } : {})
           })}\n\n`);
@@ -474,7 +456,7 @@ export class BedrockChatService implements OnModuleInit {
         });
       }
     }
-    
+
     // If we collected text content, add it to the content blocks
     if (completeMessage && contentBlocks.length === 0) {
       // Only add text content if no other content blocks (like tool uses) were added
@@ -483,13 +465,13 @@ export class BedrockChatService implements OnModuleInit {
       // Add text content as the first block if there's no text block yet
       contentBlocks.unshift({ text: completeMessage });
     }
-    
+
     // IMPORTANT: Make sure we're not aborted if we were waiting for continuation
     if (waitingForContinuation) {
       console.log('Was waiting for continuation, marking as not aborted');
       streamContext.aborted = false;
     }
-    
+
     // Create the complete assistant message for database storage
     const assistantResponse: ChatMessage = {
       role: 'assistant',
@@ -507,27 +489,46 @@ export class BedrockChatService implements OnModuleInit {
   private getMessagesToSave(assistantResponse: ChatMessage, messages: BedrockMessage[], isNewConversation: boolean): ChatMessage[] {
     // Convert Bedrock messages to your custom ChatMessage format
     const convertedMessages = messages.map(msg => {
-      
+
       return {
         role: msg.role,
         content: msg.content,
         createdAt: new Date().toISOString()
       } as ChatMessage;
     });
-    
+
     // Add the assistant response
     convertedMessages.push(assistantResponse);
-    
+
     // Return all messages or just the last 2 based on isNewConversation
-    return convertedMessages;
+    return isNewConversation ? convertedMessages : convertedMessages.slice(-2);
+  }
+
+  private convertMcpToolsToBedrockTools(mcpTools: Tool[]) {
+    const bedrockTools = mcpTools.map(tool => {
+      return {
+        "toolSpec": {
+          "name": tool.name,
+          "description": tool.description,
+          "inputSchema": {
+            "json": {
+              "type": "object",
+              "properties": tool.inputSchema.properties,
+              "required": tool.inputSchema.required
+            }
+          }
+        }
+      }
+    });
+    return bedrockTools;
   }
 
   private async generateConversationName(userInput: string, user: User) {
     const modelId = 'amazon.nova-micro-v1:0';
     const params = {
       modelId,
-      system: [{text: 'Respond with only a title name and nothing else. Do not use quotes in your response.'}],
-      messages: [{ 
+      system: [{ text: 'Respond with only a title name and nothing else. Do not use quotes in your response.' }],
+      messages: [{
         role: 'user',
         content: [{ text: `Look at the following prompt: ${userInput} \n\nYour task: As an AI proficient in summarization, create a short concise title for the given prompt. Ensure the title is under 30 characters.` }]
       } as BedrockMessage],
@@ -537,14 +538,14 @@ export class BedrockChatService implements OnModuleInit {
     const response = await this.bedrockClient.send(command);
     const inputTokens = response.usage?.inputTokens || 0;
     const outputTokens = response.usage?.outputTokens || 0;
-    
+
     await this.costService.trackUsage({
       user,
       modelId,
       inputTokens,
       outputTokens
     });
-    
+
     // Extract the message text from the response
     let titleText = '';
     if (response.output?.message?.content) {
@@ -562,13 +563,13 @@ export class BedrockChatService implements OnModuleInit {
         titleText = content as string;
       }
     }
-    
+
     return titleText;
   }
 
   private async continueWithToolResult(
-    res: Response, 
-    modelId: string, 
+    res: Response,
+    modelId: string,
     user: User,
     streamContext: { aborted: boolean },
     params: {
@@ -577,7 +578,7 @@ export class BedrockChatService implements OnModuleInit {
   ): Promise<ChatMessage> {
     try {
       console.log('Continuing with tool result');
-      
+
       // Create a new request with the updated messages
       const command = new ConverseStreamCommand({
         modelId: modelId,
@@ -593,17 +594,17 @@ export class BedrockChatService implements OnModuleInit {
 
       // Execute the command and process the stream
       const response = await this.bedrockClient.send(command);
-      
+
       // Process the response stream
       let completeMessage = '';
       let reasoningResponse = '';
-      
+
       for await (const item of response.stream!) {
         if (streamContext.aborted) {
           console.log('Continuation stream aborted');
           break;
         }
-        
+
         if (item.contentBlockDelta) {
           if (item.contentBlockDelta.delta?.text) {
             const textContent = item.contentBlockDelta.delta.text;
@@ -617,16 +618,16 @@ export class BedrockChatService implements OnModuleInit {
         } else if (item.messageStop) {
           // Send final response
           if (reasoningResponse) {
-            res.write(`event: fullReasoning\ndata: ${JSON.stringify({ 
-              reasoning: reasoningResponse 
+            res.write(`event: fullReasoning\ndata: ${JSON.stringify({
+              reasoning: reasoningResponse
             })}\n\n`);
           }
-          
-          res.write(`event: complete\ndata: ${JSON.stringify({ 
+
+          res.write(`event: complete\ndata: ${JSON.stringify({
             content: completeMessage,
             ...(reasoningResponse ? { reasoning: reasoningResponse } : {})
           })}\n\n`);
-          
+
         } else if (item.metadata) {
           const inputTokens = item.metadata.usage?.inputTokens || 0;
           const outputTokens = item.metadata.usage?.outputTokens || 0;
@@ -640,7 +641,7 @@ export class BedrockChatService implements OnModuleInit {
           });
         }
       }
-      
+
       // IMPORTANT: Make sure we're not aborted after tool continuation
       streamContext.aborted = false;
       console.log('Tool continuation complete, setting streamContext.aborted to false');
@@ -651,10 +652,10 @@ export class BedrockChatService implements OnModuleInit {
         reasoning: reasoningResponse || undefined,
         createdAt: new Date().toISOString()
       };
-      
+
     } catch (error) {
       console.error('Error in continuation response:', error);
-      
+
       // Send an error response if the response hasn't been ended
       if (!res.writableEnded) {
         res.write(`event: error\ndata: ${JSON.stringify({
@@ -675,29 +676,38 @@ export class BedrockChatService implements OnModuleInit {
   }
 
   private getConverseCommandParams(chatRequestDto: ChatRequestDto, user: User, messages: BedrockMessage[]) {
+
     // Prepare the request parameters for ConverseCommand
+    const isToolCapable = chatRequestDto.modelId.includes('us.anthropic.claude')
     return {
       modelId: chatRequestDto.modelId,
       inferenceConfig: { maxTokens: 512, temperature: 0.5, topP: 0.9 },
       system: [this.getDefaultSystemMessage(user)],
       messages,
+      ...(isToolCapable ? this.getToolConfigForParams() : {})
+
+    };
+  }
+
+  private getToolConfigForParams() {
+    return {
       toolConfig: {
         tools: this.mcpTools,
         toolChoice: {
           auto: {}
         }
       }
-    };
+    }
   }
 
   private initMcpTools() {
     try {
       // Wait for MCP service to connect and initialize
       setTimeout(async () => {
-          // Convert MCP tools to a format suitable for Bedrock
-          const availableTools = this.mcpService.getAvailableTools();
-          this.mcpTools = this.convertMcpToolsToBedrockTools(availableTools);
-          console.log(`Initialized ${this.mcpTools.length} MCP tools for AI chat`);
+        // Convert MCP tools to a format suitable for Bedrock
+        const availableTools = this.mcpService.getAvailableTools();
+        this.mcpTools = this.convertMcpToolsToBedrockTools(availableTools);
+        console.log(`Initialized ${this.mcpTools.length} MCP tools for AI chat`);
       }, 2000); // Give MCP service some time to connect
     } catch (error) {
       console.error('Failed to initialize MCP tools:', error);
@@ -715,8 +725,8 @@ export class BedrockChatService implements OnModuleInit {
     const conversationId = chatRequestDto.conversationId || uuidv4();
     const id = chatRequestDto.id || uuidv4();
 
-    const userMessage: BedrockMessage = { 
-      role: 'user', 
+    const userMessage: BedrockMessage = {
+      role: 'user',
       content: [{ text: chatRequestDto.content }]
     };
 
@@ -735,19 +745,19 @@ export class BedrockChatService implements OnModuleInit {
   }
 
   private async getPreviousMessages(conversationId: string, emplId: string, userMessage: BedrockMessage): Promise<BedrockMessage[]> {
-      const previousMessages = await this.messageService.getMessages(conversationId, emplId);
-      
-      // Convert stored messages to Bedrock format
-      const formattedMessages = previousMessages.map(message => {
-        return {
-          role: message.role,
-          content: message.content && typeof message.content === 'string' 
-            ? [{ text: message.content }] 
-            : message.content
-        } as BedrockMessage;
-      });
-      
-      return [...formattedMessages, userMessage];
+    const previousMessages = await this.messageService.getMessages(conversationId, emplId);
+
+    // Convert stored messages to Bedrock format
+    const formattedMessages = previousMessages.map(message => {
+      return {
+        role: message.role,
+        content: message.content && typeof message.content === 'string'
+          ? [{ text: message.content }]
+          : message.content
+      } as BedrockMessage;
+    });
+
+    return [...formattedMessages, userMessage];
   }
 
   private getDefaultSystemMessage(user: User) {

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ChatController } from './chat/chat.controller';
-import { ChatService } from './chat/chat.service';
 import { ConfigModule } from '@nestjs/config';
 import { ConversationsController } from './conversations/conversations.controller';
 import { ConversationService } from './conversations/conversation.service';
@@ -31,7 +30,6 @@ import { BedrockChatService } from './chat/bedrock-chat.service';
   ],
   providers: [
     BedrockChatService,
-    ChatService,
     CostService,
     ConversationService,
     ConversationSharingService,
