@@ -77,7 +77,8 @@ export class ChatRequestService {
           this.parseMessage(msg);
         },
         onclose: () => {
-          this.finishCurrentResponse();
+          // Don't call finishCurrentResponse() here as it was clearing the content
+          // Just set loading to false
           this.chatLoading.set(false);
         },
         onerror: (err) => {
@@ -111,7 +112,6 @@ export class ChatRequestService {
           this.requestId = '';
         }
         
-        this.finishCurrentResponse();
         this.chatLoading.set(false);
       }
     }
@@ -126,9 +126,29 @@ export class ChatRequestService {
       
       if (assistantMessage) {
         // Update existing message
-        const updatedContent = Array.isArray(assistantMessage.content) 
-          ? [...assistantMessage.content, contentBlock]
-          : [{ text: assistantMessage.content as unknown as string }, contentBlock];
+        // Make sure we're properly handling content as an array
+        let updatedContent;
+        if (Array.isArray(assistantMessage.content)) {
+          // If content is already an array, append to it
+          updatedContent = [...assistantMessage.content];
+          
+          // Check if we need to update an existing text block or add a new one
+          if ('text' in contentBlock && updatedContent.length > 0 && 'text' in updatedContent[0]) {
+            // Update the first text block by appending text
+            updatedContent[0] = { 
+              text: (updatedContent[0] as any).text + contentBlock.text 
+            };
+          } else {
+            // Add as new content block
+            updatedContent.push(contentBlock);
+          }
+        } else {
+          // Handle legacy format (content as string)
+          updatedContent = [
+            { text: assistantMessage.content as unknown as string },
+            contentBlock
+          ];
+        }
           
         this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
           ...assistantMessage,
@@ -192,9 +212,9 @@ export class ChatRequestService {
       
       if (assistantMessage) {
         // Update existing message with reasoning
+        // Don't overwrite existing content, just add the reasoning
         this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
           ...assistantMessage,
-          content: [{ text: this.responseContent }],
           reasoning: this.reasoningContent
         });
       } else {
@@ -208,20 +228,22 @@ export class ChatRequestService {
       }
     }
 
-    private parseMessage(msg: EventSourceMessage) {
+    private async parseMessage(msg: EventSourceMessage) {
       try {
         const message = JSON.parse(msg.data);
         switch(msg.event) {
           case 'delta':
             if ('content' in message) {
               // Handle text content delta
-              const textBlock: ContentBlock = { text: message.content };
-              this.handleAssistantResponse(textBlock);
-            }
-            break;
-          case 'reasoning':
-            this.handleReasoningContent(message.reasoning);
-            this.updateAssistantResponseWithReasoning();
+              if (message.content && typeof message.content === 'string') {
+                this.responseContent += message.content;
+                const textBlock: ContentBlock = { text: message.content };
+                this.handleAssistantResponse(textBlock);
+              } else if (message.content && typeof message.content === 'object') {
+                // Handle structured content block
+                this.handleAssistantResponse(message.content);
+              }
+            } 
             break;
           case 'tool_use':
             // Handle tool use events
@@ -234,24 +256,19 @@ export class ChatRequestService {
             };
             this.handleAssistantResponse(toolUseBlock);
             break;
-          case 'tool':
-            // Handle when a tool is being called
-            this.handleToolRequest(message.toolName, message.toolInput);
-            break;
-          case 'toolResult':
+          case 'tool_result':
             // Handle tool result events
             const toolResult: ToolResult = {
-              toolUseId: uuidv4(), // Generate ID if not provided
-              name: message.toolName,
-              input: message.toolInput,
+              toolUseId: message.toolUseId,
+              name: message.name,
+              input: message.input,
               result: message.result,
               status: message.status || 'success'
             };
             this.handleToolResult(toolResult);
             break;
-          case 'fullReasoning':
-            // When we get the complete reasoning
-            this.reasoningContent = message.reasoning;
+          case 'reasoning':
+            this.reasoningContent += message.reasoning;
             this.updateAssistantResponseWithReasoning();
             break;
           case 'metadata':
@@ -268,55 +285,50 @@ export class ChatRequestService {
             break;
           case 'error':
             const errorMessage = message.error || 'An error occurred';
-            this.showErrorToast(errorMessage);
+            const toast = await this.toastController.create({
+              message: errorMessage,
+              color: 'danger',
+              duration: 3000,
+              buttons: ['Ok']
+            });
+            toast.present();
             
             // If it's a model access error, redirect to model selection
             if (errorMessage.includes('do not have access to the selected model')) {
               this.openModelSelectionModal();
             }
             break;
+          case 'complete':
+            // Don't reset the content here, just ensure everything is finalized
+            // Make sure the response content is preserved in the message
+            if (this.responseContent) {
+              const currentConversation = this.conversationService.getCurrentConversation();
+              const existingMessages = this.messageMapService.getMessagesForConversation(currentConversation().conversationId);
+              const assistantMessage = existingMessages().find(m => 
+                m.role === 'assistant' && m.id === this.requestId
+              );
+              
+              if (assistantMessage) {
+                // No need to update content, just make sure reasoning is included
+                if (this.reasoningContent) {
+                  this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
+                    ...assistantMessage,
+                    reasoning: this.reasoningContent
+                  });
+                }
+              }
+            }
+            this.chatLoading.set(false);
+            break;
           default:
             if (message === '[DONE]') {
               this.chatLoading.set(false);
+              console.log('Unparsed Message: ',msg);
             }
         }
       } catch (error) {
         console.error('Error parsing response:', error);
       }
-    }
-    
-    // Add new method to handle tool requests
-    private handleToolRequest(toolName: string, input: any) {
-      const currentConversation = this.conversationService.getCurrentConversation();
-      
-      const existingMessages = this.messageMapService.getMessagesForConversation(currentConversation().conversationId);
-      const assistantMessage = existingMessages().find(m => 
-        m.role === 'assistant' && m.id === this.requestId
-      );
-      
-      if (assistantMessage) {
-        // Update the message to show the tool is being used
-        this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
-          ...assistantMessage,
-          // Add a special metadata property to track tool status
-          toolStatus: {
-            inProgress: true,
-            name: toolName,
-            input: input
-          }
-        });
-      }
-    }
-    
-    // Update showErrorToast method
-    private async showErrorToast(errorMessage: string) {
-      const toast = await this.toastController.create({
-        message: errorMessage,
-        color: 'danger',
-        duration: 3000,
-        buttons: ['Ok']
-      });
-      toast.present();
     }
 
   private async openModelSelectionModal() {
@@ -330,7 +342,7 @@ export class ChatRequestService {
   }
 
   private handleReasoningContent(reasoningContent: string) {
-    this.reasoningContent = this.reasoningContent += reasoningContent
+    this.reasoningContent += reasoningContent;
   }
   
 
@@ -350,8 +362,9 @@ export class ChatRequestService {
   }
   
   private finishCurrentResponse() {
+    // IMPORTANT: Don't reset responseContent as it contains the full message
+    // Just reset the reasoning and loading state
     this.reasoningContent = '';
-    this.responseContent = '';
     this.chatLoading.set(false);
   }
 

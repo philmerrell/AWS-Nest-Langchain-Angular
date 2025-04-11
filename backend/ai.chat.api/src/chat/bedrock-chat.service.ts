@@ -174,11 +174,11 @@ export class BedrockChatService implements OnModuleInit {
   private async processChatStream(params, res, user, streamContext, requestId, chatRequestDto: ChatRequestDto): Promise<ChatMessage> {
     const command = new ConverseStreamCommand(params);
     const response = await this.bedrockClient.send(command);
-
+  
     // Track tokens for cost calculation
     let inputTokens = 0;
     let outputTokens = 0;
-
+  
     // Handle the stream chunks
     let completeMessage = '';
     let reasoningResponse = '';
@@ -188,14 +188,14 @@ export class BedrockChatService implements OnModuleInit {
     let toolResults: ToolResult[] = [];
     let contentBlocks: ContentBlock[] = [];
     let waitingForContinuation = false;
-
+  
     for await (const item of response.stream!) {
       // Check if request has been aborted
       if (streamContext.aborted) {
         console.log('Stream aborted, breaking loop');
         break; // Exit the loop if request was aborted
       }
-
+      
       // Process the chunk depending on its type
       if (item.contentBlockStart) {
         if (item.contentBlockStart.start?.toolUse) {
@@ -220,14 +220,14 @@ export class BedrockChatService implements OnModuleInit {
           // Collect tool use input (append to existing)
           if (item.contentBlockDelta.delta.toolUse.input) {
             toolUseInput += item.contentBlockDelta.delta.toolUse.input;
-            // console.log(`Tool input update: ${item.contentBlockDelta.delta.toolUse.input}`);
+            console.log(`Tool input update: ${item.contentBlockDelta.delta.toolUse.input}`);
           }
         }
       } else if (item.messageStop) {
         if (item.messageStop.stopReason === 'tool_use' && toolName && toolUseInput) {
-          // console.log(`Tool use completed. Full input: ${toolUseInput}`);
+          console.log(`Tool use completed. Full input: ${toolUseInput}`);
           waitingForContinuation = true;
-
+          
           // Add the tool use to content blocks
           let parsedInput;
           try {
@@ -236,7 +236,7 @@ export class BedrockChatService implements OnModuleInit {
             console.error('Error parsing tool input JSON:', parseError);
             parsedInput = {}; // Empty object as fallback
           }
-
+          
           contentBlocks.push({
             toolUse: {
               toolUseId: toolUseId,
@@ -244,17 +244,18 @@ export class BedrockChatService implements OnModuleInit {
               input: parsedInput
             }
           });
-
+          
           // Notify client that a tool is being used
-          res.write(`event: tool\ndata: ${JSON.stringify({
-            toolName: toolName,
-            toolInput: toolUseInput
+          res.write(`event: tool_use\ndata: ${JSON.stringify({ 
+            toolUseId: toolUseId,
+            name: toolName,
+            input: parsedInput 
           })}\n\n`);
-
+          
           try {
             // Call the MCP tool
             const toolResult = await this.mcpService.callTool(toolName, parsedInput);
-
+            
             // Format tool result as plain text
             let toolResultText = '';
             if (Array.isArray(toolResult.content)) {
@@ -263,7 +264,7 @@ export class BedrockChatService implements OnModuleInit {
                 .filter(text => text)
                 .join('\n');
             }
-
+            
             // Store the tool result for later saving
             toolResults.push({
               toolUseId: toolUseId,
@@ -272,24 +273,27 @@ export class BedrockChatService implements OnModuleInit {
               result: toolResultText,
               status: 'success'
             });
-
+            
             // Notify client of the tool result
-            res.write(`event: toolResult\ndata: ${JSON.stringify({
-              toolName: toolName,
-              result: toolResultText
+            res.write(`event: tool_result\ndata: ${JSON.stringify({ 
+              toolUseId: toolUseId,
+              name: toolName,
+              input: parsedInput,
+              result: toolResultText,
+              status: 'success'
             })}\n\n`);
-
+            
             // Continue with the conversation...
             const continuationResponse = await this.continueWithToolResult(
-              res,
-              params.modelId,
-              user,
+              res, 
+              params.modelId, 
+              user, 
               streamContext,
               {
                 messages: [
                   {
                     role: 'user',
-                    content: [{ text: chatRequestDto.content }],
+                    content: [{ text: chatRequestDto.content }], 
                   } as BedrockMessage,
                   ...params.messages,
                   {
@@ -320,7 +324,7 @@ export class BedrockChatService implements OnModuleInit {
                 ]
               }
             );
-
+            
             // Update complete message with continuation response if available
             if (continuationResponse && continuationResponse.content) {
               if (typeof continuationResponse.content === 'string') {
@@ -333,22 +337,22 @@ export class BedrockChatService implements OnModuleInit {
                 }
               }
             }
-
+            
             // Update reasoning with continuation response reasoning if available
             if (continuationResponse && continuationResponse.reasoning) {
               reasoningResponse += '\n' + continuationResponse.reasoning;
             }
-
+            
             // Ensure we don't mark this as aborted
             waitingForContinuation = false;
             streamContext.aborted = false;
-
+            
           } catch (error) {
             console.error('Error handling tool result:', error);
-
+            
             // Define error message
             const errorText = `Error: ${error.message || 'Unknown error'}`;
-
+            
             // Store the failed tool result
             toolResults.push({
               toolUseId: toolUseId,
@@ -357,23 +361,23 @@ export class BedrockChatService implements OnModuleInit {
               result: errorText,
               status: 'error'
             });
-
+            
             // Send error to client
-            res.write(`event: error\ndata: ${JSON.stringify({
+            res.write(`event: error\ndata: ${JSON.stringify({ 
               error: 'Error executing tool: ' + (error.message || 'Unknown error')
             })}\n\n`);
-
+            
             // Continue the conversation with the error result
             const continuationResponse = await this.continueWithToolResult(
-              res,
-              params.modelId,
+              res, 
+              params.modelId, 
               user,
               streamContext,
               {
                 messages: [
                   {
                     role: 'user',
-                    content: [{ text: chatRequestDto.content }],
+                    content: [{ text: chatRequestDto.content }], 
                   } as BedrockMessage,
                   ...params.messages,
                   {
@@ -404,7 +408,7 @@ export class BedrockChatService implements OnModuleInit {
                 ]
               }
             );
-
+            
             // Update complete message with continuation response
             if (continuationResponse && continuationResponse.content) {
               if (typeof continuationResponse.content === 'string') {
@@ -417,36 +421,35 @@ export class BedrockChatService implements OnModuleInit {
                 }
               }
             }
-
+            
             // Update reasoning with continuation response reasoning
             if (continuationResponse && continuationResponse.reasoning) {
               reasoningResponse += '\n' + continuationResponse.reasoning;
             }
-
+            
             // Ensure we don't mark this as aborted
             waitingForContinuation = false;
             streamContext.aborted = false;
           }
-
         } else {
           // Normal message end (not a tool use)
           // If there's reasoning content, send an event with the complete reasoning
           if (reasoningResponse) {
-            res.write(`event: fullReasoning\ndata: ${JSON.stringify({
-              reasoning: reasoningResponse
+            res.write(`event: fullReasoning\ndata: ${JSON.stringify({ 
+              reasoning: reasoningResponse 
             })}\n\n`);
           }
-
-          // Send a completion event
-          res.write(`event: complete\ndata: ${JSON.stringify({
-            content: completeMessage,
+          
+          // Send a completion event - IMPORTANT: Don't send content in this event
+          // This prevents the client from replacing existing content
+          res.write(`event: complete\ndata: ${JSON.stringify({ 
             ...(reasoningResponse ? { reasoning: reasoningResponse } : {})
           })}\n\n`);
         }
       } else if (item.metadata) {
         inputTokens = item.metadata.usage?.inputTokens || 0;
         outputTokens = item.metadata.usage?.outputTokens || 0;
-
+  
         // Track usage
         await this.costService.trackUsage({
           user,
@@ -454,9 +457,17 @@ export class BedrockChatService implements OnModuleInit {
           inputTokens,
           outputTokens,
         });
+        
+        // Send usage metadata to client
+        res.write(`event: metadata\ndata: ${JSON.stringify({ 
+          usage: {
+            inputTokens,
+            outputTokens
+          }
+        })}\n\n`);
       }
     }
-
+    
     // If we collected text content, add it to the content blocks
     if (completeMessage && contentBlocks.length === 0) {
       // Only add text content if no other content blocks (like tool uses) were added
@@ -465,13 +476,13 @@ export class BedrockChatService implements OnModuleInit {
       // Add text content as the first block if there's no text block yet
       contentBlocks.unshift({ text: completeMessage });
     }
-
+    
     // IMPORTANT: Make sure we're not aborted if we were waiting for continuation
     if (waitingForContinuation) {
       console.log('Was waiting for continuation, marking as not aborted');
       streamContext.aborted = false;
     }
-
+    
     // Create the complete assistant message for database storage
     const assistantResponse: ChatMessage = {
       role: 'assistant',
@@ -482,7 +493,7 @@ export class BedrockChatService implements OnModuleInit {
       // Add tool results if any
       toolResults: toolResults.length > 0 ? toolResults : undefined
     };
-
+  
     return assistantResponse;
   }
 
