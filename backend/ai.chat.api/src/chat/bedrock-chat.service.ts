@@ -225,7 +225,6 @@ export class BedrockChatService implements OnModuleInit {
                 }
               });
               
-              // Notify client of the tool result
               res.write(`event: tool_result\ndata: ${JSON.stringify({ 
                 toolUseId: toolUseId,
                 name: toolName,

@@ -1,0 +1,88 @@
+<ion-card class="tool-execution-card" [ngClass]="getToolStatus()">
+  <!-- Tool Header with single expand/collapse toggle -->
+  <ion-card-header class="tool-header" (click)="toggleExpand()">
+    <ion-card-title>
+      <div class="header-content">
+        <div class="tool-info">
+          <ion-icon name="build-outline"></ion-icon>
+          <span class="tool-name">{{ toolUse.toolUse.name }}</span>
+          
+          <!-- Status badge in header -->
+          @if(toolResult) {
+            @if(toolResult.toolResult.status === 'success') {
+              <ion-badge color="success">Success</ion-badge>
+            } @else if(toolResult.toolResult.status === 'error') {
+              <ion-badge color="danger">Error</ion-badge>
+            }
+          } @else {
+            <ion-badge color="warning">Pending</ion-badge>
+          }
+        </div>
+        <div class="expand-toggle">
+          <ion-icon [name]="expanded ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+        </div>
+      </div>
+    </ion-card-title>
+  </ion-card-header>
+  
+  <!-- Expandable content section (includes both input and result) -->
+  @if(expanded) {
+    <ion-card-content class="tool-content">
+      <!-- Tool Input Section -->
+      <div class="tool-input-section">
+        <div class="section-label">
+          <ion-icon name="terminal-outline"></ion-icon>
+          <span>Input</span>
+        </div>
+        <div class="tool-input">
+          <pre>{{ toolUse.toolUse.input | json }}</pre>
+        </div>
+      </div>
+      
+      <!-- Tool Result Section -->
+      @if(toolResult) {
+        <div class="tool-result-section">
+          <div class="section-label">
+            @if(toolResult.toolResult.status === 'success') {
+              <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+              <span>Result</span>
+            } @else if(toolResult.toolResult.status === 'error') {
+              <ion-icon name="close-circle-outline" color="danger"></ion-icon>
+              <span>Error</span>
+            }
+          </div>
+          
+          <div class="result-content">
+            @if(isCodeContent()) {
+              <div class="content-type-indicator">
+                <ion-icon name="code-outline" color="medium"></ion-icon>
+                <span>Code Output</span>
+              </div>
+            }
+            
+            <div class="markdown-content">
+              <markdown [data]="getToolResultText()"></markdown>
+            </div>
+            
+            @if(hasJsonContent()) {
+              <div class="json-content">
+                <div class="content-type-indicator">
+                  <ion-icon name="document-outline" color="medium"></ion-icon>
+                  <span>JSON Data</span>
+                </div>
+                <pre>{{ getJsonContent() | json }}</pre>
+              </div>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="pending-result">
+          <div class="pending-indicator">
+            <ion-icon name="information-circle-outline" color="warning"></ion-icon>
+            <span>Waiting for result...</span>
+          </div>
+        </div>
+      }
+    </ion-card-content>
+  }
+</ion-card>

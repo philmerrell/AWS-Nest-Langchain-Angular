@@ -1,7 +1,7 @@
 import { Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { EventSourceMessage, EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
-import { ContentBlock, Conversation, Model, TextContentBlock } from './conversation.model';
+import { ContentBlock, Conversation, Model, TextContentBlock, ToolResultContentBlock } from './conversation.model';
 import { ConversationService } from './conversation.service';
 import { ModelService } from './model.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -54,7 +54,7 @@ export class ChatRequestService {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.authService.getToken()}`
         },
-        body: JSON.stringify({ ...userMessage, modelId: model!.modelId, requestId: this.requestId}),
+        body: JSON.stringify({ content: userInput, id: userMessage.id, role: 'user', modelId: model!.modelId, requestId: this.requestId}),
         signal: this.abortController.signal,
         async onopen(response) {
           if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
@@ -161,7 +161,7 @@ export class ChatRequestService {
       }
     }
 
-    private handleToolResult(toolResult: any) {
+    private handleToolResult(toolResultBlock: ToolResultContentBlock) {
       const currentConversation = this.conversationService.getCurrentConversation();
       
       const existingMessages = this.messageMapService.getMessagesForConversation(currentConversation().conversationId);
@@ -170,13 +170,33 @@ export class ChatRequestService {
       );
       
       if (assistantMessage) {
-        // const toolResults = assistantMessage.toolResults || [];
-        // const updatedToolResults = [...toolResults, toolResult];
+        let updatedContent;
         
-        // Update existing message with tool result
+        if (Array.isArray(assistantMessage.content)) {
+          updatedContent = [...assistantMessage.content];
+          
+          // Find if there's any existing toolResult for this toolUseId and update it
+          const toolResultIndex = updatedContent.findIndex(
+            block => 'toolResult' in block && 
+            block.toolResult.toolUseId === toolResultBlock.toolResult.toolUseId
+          );
+          
+          if (toolResultIndex >= 0) {
+            // Update existing tool result
+            updatedContent[toolResultIndex] = toolResultBlock;
+          } else {
+            // Add new tool result
+            updatedContent.push(toolResultBlock);
+          }
+        } else {
+          // Handle legacy format or incorrect format
+          updatedContent = [toolResultBlock];
+        }
+        
+        // Update the message with the new content
         this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
           ...assistantMessage,
-          // toolResults: updatedToolResults
+          content: updatedContent
         });
       }
     }
@@ -252,15 +272,15 @@ export class ChatRequestService {
             this.handleAssistantResponse(toolUseBlock);
             break;
           case 'tool_result':
-            // Handle tool result events
-            const toolResult: ToolResult = {
-              toolUseId: message.toolUseId,
-              name: message.name,
-              input: message.input,
-              result: message.result,
-              status: message.status || 'success'
+            // Handle tool result events - updated to use ToolResultContentBlock
+            const toolResultBlock: ToolResultContentBlock = {
+              toolResult: {
+                toolUseId: message.toolUseId,
+                content: [{ text: message.result }],
+                status: message.status || 'success'
+              }
             };
-            this.handleToolResult(toolResult);
+            this.handleToolResult(toolResultBlock);
             break;
           case 'reasoning':
             this.reasoningContent += message.reasoning;

@@ -1,11 +1,11 @@
+// Updated conversation.model.ts
 
-  
-  
-  // Update ContentBlock types to include ToolResult
+// Text Content Block
 export interface TextContentBlock {
     text: string;
   }
   
+  // Tool Use Content Block
   export interface ToolUseContentBlock {
     toolUse: {
       toolUseId: string;
@@ -13,21 +13,41 @@ export interface TextContentBlock {
       input: any;
     };
   }
-
+  
+  // Tool Result Text Content Block
+  export interface ToolResultTextContent {
+    text: string;
+  }
+  
+  // Tool Result JSON Content Block
+  export interface ToolResultJsonContent {
+    json: any;
+  }
+  
+  // Union type for tool result content blocks
+  export type ToolResultContent = 
+    | ToolResultTextContent
+    | ToolResultJsonContent;
+  
+  // Tool Result Content Block
+  export interface ToolResultBlock {
+    toolUseId: string;
+    content: ToolResultContent[];
+    status: 'success' | 'error';
+  }
+  
+  // Tool Result Content Block wrapper
+  export interface ToolResultContentBlock {
+    toolResult: ToolResultBlock;
+  }
+  
+  // Legacy ToolResult interface (to be deprecated)
   export interface ToolResult {
     toolUseId: string;
     name: string;
     input: any;
     result: string;
     status: 'success' | 'error';
-  }
-  
-  export interface ToolResultContentBlock {
-    toolResult: {
-      toolUseId: string;
-      content: Array<{text?: string; json?: any}>;
-      status: 'success' | 'error';
-    };
   }
   
   // Union type for all content block types

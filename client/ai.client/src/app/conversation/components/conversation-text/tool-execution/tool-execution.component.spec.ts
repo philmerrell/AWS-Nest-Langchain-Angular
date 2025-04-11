@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { ToolResultComponent } from './tool-result.component';
+import { ToolExecutionComponent } from './tool-execution.component';
 
-describe('ToolResultComponent', () => {
-  let component: ToolResultComponent;
-  let fixture: ComponentFixture<ToolResultComponent>;
+describe('ToolExecutionComponent', () => {
+  let component: ToolExecutionComponent;
+  let fixture: ComponentFixture<ToolExecutionComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ ToolResultComponent ],
+      declarations: [ ToolExecutionComponent ],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ToolResultComponent);
+    fixture = TestBed.createComponent(ToolExecutionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

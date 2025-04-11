@@ -1,82 +1,59 @@
 <!-- conversation-text.component.html -->
 @for(message of messages(); track message.id; let i = $index;) {
-  @if(message.role === 'user') {
-    <ion-row [id]="message.id">
-      <ion-col>
-        <app-user-message [message]="message"></app-user-message>
-      </ion-col>
-    </ion-row>
-  } @else {
-    <ion-row class="assistant-response-row">
-      <ion-col size="12">
-        <div class="assistant-message" [@fadeInOut]>
-          @if(message.reasoning) {
-            <ion-button size="small" (click)="toggleReasoning()" fill="clear">
-              {{ showReasoning ? 'Hide Reasoning' : 'Show Reasoning' }}
-            </ion-button>
-          }
-          
-          <!-- Show reasoning if available and user has toggled it -->
-          @if(message.reasoning && showReasoning) {
-            <div class="reasoning-container">
-              <h4>AI Reasoning</h4>
-              {{ message.reasoning }}
-            </div>
-          }
-          
-          <!-- Render assistant's text content -->
-          @if(message.content && message.content.length > 0) {
-            <markdown clipboard mermaid [data]="getTextContent(message.content)"></markdown>
-          }
-          
-          <!-- Render tool uses and their results -->
-          @for(toolUse of getToolUseBlocks(message.content); track toolUse.toolUse.toolUseId) {
-            <div class="tool-use-container">
-              <div class="tool-use-header">
-                <ion-icon name="build-outline"></ion-icon>
-                <span>Using tool: {{ toolUse.toolUse.name }}</span>
-              </div>
-              <div class="tool-use-input">
-                <pre>{{ toolUse.toolUse.input | json }}</pre>
-              </div>
-              
-              <!-- Find and render corresponding tool result -->
-              @let toolResult = getToolResultForToolUse(message.content, toolUse.toolUse.toolUseId);
-              @if(toolResult) {
-                <div class="tool-result-container" 
-                     [class.tool-result-success]="toolResult.toolResult.status === 'success'"
-                     [class.tool-result-error]="toolResult.toolResult.status === 'error'">
-                  <div class="tool-result-header">
-                    <ion-icon [name]="toolResult.toolResult.status === 'success' ? 'checkmark-circle-outline' : 'alert-circle-outline'"
-                              [color]="toolResult.toolResult.status === 'success' ? 'success' : 'danger'">
-                    </ion-icon>
-                    <span>Tool Result: {{ toolResult.toolResult.status }}</span>
-                  </div>
-                  <div class="tool-result-content">
-                    <markdown [data]="getToolResultText(toolResult)"></markdown>
-                  </div>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      </ion-col>
-    </ion-row>
-  }
-  
-  @if(loading()) {
-    <ion-row class="metadata-row">
-      <ion-col>
-        <!-- Only display loading indicator if it's the last or second to last message -->
-        @if(i === messages()!.length || i === messages()!.length - 1) {
-          <ion-chip [@fadeInOut]>
-            <ion-avatar>
-              <div class="pulsating-circle"></div>
-            </ion-avatar>
-            <ion-label>Loading...</ion-label>
-          </ion-chip>
-        }
-      </ion-col>
-    </ion-row>
-  }
+@if(message.role === 'user') {
+<ion-row [id]="message.id">
+  <ion-col>
+    <app-user-message [message]="message"></app-user-message>
+  </ion-col>
+</ion-row>
+} @else {
+<ion-row class="assistant-response-row">
+  <ion-col size="12">
+    <div class="assistant-message" [@fadeInOut]>
+      @if(message.reasoning) {
+      <ion-button size="small" (click)="toggleReasoning()" fill="clear">
+        {{ showReasoning ? 'Hide Reasoning' : 'Show Reasoning' }}
+      </ion-button>
+      }
+
+      <!-- Show reasoning if available and user has toggled it -->
+      @if(message.reasoning && showReasoning) {
+      <div class="reasoning-container">
+        <h4>AI Reasoning</h4>
+        {{ message.reasoning }}
+      </div>
+      }
+
+      <!-- Render assistant's text content -->
+      @if(message.content && message.content.length > 0) {
+      <markdown clipboard mermaid [data]="getTextContent(message.content)"></markdown>
+      }
+
+      @for(toolUse of getToolUseBlocks(message.content); track toolUse.toolUse.toolUseId) {
+        <app-tool-execution 
+          [toolUse]="toolUse" 
+          [messageBlocks]="message.content">
+        </app-tool-execution>
+      }
+      
+    </div>
+  </ion-col>
+</ion-row>
+}
+
+@if(loading()) {
+<ion-row class="metadata-row">
+  <ion-col>
+    <!-- Only display loading indicator if it's the last or second to last message -->
+    @if(i === messages()!.length || i === messages()!.length - 1) {
+    <ion-chip [@fadeInOut]>
+      <ion-avatar>
+        <div class="pulsating-circle"></div>
+      </ion-avatar>
+      <ion-label>Loading...</ion-label>
+    </ion-chip>
+    }
+  </ion-col>
+</ion-row>
+}
 }
