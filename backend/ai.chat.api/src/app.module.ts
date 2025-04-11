@@ -17,6 +17,7 @@ import { UsageLimitService } from './chat/usage-limit.service';
 import { ConversationSharingService } from './conversations/conversation-sharing.service';
 import { McpService } from './mcp/mcp.service';
 import { AppController } from './app.controller';
+import { BedrockChatService } from './chat/bedrock-chat.service';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule],
@@ -29,6 +30,7 @@ import { AppController } from './app.controller';
     ReportingController
   ],
   providers: [
+    BedrockChatService,
     ChatService,
     CostService,
     ConversationService,

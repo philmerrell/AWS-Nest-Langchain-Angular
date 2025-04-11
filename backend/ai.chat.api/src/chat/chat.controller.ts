@@ -6,17 +6,26 @@ import { EntraAuthGuard } from 'src/auth/guards/entra-auth.guard';
 import { Role, Roles } from 'src/auth/guards/roles/roles.decorator';
 import { UsageLimitGuard } from 'src/auth/guards/usage-limit.guard';
 import { ModelAccessGuard } from 'src/auth/guards/model-access.guard';
+import { BedrockChatService } from './bedrock-chat.service';
 
 @Controller('chat')
 export class ChatController {
 
-  constructor(private chatService: ChatService) { }
+  constructor(private chatService: ChatService, private bedrockChatService: BedrockChatService) { }
+
 
   @Post()
   @UseGuards(EntraAuthGuard, UsageLimitGuard, ModelAccessGuard)
   async chat(@Body() chatRequestDto: ChatRequestDto, @Res() res: Response, @Req() req: any) {
     const user = req.user;
     return this.chatService.streamChat(chatRequestDto, res, user);
+  }
+
+  @Post('bedrock')
+  @UseGuards(EntraAuthGuard, UsageLimitGuard, ModelAccessGuard)
+  async bedrockChat(@Body() chatRequestDto: ChatRequestDto, @Res() res: Response, @Req() req: any) {
+    const user = req.user;
+    return this.bedrockChatService.streamChat(chatRequestDto, res, user);
   }
 
   @Post('cancel/:requestId')
@@ -34,8 +43,4 @@ export class ChatController {
     return { message: 'Hello, Developer.', user };
   }
 
-  @Get('health')
-  health() {
-    return { message: 'I am healthy! ' };
-  }
 }
