@@ -89,18 +89,43 @@ export class MessageMapService {
      */
     updateMessage(conversationId: string, messageId: string, updatedAttributes: Partial<Message>): void {
         this.messageMap.update(currentMap => {
-            const updatedMap = { ...currentMap };
-            const conversationMessages = updatedMap[conversationId];
-            if (conversationMessages) {
-                conversationMessages.update(messages => 
-                    messages.map(message => 
-                        message.id === messageId ? { ...message, ...updatedAttributes } : message
-                    )
-                );
-            }
-            return updatedMap;
+          const updatedMap = { ...currentMap };
+          const conversationMessages = updatedMap[conversationId];
+          
+          if (conversationMessages) {
+            conversationMessages.update(messages => 
+              messages.map(message => {
+                if (message.id === messageId) {
+                  // Special handling for content property to ensure proper merging
+                  if (updatedAttributes.content && Array.isArray(updatedAttributes.content) && Array.isArray(message.content)) {
+                    // Merge content arrays if both are arrays
+                    return { 
+                      ...message, 
+                      ...updatedAttributes,
+                      // Use the updated content directly as it's already merged in the handleAssistantResponse method
+                    };
+                  } else if (updatedAttributes.content && !Array.isArray(message.content)) {
+                    // Convert old format to new format if needed
+                    return {
+                      ...message,
+                      ...updatedAttributes,
+                      content: Array.isArray(updatedAttributes.content) 
+                        ? updatedAttributes.content 
+                        : [{ text: updatedAttributes.content as unknown as string }]
+                    };
+                  } else {
+                    // Default merge behavior
+                    return { ...message, ...updatedAttributes };
+                  }
+                }
+                return message;
+              })
+            );
+          }
+          
+          return updatedMap;
         });
-    }
+      }
 
 
 

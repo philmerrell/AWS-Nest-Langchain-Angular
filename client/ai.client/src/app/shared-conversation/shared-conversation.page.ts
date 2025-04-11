@@ -3,14 +3,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, 
   IonButtons, IonBackButton, IonCard, IonCardHeader,
-  IonCardTitle, IonCardContent, IonSkeletonText, IonItem, IonLabel, IonFooter, IonButton, IonIcon, IonSpinner } from '@ionic/angular/standalone';
-import { MarkdownComponent } from 'ngx-markdown';
+  IonCardTitle, IonCardContent, IonItem, IonLabel, IonFooter, IonButton, IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { ConversationSharingService, SharedConversation, SharedMessage } from '../conversation/services/conversation-sharing.service';
 import { DatePipe } from '@angular/common';
 import { ConversationTextComponent } from '../conversation/components/conversation-text/conversation-text.component';
 import { addIcons } from 'ionicons';
 import { addCircleOutline } from 'ionicons/icons';
 import { ConversationService } from '../conversation/services/conversation.service';
+import { Message } from '../conversation/services/conversation.model';
 
 @Component({
   selector: 'app-shared-conversation',
@@ -26,7 +26,7 @@ import { ConversationService } from '../conversation/services/conversation.servi
 export class SharedConversationPage implements OnInit {
   sharedConversationId = '';
   conversation: SharedConversation | null = null;
-  messages: SharedMessage[] = [];
+  messages: Message[] = [];
   isLoading = true;
   isAddingConversation = false;
   error = '';

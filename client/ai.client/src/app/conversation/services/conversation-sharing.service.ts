@@ -3,6 +3,7 @@ import { Injectable, resource, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { Message } from './conversation.model';
 
 export interface ShareConversationOptions {
   conversationId: string;
@@ -64,9 +65,9 @@ export class ConversationSharingService {
     return lastValueFrom(this.http.get<SharedConversation>(url));
   }
 
-  async getSharedConversationMessages(sharedConversationId: string): Promise<SharedMessage[]> {
+  async getSharedConversationMessages(sharedConversationId: string): Promise<Message[]> {
     const url = `${environment.chatApiUrl}/conversations/shared/${sharedConversationId}/messages`;
-    return lastValueFrom(this.http.get<SharedMessage[]>(url));
+    return lastValueFrom(this.http.get<Message[]>(url));
   }
 
   async getShareableLink(sharedConversationId: string): Promise<string> {

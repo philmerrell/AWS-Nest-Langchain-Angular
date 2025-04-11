@@ -32,17 +32,14 @@ interface ToolResult {
 // Updated Message interface
 export interface Message {
   id?: string;
-  // Content can be either a string (for backward compatibility) or an array of content blocks
-  content: string | ContentBlock[];
+  content: ContentBlock[];
   createdAt?: string;
   reasoning?: string;
   role: 'system' | 'user' | 'assistant';
-  // Token usage tracking
   usage?: {
     inputTokens: number;
     outputTokens: number;
   };
-  // Tool results
   toolResults?: ToolResult[];
 }
 

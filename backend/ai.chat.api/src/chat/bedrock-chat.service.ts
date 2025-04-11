@@ -156,12 +156,10 @@ export class BedrockChatService implements OnModuleInit {
       // Only save results if not aborted
       if (!streamContext.aborted) {
         const messagesToSave = this.getMessagesToSave(assistantResponse, messages, isNewConversation);
-        console.log('Messages to save: ', messagesToSave);
         this.messageService.addToConversation(messagesToSave, conversationId, user.emplId);
         
         if(isNewConversation) {
           const conversationName = await this.generateConversationName(chatRequestDto.content, user);
-          console.log('New Conversation: ', conversationName);
           res.write(`event: metadata\ndata: ${JSON.stringify({ conversationId, conversationName})}\n\n`);
           await this.conversationService.updateConversationName(user.emplId, conversationId, conversationName);
         }
@@ -546,8 +544,6 @@ export class BedrockChatService implements OnModuleInit {
       inputTokens,
       outputTokens
     });
-
-    console.log(response);
     
     // Extract the message text from the response
     let titleText = '';

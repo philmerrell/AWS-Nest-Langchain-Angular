@@ -1,3 +1,4 @@
+<!-- client/ai.client/src/app/conversation/components/conversation-text/conversation-text.component.html -->
 @for(message of messages(); track message.id; let i = $index;) {
   @if(message.role === 'user') {
     <ion-row [id]="message.id">
@@ -9,12 +10,12 @@
     <ion-row class="assistant-response-row">
       <ion-col size="12">
         <div class="assistant-message" [@fadeInOut]>
-
           @if(message.reasoning) {
             <ion-button size="small" (click)="toggleReasoning()" fill="clear">
               {{ showReasoning ? 'Hide Reasoning' : 'Show Reasoning' }}
             </ion-button>
           }
+          
           <!-- Show reasoning if available and user has toggled it -->
           @if(message.reasoning && showReasoning) {
             <div class="reasoning-container">
@@ -22,28 +23,34 @@
               {{ message.reasoning }}
             </div>
           }
-          <markdown clipboard mermaid [data]="message.content"></markdown>
-                    
+          
+          <!-- Render assistant's text content -->
+          <markdown clipboard mermaid [data]="getTextContent(message.content)"></markdown>
+          
+          <!-- Render tool results if available -->
+          @if(message.toolResults && message.toolResults.length > 0) {
+            @for(toolResult of message.toolResults; track toolResult.toolUseId) {
+              <app-tool-result [toolResult]="toolResult"></app-tool-result>
+            }
+          }
         </div>
       </ion-col>
     </ion-row>
   }
+  
   @if(loading()) {
-  <ion-row class="metadata-row">
-    <ion-col>
+    <ion-row class="metadata-row">
+      <ion-col>
         <!-- Only display loading indicator if it's the last or second to last message -->
         @if(i === messages()!.length || i === messages()!.length - 1) {
-        
-            <ion-chip [@fadeInOut]>
-              <ion-avatar>
+          <ion-chip [@fadeInOut]>
+            <ion-avatar>
               <div class="pulsating-circle"></div>
-              </ion-avatar>
-              <ion-label>Loading...</ion-label>
-            </ion-chip>
-            
-          
+            </ion-avatar>
+            <ion-label>Loading...</ion-label>
+          </ion-chip>
         }
-    </ion-col>
-  </ion-row>
+      </ion-col>
+    </ion-row>
   }
 }

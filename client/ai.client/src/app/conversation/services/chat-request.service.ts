@@ -10,6 +10,8 @@ import { MessageMapService } from './message-map.service';
 import { ModalController, ToastController } from '@ionic/angular/standalone';
 import { ModelSettingsComponent } from '../components/model-settings/model-settings.component';
 import { HttpClient } from '@angular/common/http';
+import { ContentBlock, ToolResult } from './conversation.model';
+
 
 class RetriableError extends Error { }
 class FatalError extends Error { }
@@ -47,7 +49,7 @@ export class ChatRequestService {
       const model = this.selectedModel();
     
       // First add error handling for the HTTP request
-      fetchEventSource(`${environment.chatApiUrl}/chat`, {
+      fetchEventSource(`${environment.chatApiUrl}/chat/bedrock`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -87,7 +89,7 @@ export class ChatRequestService {
               {
                 id: uuidv4(),
                 role: 'assistant',
-                content: `⚠️ ${err.message}`
+                content: [{ text: `⚠️ ${err.message}`}]
               }
             );
           }
@@ -114,9 +116,8 @@ export class ChatRequestService {
       }
     }
 
-    private handleAssistantResponse(contentDelta: string) {
+    private handleAssistantResponse(contentBlock: ContentBlock) {
       const currentConversation = this.conversationService.getCurrentConversation();
-      this.responseContent += contentDelta;
       
       const existingMessages = this.messageMapService.getMessagesForConversation(currentConversation().conversationId);
       const assistantMessage = existingMessages().find(m => 
@@ -125,17 +126,59 @@ export class ChatRequestService {
       
       if (assistantMessage) {
         // Update existing message
+        const updatedContent = Array.isArray(assistantMessage.content) 
+          ? [...assistantMessage.content, contentBlock]
+          : [{ text: assistantMessage.content as unknown as string }, contentBlock];
+          
         this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
           ...assistantMessage,
-          content: this.responseContent
+          content: updatedContent
         });
       } else {
         // Add new message
         this.messageMapService.addMessageToConversation(currentConversation().conversationId, {
           id: this.requestId,
           role: 'assistant',
-          content: this.responseContent,
-          reasoning: this.reasoningContent.length > 0 ? this.reasoningContent : undefined
+          content: [contentBlock],
+          reasoning: this.reasoningContent.length > 0 ? this.reasoningContent : undefined,
+          toolResults: []
+        });
+      }
+    }
+
+    private handleToolResult(toolResult: ToolResult) {
+      const currentConversation = this.conversationService.getCurrentConversation();
+      
+      const existingMessages = this.messageMapService.getMessagesForConversation(currentConversation().conversationId);
+      const assistantMessage = existingMessages().find(m => 
+        m.role === 'assistant' && m.id === this.requestId
+      );
+      
+      if (assistantMessage) {
+        const toolResults = assistantMessage.toolResults || [];
+        const updatedToolResults = [...toolResults, toolResult];
+        
+        // Update existing message with tool result
+        this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
+          ...assistantMessage,
+          toolResults: updatedToolResults
+        });
+      }
+    }
+    
+    private handleUsageMetadata(usage: any) {
+      const currentConversation = this.conversationService.getCurrentConversation();
+      
+      const existingMessages = this.messageMapService.getMessagesForConversation(currentConversation().conversationId);
+      const assistantMessage = existingMessages().find(m => 
+        m.role === 'assistant' && m.id === this.requestId
+      );
+      
+      if (assistantMessage) {
+        // Update existing message with usage data
+        this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
+          ...assistantMessage,
+          usage
         });
       }
     }
@@ -151,7 +194,7 @@ export class ChatRequestService {
         // Update existing message with reasoning
         this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
           ...assistantMessage,
-          content: this.responseContent,
+          content: [{ text: this.responseContent }],
           reasoning: this.reasoningContent
         });
       } else {
@@ -159,60 +202,91 @@ export class ChatRequestService {
         this.messageMapService.addMessageToConversation(currentConversation().conversationId, {
           id: this.requestId,
           role: 'assistant',
-          content: this.responseContent,
+          content: [{text: this.responseContent}],
           reasoning: this.reasoningContent
         });
       }
     }
 
-  private async parseMessage(msg: EventSourceMessage) {
-    try {
-      const message = JSON.parse(msg.data);
-      switch(msg.event) {
-        case 'delta':
-          if ('content' in message) {
-            this.handleAssistantResponse(message.content);
-          } 
-          break;
-        case 'reasoning':
+    private async parseMessage(msg: EventSourceMessage) {
+      try {
+        const message = JSON.parse(msg.data);
+        switch(msg.event) {
+          case 'delta':
+            if ('content' in message) {
+              // Handle text content delta
+              if (message.content && typeof message.content === 'string') {
+                const textBlock: ContentBlock = { text: message.content };
+                this.handleAssistantResponse(textBlock);
+              } else if (message.content && typeof message.content === 'object') {
+                // Handle structured content block
+                this.handleAssistantResponse(message.content);
+              }
+            } 
+            break;
+          case 'tool_use':
+            // Handle tool use events
+            const toolUseBlock: ContentBlock = { 
+              toolUse: {
+                toolUseId: message.toolUseId,
+                name: message.name,
+                input: message.input
+              } 
+            };
+            this.handleAssistantResponse(toolUseBlock);
+            break;
+          case 'tool_result':
+            // Handle tool result events
+            const toolResult: ToolResult = {
+              toolUseId: message.toolUseId,
+              name: message.name,
+              input: message.input,
+              result: message.result,
+              status: message.status || 'success'
+            };
+            this.handleToolResult(toolResult);
+            break;
+          case 'reasoning':
             this.handleReasoningContent(message.reasoning);
-            this.updateAssistantResponseWithReasoning()
-        break;
-        case 'metadata':
-          if ('conversationId' in message) {
-            // Handle new conversation ID
-            this.handleNewConversation(message.conversationId);
-          }
-          if ('conversationId' in message && 'conversationName' in message) {
-            this.handleConversationName(message.conversationName, message.conversationId);
-          }
-        break;
-        case 'error':
-        const errorMessage = message.error || 'An error occurred';
-          const toast = await this.toastController.create({
-            message: errorMessage,
-            color: 'danger',
-            duration: 3000,
-            buttons: ['Ok']
-          });
-          toast.present();
-          
-          // If it's a model access error, redirect to model selection
-          if (errorMessage.includes('do not have access to the selected model')) {
-            this.openModelSelectionModal();
-          }
-        break;
-        default:
-          if (message === '[DONE]') {
-            this.chatLoading.set(false);
-            console.log('Unparsed Message: ',msg);
-          }
+            this.updateAssistantResponseWithReasoning();
+            break;
+          case 'metadata':
+            if ('conversationId' in message) {
+              // Handle new conversation ID
+              this.handleNewConversation(message.conversationId);
+            }
+            if ('conversationId' in message && 'conversationName' in message) {
+              this.handleConversationName(message.conversationName, message.conversationId);
+            }
+            if ('usage' in message) {
+              this.handleUsageMetadata(message.usage);
+            }
+            break;
+          case 'error':
+            const errorMessage = message.error || 'An error occurred';
+            const toast = await this.toastController.create({
+              message: errorMessage,
+              color: 'danger',
+              duration: 3000,
+              buttons: ['Ok']
+            });
+            toast.present();
+            
+            // If it's a model access error, redirect to model selection
+            if (errorMessage.includes('do not have access to the selected model')) {
+              this.openModelSelectionModal();
+            }
+            break;
+          default:
+            if (message === '[DONE]') {
+              this.chatLoading.set(false);
+              console.log('Unparsed Message: ',msg);
+            }
+        }
+      } catch (error) {
+        console.error('Error parsing response:', error);
       }
     }
-      catch (error) {
-      console.error('Error parsing response:', error);
-    }
-  }
 
   private async openModelSelectionModal() {
     const modal = await this.modalController.create({
