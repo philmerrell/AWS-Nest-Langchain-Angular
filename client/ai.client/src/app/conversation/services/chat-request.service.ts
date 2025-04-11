@@ -1,7 +1,7 @@
 import { Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { EventSourceMessage, EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
-import { Conversation, Model } from './conversation.model';
+import { ContentBlock, Conversation, Model, TextContentBlock } from './conversation.model';
 import { ConversationService } from './conversation.service';
 import { ModelService } from './model.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -10,7 +10,6 @@ import { MessageMapService } from './message-map.service';
 import { ModalController, ToastController } from '@ionic/angular/standalone';
 import { ModelSettingsComponent } from '../components/model-settings/model-settings.component';
 import { HttpClient } from '@angular/common/http';
-import { ContentBlock, ToolResult } from './conversation.model';
 
 
 class RetriableError extends Error { }
@@ -126,28 +125,25 @@ export class ChatRequestService {
       
       if (assistantMessage) {
         // Update existing message
-        // Make sure we're properly handling content as an array
         let updatedContent;
+        
         if (Array.isArray(assistantMessage.content)) {
-          // If content is already an array, append to it
+          // If content is already an array, add the new block
           updatedContent = [...assistantMessage.content];
           
-          // Check if we need to update an existing text block or add a new one
+          // Special handling for text blocks to merge them if possible
           if ('text' in contentBlock && updatedContent.length > 0 && 'text' in updatedContent[0]) {
-            // Update the first text block by appending text
-            updatedContent[0] = { 
-              text: (updatedContent[0] as any).text + contentBlock.text 
+            // Append to existing text block
+            updatedContent[0] = {
+              text: (updatedContent[0] as TextContentBlock).text + contentBlock.text
             };
           } else {
             // Add as new content block
             updatedContent.push(contentBlock);
           }
         } else {
-          // Handle legacy format (content as string)
-          updatedContent = [
-            { text: assistantMessage.content as unknown as string },
-            contentBlock
-          ];
+          // Handle legacy format or incorrect format
+          updatedContent = [contentBlock];
         }
           
         this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
@@ -160,13 +156,12 @@ export class ChatRequestService {
           id: this.requestId,
           role: 'assistant',
           content: [contentBlock],
-          reasoning: this.reasoningContent.length > 0 ? this.reasoningContent : undefined,
-          toolResults: []
+          reasoning: this.reasoningContent.length > 0 ? this.reasoningContent : undefined
         });
       }
     }
 
-    private handleToolResult(toolResult: ToolResult) {
+    private handleToolResult(toolResult: any) {
       const currentConversation = this.conversationService.getCurrentConversation();
       
       const existingMessages = this.messageMapService.getMessagesForConversation(currentConversation().conversationId);
@@ -175,13 +170,13 @@ export class ChatRequestService {
       );
       
       if (assistantMessage) {
-        const toolResults = assistantMessage.toolResults || [];
-        const updatedToolResults = [...toolResults, toolResult];
+        // const toolResults = assistantMessage.toolResults || [];
+        // const updatedToolResults = [...toolResults, toolResult];
         
         // Update existing message with tool result
         this.messageMapService.updateMessage(currentConversation().conversationId, this.requestId, {
           ...assistantMessage,
-          toolResults: updatedToolResults
+          // toolResults: updatedToolResults
         });
       }
     }

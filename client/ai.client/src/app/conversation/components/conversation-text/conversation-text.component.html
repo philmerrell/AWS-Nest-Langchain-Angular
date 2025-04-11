@@ -10,60 +10,72 @@
     <ion-row class="assistant-response-row">
       <ion-col size="12">
         <div class="assistant-message" [@fadeInOut]>
-          <!-- Show reasoning toggle button if reasoning is available -->
-          @if(hasReasoning(message)) {
+          @if(message.reasoning) {
             <ion-button size="small" (click)="toggleReasoning()" fill="clear">
-              <ion-icon slot="start" name="reader-outline"></ion-icon>
               {{ showReasoning ? 'Hide Reasoning' : 'Show Reasoning' }}
             </ion-button>
           }
           
           <!-- Show reasoning if available and user has toggled it -->
-          @if(hasReasoning(message) && showReasoning) {
+          @if(message.reasoning && showReasoning) {
             <div class="reasoning-container">
-              <h4>AI Reasoning Process</h4>
-              <div class="reasoning-content">{{ message.reasoning }}</div>
+              <h4>AI Reasoning</h4>
+              {{ message.reasoning }}
             </div>
-          }
-          
-          <!-- Show tool status if a tool is being used -->
-          @if(isToolActive(message)) {
-            <app-tool-status 
-              [toolName]="message.toolStatus?.name || ''" 
-              [toolInput]="message.toolStatus?.input">
-            </app-tool-status>
           }
           
           <!-- Render assistant's text content -->
-          <markdown clipboard mermaid [data]="getTextContent(message.content)"></markdown>
-          
-          <!-- Render tool use blocks if available -->
-          @for(toolUseBlock of getToolUseBlocks(message.content); track toolUseBlock.toolUse.toolUseId) {
-            <div class="tool-use-block">
-              <ion-badge color="tertiary">Using Tool: {{ toolUseBlock.toolUse.name }}</ion-badge>
-            </div>
+          @if(message.content && message.content.length > 0) {
+            <markdown clipboard mermaid [data]="getTextContent(message.content)"></markdown>
           }
           
-          <!-- Render tool results if available -->
-          @if(message.toolResults && message.toolResults.length > 0) {
-            @for(toolResult of message.toolResults; track toolResult.toolUseId) {
-              <app-tool-result [toolResult]="toolResult"></app-tool-result>
-            }
+          <!-- Render tool uses and their results -->
+          @for(toolUse of getToolUseBlocks(message.content); track toolUse.toolUse.toolUseId) {
+            <div class="tool-use-container">
+              <div class="tool-use-header">
+                <ion-icon name="build-outline"></ion-icon>
+                <span>Using tool: {{ toolUse.toolUse.name }}</span>
+              </div>
+              <div class="tool-use-input">
+                <pre>{{ toolUse.toolUse.input | json }}</pre>
+              </div>
+              
+              <!-- Find and render corresponding tool result -->
+              @let toolResult = getToolResultForToolUse(message.content, toolUse.toolUse.toolUseId);
+              @if(toolResult) {
+                <div class="tool-result-container" 
+                     [class.tool-result-success]="toolResult.toolResult.status === 'success'"
+                     [class.tool-result-error]="toolResult.toolResult.status === 'error'">
+                  <div class="tool-result-header">
+                    <ion-icon [name]="toolResult.toolResult.status === 'success' ? 'checkmark-circle-outline' : 'alert-circle-outline'"
+                              [color]="toolResult.toolResult.status === 'success' ? 'success' : 'danger'">
+                    </ion-icon>
+                    <span>Tool Result: {{ toolResult.toolResult.status }}</span>
+                  </div>
+                  <div class="tool-result-content">
+                    <markdown [data]="getToolResultText(toolResult)"></markdown>
+                  </div>
+                </div>
+              }
+            </div>
           }
         </div>
       </ion-col>
     </ion-row>
   }
   
-  @if(loading() && isLastMessage(i)) {
+  @if(loading()) {
     <ion-row class="metadata-row">
       <ion-col>
-        <ion-chip [@fadeInOut]>
-          <ion-avatar>
-            <div class="pulsating-circle"></div>
-          </ion-avatar>
-          <ion-label>AI is thinking...</ion-label>
-        </ion-chip>
+        <!-- Only display loading indicator if it's the last or second to last message -->
+        @if(i === messages()!.length || i === messages()!.length - 1) {
+          <ion-chip [@fadeInOut]>
+            <ion-avatar>
+              <div class="pulsating-circle"></div>
+            </ion-avatar>
+            <ion-label>Loading...</ion-label>
+          </ion-chip>
+        }
       </ion-col>
     </ion-row>
   }

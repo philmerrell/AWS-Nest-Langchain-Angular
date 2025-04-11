@@ -25,7 +25,7 @@ import { ConversationService } from 'src/app/conversation/services/conversation.
         Rename
       </ion-item>
 
-      <ion-item button (click)="deleteConversation()">
+      <ion-item button (click)="deleteConversation()" lines="none">
         <ion-icon name="trash-outline" slot="start" color="danger"></ion-icon>
         Delete
       </ion-item>

@@ -61,15 +61,27 @@ export class MessageMapService {
      */
     addMessageToConversation(conversationId: string, message: Message): void {
         this.messageMap.update(currentMap => {
-        const updatedMap = { ...currentMap };
-        if (!updatedMap[conversationId]) {
+          const updatedMap = { ...currentMap };
+          
+          // Ensure message content is always an array of content blocks
+          if (message.content && !Array.isArray(message.content)) {
+            // Convert string or any other format to a proper content block array
+            if (typeof message.content === 'string') {
+              message.content = [{ text: message.content }];
+            } else {
+              message.content = []; // Default to empty if unrecognized format
+            }
+          }
+          
+          if (!updatedMap[conversationId]) {
             updatedMap[conversationId] = signal([message]);
-        }
-        const updatedMessages = updatedMap[conversationId]().concat(message);
-        updatedMap[conversationId].set(updatedMessages);
-        return { ...updatedMap };
+          } else {
+            updatedMap[conversationId].update(messages => [...messages, message]);
+          }
+          
+          return { ...updatedMap };
         });
-    }
+      }
 
     /**
      * Adds new messages to a conversation in the messageMap
@@ -96,27 +108,19 @@ export class MessageMapService {
             conversationMessages.update(messages => 
               messages.map(message => {
                 if (message.id === messageId) {
-                  // Special handling for content property to ensure proper merging
-                  if (updatedAttributes.content && Array.isArray(updatedAttributes.content) && Array.isArray(message.content)) {
-                    // Merge content arrays if both are arrays
-                    return { 
-                      ...message, 
-                      ...updatedAttributes,
-                      // Use the updated content directly as it's already merged in the handleAssistantResponse method
-                    };
-                  } else if (updatedAttributes.content && !Array.isArray(message.content)) {
-                    // Convert old format to new format if needed
-                    return {
-                      ...message,
-                      ...updatedAttributes,
-                      content: Array.isArray(updatedAttributes.content) 
-                        ? updatedAttributes.content 
-                        : [{ text: updatedAttributes.content as unknown as string }]
-                    };
-                  } else {
-                    // Default merge behavior
-                    return { ...message, ...updatedAttributes };
+                  const updatedMessage = { ...message, ...updatedAttributes };
+                  
+                  // Ensure content is properly formatted as an array of content blocks
+                  if (updatedMessage.content && !Array.isArray(updatedMessage.content)) {
+                    if (typeof updatedMessage.content === 'string') {
+                      updatedMessage.content = [{ text: updatedMessage.content }];
+                    } else {
+                      // Keep existing content if new content is invalid
+                      updatedMessage.content = message.content || [];
+                    }
                   }
+                  
+                  return updatedMessage;
                 }
                 return message;
               })

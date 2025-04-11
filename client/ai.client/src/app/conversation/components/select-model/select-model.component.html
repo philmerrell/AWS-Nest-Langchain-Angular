@@ -26,8 +26,8 @@
         Advanced Settings
       </ion-item> -->
       <ion-item-divider sticky>Models</ion-item-divider>
-      @for(model of models.value(); track model.modelId) {
-        <ion-item (click)="selectModel(model)" button detail="false">
+      @for(model of models.value(); track model.modelId; let last = $last) {
+        <ion-item (click)="selectModel(model)" button detail="false" [lines]="last ? 'none' : ''">
           <ion-label>
             <h2>{{ model.name }}</h2>
             <!-- <p>{{ model.description }}</p> -->

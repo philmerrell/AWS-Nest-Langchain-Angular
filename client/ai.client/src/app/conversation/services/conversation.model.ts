@@ -1,3 +1,7 @@
+
+  
+  
+  // Update ContentBlock types to include ToolResult
 export interface TextContentBlock {
     text: string;
   }
@@ -9,11 +13,7 @@ export interface TextContentBlock {
       input: any;
     };
   }
-  
-  // Union type for all content block types
-  export type ContentBlock = TextContentBlock | ToolUseContentBlock;
-  
-  // Tool result tracking
+
   export interface ToolResult {
     toolUseId: string;
     name: string;
@@ -22,22 +22,30 @@ export interface TextContentBlock {
     status: 'success' | 'error';
   }
   
- // Extend the Message interface in conversation.model.ts
-export interface Message {
+  export interface ToolResultContentBlock {
+    toolResult: {
+      toolUseId: string;
+      content: Array<{text?: string; json?: any}>;
+      status: 'success' | 'error';
+    };
+  }
+  
+  // Union type for all content block types
+  export type ContentBlock = 
+    | TextContentBlock 
+    | ToolUseContentBlock
+    | ToolResultContentBlock;
+  
+  // Updated Message interface
+  export interface Message {
     id?: string;
+    role: 'user' | 'assistant';
     content: ContentBlock[];
     createdAt?: string;
     reasoning?: string;
-    role: 'system' | 'user' | 'assistant';
     usage?: {
       inputTokens: number;
       outputTokens: number;
-    };
-    toolResults?: ToolResult[];
-    toolStatus?: {
-      inProgress: boolean;
-      name: string;
-      input: any;
     };
   }
   

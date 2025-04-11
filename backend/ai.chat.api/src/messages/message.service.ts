@@ -4,12 +4,41 @@ import { BatchWriteCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
-// Define the content block types
-interface TextContentBlock {
+// ToolResultContentBlock types
+export interface ToolResultTextContent {
   text: string;
 }
 
-interface ToolUseContentBlock {
+export interface ToolResultJsonContent {
+  json: any;
+}
+
+// Union type for tool result content blocks
+export type ToolResultContentBlock = 
+  | ToolResultTextContent
+  | ToolResultJsonContent;
+  // We could add the other types (image, document, video) as needed
+
+// The ToolResultBlock structure matching Bedrock's API
+export interface ToolResultBlock {
+  toolUseId: string;  // required
+  content: ToolResultContentBlock[];  // required
+  status: "success" | "error";
+}
+
+
+// The complete ContentBlock union type
+export type ContentBlock = 
+  | TextContentBlock
+  | ToolUseContentBlock
+  | { toolResult: ToolResultBlock }
+  // Other content block types as needed
+// Define the content block types
+export interface TextContentBlock {
+  text: string;
+}
+
+export interface ToolUseContentBlock {
   toolUse: {
     toolUseId: string;
     name: string;
@@ -17,17 +46,6 @@ interface ToolUseContentBlock {
   };
 }
 
-// Union type for all content block types
-type ContentBlock = TextContentBlock | ToolUseContentBlock;
-
-// Tool result tracking
-interface ToolResult {
-  toolUseId: string;
-  name: string;
-  input: any;
-  result: string;
-  status: 'success' | 'error';
-}
 
 // Updated Message interface
 export interface Message {
@@ -35,13 +53,14 @@ export interface Message {
   content: ContentBlock[];
   createdAt?: string;
   reasoning?: string;
-  role: 'system' | 'user' | 'assistant';
+  role: 'user' | 'assistant';
   usage?: {
     inputTokens: number;
     outputTokens: number;
   };
-  toolResults?: ToolResult[];
 }
+
+
 
 @Injectable()
 export class MessageService {
@@ -157,57 +176,82 @@ export class MessageService {
      * Prepare a message for storage in DynamoDB by converting complex objects to strings
      */
     private prepareMessageForStorage(message: Message): Record<string, any> {
-        const preparedMessage: Record<string, any> = {
-            id: message.id,
-            role: message.role,
-            content: JSON.stringify(message.content),
-            createdAt: message.createdAt || new Date().toISOString(),
-        };
-               
-        // Add optional fields
-        if (message.reasoning) {
-            preparedMessage.reasoning = message.reasoning;
-        }
-        
-        if (message.usage) {
-            preparedMessage.usage = JSON.stringify(message.usage);
-        }
-        
-        if (message.toolResults && message.toolResults.length > 0) {
-            preparedMessage.toolResults = JSON.stringify(message.toolResults);
-        }
-        
-        return preparedMessage;
-    }
+      const preparedMessage: Record<string, any> = {
+          id: message.id,
+          role: message.role,
+          createdAt: message.createdAt || new Date().toISOString(),
+      };
+  
+      // Process content blocks
+      if (message.content) {
+          // Ensure the content array is properly formatted
+          // Tool results should be content blocks within this array
+          if (Array.isArray(message.content)) {
+              // Content is already an array of content blocks
+              // We just need to convert it to a string for storage
+              preparedMessage.content = JSON.stringify(message.content);
+          } else if (typeof message.content === 'string') {
+              // Legacy format - single string content
+              preparedMessage.content = JSON.stringify([{ text: message.content }]);
+          } else {
+              // Unknown format, store as empty array
+              preparedMessage.content = JSON.stringify([]);
+          }
+      }
+      
+      // Add optional fields
+      if (message.reasoning) {
+          preparedMessage.reasoning = message.reasoning;
+      }
+      
+      if (message.usage) {
+          preparedMessage.usage = JSON.stringify(message.usage);
+      }
+      
+      return preparedMessage;
+  }
 
     /**
-     * Convert a DynamoDB item back to a Message object
-     */
+ * Convert a DynamoDB item back to a Message object
+ */
     private convertDynamoItemToMessage(item: Record<string, any>): Message {
-      console.log(item.content);
-      // Create the message object with all required properties
+      // Create the message object with required properties
       const message: Message = {
           id: item.id || item.SK,
-          content: JSON.parse(item.content),
           role: item.role,
           createdAt: item.createdAt || item.SK,
-          reasoning: item.reasoning,
+          content: [], // Initialize with empty array
       };
       
-      // Parse optional fields
+      // Parse content field
+      if (item.content) {
+          try {
+              // Try to parse as JSON array of content blocks
+              message.content = JSON.parse(item.content);
+              
+              // Validate content structure
+              if (!Array.isArray(message.content)) {
+                  // If it's not an array, convert to array with single text block
+                  message.content = [{ text: String(message.content) }];
+              }
+          } catch (error) {
+              // If parsing fails, it might be a legacy string format
+              message.content = [{ text: item.content }];
+              console.error('Failed to parse content JSON, converting to text block:', error);
+          }
+      }
+      
+      // Add reasoning if present
+      if (item.reasoning) {
+          message.reasoning = item.reasoning;
+      }
+      
+      // Parse usage if present
       if (item.usage) {
           try {
               message.usage = JSON.parse(item.usage);
           } catch (error) {
               console.error('Failed to parse usage JSON', error);
-          }
-      }
-      
-      if (item.toolResults) {
-          try {
-              message.toolResults = JSON.parse(item.toolResults);
-          } catch (error) {
-              console.error('Failed to parse toolResults JSON', error);
           }
       }
       

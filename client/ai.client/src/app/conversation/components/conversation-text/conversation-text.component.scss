@@ -1,4 +1,71 @@
 /* conversation-text.component.scss */
+
+.tool-use-container {
+  margin: 12px 0;
+  border-radius: 6px;
+  background-color: rgba(var(--ion-color-primary-rgb), 0.05);
+  overflow: hidden;
+}
+
+.tool-use-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+  
+  ion-icon {
+    margin-right: 8px;
+  }
+}
+
+.tool-use-input {
+  padding: 8px 12px;
+  
+  pre {
+    margin: 0;
+    white-space: pre-wrap;
+    font-size: 0.9em;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 8px;
+    border-radius: 4px;
+  }
+}
+
+.tool-result-container {
+  margin: 8px 0 0 16px;
+  border-radius: 6px;
+  overflow: hidden;
+  
+  &.tool-result-success {
+    background-color: rgba(var(--ion-color-success-rgb), 0.05);
+  }
+  
+  &.tool-result-error {
+    background-color: rgba(var(--ion-color-danger-rgb), 0.05);
+  }
+}
+
+.tool-result-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  
+  &.tool-result-success {
+    background-color: rgba(var(--ion-color-success-rgb), 0.1);
+  }
+  
+  &.tool-result-error {
+    background-color: rgba(var(--ion-color-danger-rgb), 0.1);
+  }
+  
+  ion-icon {
+    margin-right: 8px;
+  }
+}
+
+.tool-result-content {
+  padding: 8px 12px;
+}
 .assistant-message {
   line-height: 1.65rem;
   font-size: 1.15rem;
